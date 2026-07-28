@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+celery
+redis
+python-dotenv
+ffmpeg-python
+faster-whisper
+ollama
+openai
+pydub
