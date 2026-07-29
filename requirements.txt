@@ -8,3 +8,4 @@ faster-whisper
 ollama
 openai
 pydub
+python-multipart

@@ -14,8 +14,8 @@ venv/
 .venv/
 env/
 .env/
+.env
 
-# Test
 tests/output/
 tests/*.vault
 tests/*.decrypted
@@ -32,4 +32,4 @@ Thumbs.db
 *.swp
 
 uploads/
-.env
+
