@@ -16,7 +16,7 @@ env/
 .env/
 .env
 
-test/video
+test/videos/
 .pytest_cache/
 
 # OS
@@ -29,4 +29,3 @@ Thumbs.db
 *.swp
 
 uploads/
-
