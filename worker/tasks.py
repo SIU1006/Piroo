@@ -2,14 +2,12 @@ from worker.celery_app import celery_app
 import ffmpeg
 import os
 from dotenv import load_dotenv
-from faster_whisper import WhisperModel
-import ollama
 import redis
 import json
+import requests
+import ollama
 
 load_dotenv()
-model = WhisperModel("base", device="cpu", compute_type="int8")
-
 
 @celery_app.task(name="process_video")
 def process_video(task_id: str, file_path: str):
@@ -24,22 +22,25 @@ def process_video(task_id: str, file_path: str):
     if size_mb > 25:
         raise ValueError(f"Audio file size exceeds 25MB limit: {size_mb:.2f}MB")
 
-    # faster-whisper transcription
-    segments, info = model.transcribe(audio_path, beam_size=5)
-    segments = list(segments)
+    # Send audio file to Whisper service for transcription
+    whisper_url = os.getenv("WHISPER_URL", "http://localhost:3000")
+    
+    response = requests.post(
+        f"{whisper_url}/transcribe",
+        json={"audio_file": audio_path} # Bentoml v1.4 accepts JSON by default
+    )
 
-    print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
+    if response.status_code != 200:
+        raise ValueError(f"Whisper service errorL {response.status_code}: {response.text}")
+    
+    transcript = response.text
 
-    # LLM Summarization (ollama)
-    transcript_text = " ".join([segment.text for segment in segments])
-    prompt = f"You are a helpful assistant. Below is a transcript from an audio recording. Write a concise summary in 3-5 sentences covering the main topics discussed. Transcript: {transcript_text}"
+    response_llm = ollama.chat(
+        model="llama3.2",
+        messages=[{"role": "user", "content": f"Summarise this transcript in 3-5 sentences: {transcript}"}]
+    )
+    summary = response_llm.message.content
 
-    response = ollama.chat(
-        model="llama3.2", 
-        messages=[{"role": "user", "content": prompt}]
-        )
-
-    summary = response.message.content
     print(f"Task ID: {task_id}, Summary: {summary}")
     # use Redis as a bridge to tell browser the task is completed and send the summary back to the browser
     r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))    

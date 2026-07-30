@@ -9,3 +9,5 @@ ollama
 openai
 pydub
 python-multipart
+bentoml==1.3.9
+requests

@@ -16,11 +16,16 @@ services:
     environment:
       - BROKER_URL=redis://redis:6379/0
       - BACKEND_URL=redis://redis:6379/0
+      - WHISPER_URL=http://whisper-service:3000
     depends_on:
       redis:
         condition: service_healthy
       ollama:
         condition: service_started
+      whisper-service:
+        condition: service_started
+    volumes:
+      - uploads_data:/app/uploads
 
   celery:
     build: .
@@ -28,11 +33,33 @@ services:
     environment:
       - BROKER_URL=redis://redis:6379/0
       - BACKEND_URL=redis://redis:6379/0
+      - WHISPER_URL=http://whisper-service:3000
+      - OLLAMA_HOST=http://ollama:11434
     depends_on:
       redis:
         condition: service_healthy
       ollama:
         condition: service_started
+      whisper-service:
+        condition: service_started
+    volumes:
+      - uploads_data:/app/uploads
+        
+
+  whisper-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.inference
+    ports:
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    volumes:
+      - uploads_data:/app/uploads
+
 
   ollama:
     image: ollama/ollama
@@ -41,5 +68,6 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
-volumes:
+volumes: # storage outside any container
   ollama_data:
+  uploads_data:

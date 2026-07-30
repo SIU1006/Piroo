@@ -16,10 +16,7 @@ env/
 .env/
 .env
 
-tests/output/
-tests/*.vault
-tests/*.decrypted
-tests/
+test/video
 .pytest_cache/
 
 # OS
