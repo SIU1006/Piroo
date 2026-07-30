@@ -1,7 +1,7 @@
 import bentoml
 from faster_whisper import WhisperModel
 
-@bentoml.service
+@bentoml.service(traffic={"timeout": 600})
 class WhisperService:
     def __init__(self):
         self.model = WhisperModel("base", device="cpu", compute_type="int8")

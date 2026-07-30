@@ -262,6 +262,9 @@
         } else if (!data.summary && data.status) {
           // status-only message, no summary yet
         }
+        if (data.status === "error") {
+          setSummary(data.error || "An error occurred", "error", data.task_id);
+        }
       };
 
       ws.onclose = () => {
