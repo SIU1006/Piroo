@@ -241,7 +241,7 @@
 
       setStage("Connecting…", "active");
 
-      const ws = new WebSocket(`ws://localhost:8000/api/v1/ws/${task_id}`);
+      const ws = new WebSocket(`ws://localhost:8080/api/v1/ws/${task_id}`);
 
       ws.onopen = () => setStage("Connected. Waiting for result…", "active");
 

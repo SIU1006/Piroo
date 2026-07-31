@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whisper
+  template:
+    metadata:
+      labels:
+        app: whisper
+    spec:
+      containers:
+      - name: whisper
+        image: asyncvtp-whisper-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
+        volumeMounts:
+        - name: uploads-storage
+          mountPath: /app/uploads
+      volumes:
+      - name: uploads-storage
+        persistentVolumeClaim:
+          claimName: uploads-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper-service
+spec:
+  selector:
+    app: whisper
+  ports:
+    - port: 3000
+      targetPort: 3000

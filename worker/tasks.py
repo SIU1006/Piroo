@@ -56,6 +56,13 @@ def process_video(task_id: str, file_path: str):
             "summary": summary
         }))
 
+        # Store result for late WebSocket connections (Solve pub/sub race condition)
+        r.setex(f"result:{task_id}", 3600, json.dumps({ # setex stores result for 1 hour
+            "status": "completed",
+            "task_id": task_id,
+            "summary": summary
+        }))
+
     except Exception as e:
         r.publish(f"task:{task_id}", json.dumps({
             "status": "error",

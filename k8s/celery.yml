@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment # Only Deployment cuz no other pod talks to it
+metadata:
+  name: celery
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery
+
+  template:
+    metadata:
+      labels:
+        app: celery
+
+    spec:
+      containers:
+      - name: celery
+        image: asyncvtp-celery:latest
+        imagePullPolicy: Never
+        command: ["python", "-m", "celery"]
+        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=solo"]
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
+        volumeMounts:
+        - name: uploads-storage
+          mountPath: /app/uploads
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: uploads-storage
+        persistentVolumeClaim:
+          claimName: uploads-pvc

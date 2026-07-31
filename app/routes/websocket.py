@@ -8,7 +8,16 @@ router = APIRouter()
 @router.websocket("/ws/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: str):
     await websocket.accept()
-    r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))    
+    r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))  
+
+    # Check for stored result in Redis before subscribe
+    stored = r.get(f"result:{task_id}")
+    if stored:
+        await websocket.send_text(stored.decode("utf-8"))  
+        await websocket.close()
+        return
+
+    # Otherwise normal sub
     pubsub = r.pubsub()
     pubsub.subscribe(f"task:{task_id}")
 
