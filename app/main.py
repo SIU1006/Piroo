@@ -17,8 +17,8 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-app.include_router(router, prefix="/api/v1") # For uploading
-app.include_router(websocket_router, prefix="/api/v1") # For websocket
+app.include_router(router, prefix="/api/v1") # uploading
+app.include_router(websocket_router, prefix="/api/v1") # websocket
 
 # Serve html from FASTAPI
 app.mount("/static", StaticFiles(directory="static"), name="static")
