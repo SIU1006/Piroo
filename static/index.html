@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Video Pipeline Tester</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <p class="eyebrow">Internal Tool</p>
+      <h1>Video Pipeline Tester</h1>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="task_id" placeholder="Paste task_id here" />
+      <button onclick="connect()">Connect</button>
+    </div>
+
+    <div class="box">
+      <p class="box-label"><span class="dot pending" id="stage_dot"></span>Stage</p>
+      <p class="stage-text empty" id="stage_text">Not connected</p>
+    </div>
+
+    <div class="box">
+      <p class="box-label"><span class="dot pending" id="summary_dot"></span>Result</p>
+      <p class="summary-text empty" id="summary_text">Waiting for task result</p>
+      <div class="meta" id="meta" style="display:none">
+        task_id: <span id="meta_task_id"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
