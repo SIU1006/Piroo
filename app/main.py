@@ -4,6 +4,8 @@ from app.routes.websocket import router as websocket_router #!!!
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from prometheus_fastapi_instrumentator import Instrumentator
+
 
 app = FastAPI(
     title="Asnyc Video to Text API",
@@ -26,3 +28,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def root():
     return FileResponse("static/index.html")
+
+Instrumentator().instrument(app).expose(app) # expose /metrics endpoint for Prometheus
+# must be after all routes are registered, otherwise it will not instrument them

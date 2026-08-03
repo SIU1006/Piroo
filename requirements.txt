@@ -12,3 +12,6 @@ python-multipart
 bentoml==1.3.9
 requests
 aiofiles
+prometheus-fastapi-instrumentator
+flower
+locust
