@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whisper-canary
+spec:
+  replicas: 1     
+  selector:
+    matchLabels:
+      app: whisper
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: whisper
+        track: canary
+    spec:
+      containers:
+      - name: whisper
+        image: asyncvtp-whisper-service:latest
+        imagePullPolicy: Never
+        env:
+        - name: WHISPER_MODEL_SIZE
+          value: "small"    
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: uploads-storage
+          mountPath: /app/uploads
+      volumes:
+      - name: uploads-storage
+        persistentVolumeClaim:
+          claimName: uploads-pvc
