@@ -1,0 +1,11 @@
+.git
+.env
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+uploads/
+test/videos/
+docs/
+k8s/
+monitoring/
+*.md

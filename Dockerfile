@@ -11,5 +11,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+# add a non-root user
+RUN useradd --create-home appuser 
 
+RUN mkdir -p /app/uploads
+
+# Makes appuser owner of /app - non-root user could not write to /app/uploads without this
+RUN chown -R appuser:appuser /app
+# Run as appuser
+USER appuser
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

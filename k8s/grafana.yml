@@ -19,7 +19,10 @@ spec:
         - containerPort: 3000
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
-          value: "admin"
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secret
+              key: admin-password
 ---
 apiVersion: v1
 kind: Service

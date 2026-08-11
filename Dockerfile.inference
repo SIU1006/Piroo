@@ -2,10 +2,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install dependencies first (better layer caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# add a non-root user
+RUN useradd --create-home appuser 
+
+RUN mkdir -p /app/uploads
+
+# Makes appuser owner of /app - non-root user could not write to /app/uploads without this
+RUN chown -R appuser:appuser /app
+# Run as appuser
+USER appuser
 
 CMD ["bentoml", "serve", "inference.whisper_service:WhisperService", "--port", "3000"]
