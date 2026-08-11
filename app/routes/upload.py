@@ -14,10 +14,10 @@ async def upload_file(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
     
-    file.task_id = str(uuid.uuid4())
-    file_path = UPLOAD_DIR / file.task_id # / join path
+    task_id = str(uuid.uuid4())
+    file_path = UPLOAD_DIR / task_id # / join path
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer) # Chunk the video to avoid memory issues for large files
 
-    process_video.delay(file.task_id, str(file_path)) # Pass next step to celery worker
-    return UploadResponse(filename=file.filename, task_id=file.task_id, status="queued")
+    process_video.delay(task_id, str(file_path)) # Pass next step to celery worker
+    return UploadResponse(filename=file.filename, task_id=task_id, status="queued")

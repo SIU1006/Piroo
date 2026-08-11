@@ -35,6 +35,7 @@ services:
       - BACKEND_URL=redis://redis:6379/0
       - WHISPER_URL=http://whisper-service:3000
       - OLLAMA_HOST=http://ollama:11434
+      - LLM_MODEL=llama3.2
     depends_on:
       redis:
         condition: service_healthy

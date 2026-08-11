@@ -7,3 +7,4 @@ data:
   BACKEND_URL: redis://redis-service:6379/0
   WHISPER_URL: http://whisper-service:3000
   OLLAMA_HOST: http://ollama-service:11434
+  LLM_MODEL: llama3.2

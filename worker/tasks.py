@@ -6,8 +6,11 @@ import redis
 import json
 import requests
 import ollama
+import logging
 
 load_dotenv()
+assert os.getenv("LLM_MODEL") is not None, "LLM_MODEL is not set in .env"
+logger = logging.getLogger(__name__)
 
 @celery_app.task(name="process_video")
 def process_video(task_id: str, file_path: str):
@@ -19,7 +22,7 @@ def process_video(task_id: str, file_path: str):
 
         # Extract audio only
         ffmpeg.input(file_path).output(audio_path, vn=None, acodec='mp3', ac=1, audio_bitrate="128k").overwrite_output().run()
-        print(f"Audio Extracted: {task_id} at {audio_path}")
+        logger.info(f"Audio Extracted: {task_id} at {audio_path}")
 
         # Check audio duration
         probe = ffmpeg.probe(audio_path)
@@ -38,12 +41,12 @@ def process_video(task_id: str, file_path: str):
         )
 
         if response.status_code != 200:
-            raise ValueError(f"Whisper service errorL {response.status_code}: {response.text}")
+            raise ValueError(f"Whisper service error: {response.status_code}: {response.text}")
         
-        transcript = response.text
+        transcript = response.json().get("transcript", "")
 
         response_llm = ollama.chat(
-            model="llama3.2",
+            model=os.getenv("LLM_MODEL"),
             messages=[{"role": "user", "content": f"Summarise this transcript in 3-5 sentences: {transcript}"}]
         )
         summary = response_llm.message.content
@@ -55,7 +58,7 @@ def process_video(task_id: str, file_path: str):
             "summary": summary
         }))
 
-        print(f"Task ID: {task_id}, Summary: {summary}")
+        logger.info(f"Task ID: {task_id}, Summary: {summary}")
         # use Redis as a bridge to tell browser the task is completed and send the summary back to the browser
         r.publish(f"task:{task_id}", json.dumps({    
             "status": "completed",
@@ -65,6 +68,7 @@ def process_video(task_id: str, file_path: str):
 
 
     except Exception as e:
+        logger.exception(f"Task {task_id} failed")
         r.publish(f"task:{task_id}", json.dumps({
             "status": "error",
             "task_id": task_id,
