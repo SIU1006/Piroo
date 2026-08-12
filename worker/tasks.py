@@ -17,20 +17,20 @@ def process_video(task_id: str, file_path: str):
 
     r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))    
 
-    try:
-        audio_path = f"uploads/{task_id}.mp3"
+    audio_path = f"uploads/{task_id}.mp3" # ensure finally block sees this variable even if ffmpeg fails
 
-        # Extract audio only
-        ffmpeg.input(file_path).output(audio_path, vn=None, acodec='mp3', ac=1, audio_bitrate="128k").overwrite_output().run()
-        logger.info(f"Audio Extracted: {task_id} at {audio_path}")
+    try:
 
         # Check audio duration
-        probe = ffmpeg.probe(audio_path)
-        duration_seconds = float(probe['format']['duration'])
-        duration_minutes = duration_seconds / 60
+        probe = ffmpeg.probe(file_path)
+        duration_minutes = float(probe['format']['duration']) / 60
 
         if duration_minutes > 30:
             raise ValueError(f"Audio file duration exceeds 30 minutes limit: {duration_minutes:.2f} minutes")
+
+        # Extract audio
+        ffmpeg.input(file_path).output(audio_path, vn=None, acodec='mp3', ac=1, audio_bitrate="128k").overwrite_output().run()
+        logger.info(f"Audio Extracted: {task_id} at {audio_path}")
         
         # Send audio file to Whisper service for transcription
         whisper_url = os.getenv("WHISPER_URL", "http://localhost:3000")
@@ -76,3 +76,10 @@ def process_video(task_id: str, file_path: str):
         r.setex(f"result:{task_id}", 3600, error)
         r.publish(f"task:{task_id}", error)
         raise
+
+    finally:
+        # Clean up
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if os.path.exists(audio_path):
+            os.remove(audio_path)
