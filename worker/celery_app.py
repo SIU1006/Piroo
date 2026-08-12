@@ -12,3 +12,9 @@ celery_app = Celery(
     broker=os.getenv("BROKER_URL"),
     backend=os.getenv("BACKEND_URL")
 )
+
+celery_app.conf.update(
+    task_soft_time_limit=1800, # Raise Exception
+    task_time_limit=1900, # force-kill
+    task_acks_late=True, # Redis will re-queue the force-killed tasks
+)

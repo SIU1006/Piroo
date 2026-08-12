@@ -37,41 +37,42 @@ def process_video(task_id: str, file_path: str):
         
         response = requests.post(
             f"{whisper_url}/transcribe",
-            json={"audio_file": audio_path} # Bentoml v1.4 accepts JSON by default
+            json={"audio_file": audio_path}, # Bentoml v1.4 accepts JSON by default
+            timeout=700
         )
 
         if response.status_code != 200:
             raise ValueError(f"Whisper service error: {response.status_code}: {response.text}")
         
-        transcript = response.json().get("transcript", "")
+        transcript = response.json()
 
-        response_llm = ollama.chat(
+        client = ollama.Client(timeout=300)
+        response_llm = client.chat(
             model=os.getenv("LLM_MODEL"),
             messages=[{"role": "user", "content": f"Summarise this transcript in 3-5 sentences: {transcript}"}]
         )
         summary = response_llm.message.content
 
         # Store result for late WebSocket connections (Solve pub/sub race condition)
-        r.setex(f"result:{task_id}", 3600, json.dumps({ # setex stores result for 1 hour
+        complete = json.dumps({
             "status": "completed",
             "task_id": task_id,
             "summary": summary
-        }))
+        })
+            
+        r.setex(f"result:{task_id}", 3600, complete) # setex stores result for 1 hour
+        # use Redis as a bridge to tell browser the task is completed and send the summary back to the browser
+        r.publish(f"task:{task_id}", complete)
 
         logger.info(f"Task ID: {task_id}, Summary: {summary}")
-        # use Redis as a bridge to tell browser the task is completed and send the summary back to the browser
-        r.publish(f"task:{task_id}", json.dumps({    
-            "status": "completed",
-            "task_id": task_id,
-            "summary": summary
-        }))
-
 
     except Exception as e:
         logger.exception(f"Task {task_id} failed")
-        r.publish(f"task:{task_id}", json.dumps({
+        error = json.dumps({
             "status": "error",
             "task_id": task_id,
             "error": str(e)
-        }))
+        })
+        r.setex(f"result:{task_id}", 3600, error)
+        r.publish(f"task:{task_id}", error)
         raise
