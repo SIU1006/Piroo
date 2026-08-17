@@ -18,6 +18,9 @@ spec:
       - name: whisper
         image: asyncvtp-whisper-service:latest
         imagePullPolicy: Never
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
         env:
         - name: WHISPER_MODEL_SIZE
           value: "small"    
@@ -26,6 +29,33 @@ spec:
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          periodSeconds: 10
+          failureThreshold: 30    # 5 mins for model download + load
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 3000
+          periodSeconds: 10
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+
+
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:

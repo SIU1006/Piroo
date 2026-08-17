@@ -10,9 +10,6 @@ data:
       - job_name: 'fastapi'
         static_configs:
           - targets: ['fastapi-service:8000']
-      - job_name: 'flower'
-        static_configs:
-          - targets: ['flower-service:5555']
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,17 +27,27 @@ spec:
     spec:
       containers:
       - name: prometheus
-        image: prom/prometheus
+        image: prom/prometheus:v3.8.1
         ports:
         - containerPort: 9090
         volumeMounts:
         - name: config
           mountPath: /etc/prometheus/prometheus.yml
           subPath: prometheus.yml
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
       volumes:
       - name: config
         configMap:
           name: prometheus-config
+
 ---
 apiVersion: v1
 kind: Service

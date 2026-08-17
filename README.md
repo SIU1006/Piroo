@@ -53,7 +53,7 @@ FastAPI WebSocket /api/v1/ws/{task_id}
   ▼
 Browser receives the summary in real time
 
-Observability (sidecar): Prometheus scrapes FastAPI /metrics + Flower → Grafana dashboards
+Observability (sidecar): Prometheus scrapes FastAPI /metrics → Grafana dashboards
 ```
 
 FastAPI and the Celery workers are **separate processes communicating exclusively through Redis**. The Whisper model is served by a **standalone BentoML inference service**, so it can be versioned, scaled, and canary-released independently of the workers that call it.
@@ -68,7 +68,7 @@ FastAPI and the Celery workers are **separate processes communicating exclusivel
 - **Real-time delivery** — WebSocket push with a Redis-backed result cache that survives late connections
 - **Kubernetes-native** — Deployments, Services, PVCs, ConfigMaps, and a CPU-based HorizontalPodAutoscaler
 - **Canary inference releases** — stable and canary Whisper pods served behind one Service via label selectors
-- **Full observability** — Prometheus metrics, prebuilt Grafana dashboard, Flower for Celery, Locust for load testing
+- **Full observability** — Prometheus metrics, prebuilt Grafana dashboard and Locust for load testing
 - **MLOps lifecycle** — MLflow experiment tracking and model registry; GitHub Actions CI that tests, builds, and pushes images to GHCR
 
 ---
@@ -132,7 +132,6 @@ docker compose exec ollama ollama pull llama3.2
 |---|---|
 | Web UI / API | http://localhost:8000 (`/docs` for Swagger) |
 | Whisper inference service | http://localhost:3000 |
-| Flower (Celery dashboard) | http://localhost:5555 |
 | Ollama | http://localhost:11434 |
 
 ### Option B — Kubernetes (kind cluster)
@@ -218,9 +217,8 @@ Prometheus scrape endpoint, exposed via `prometheus-fastapi-instrumentator`.
 
 ## Observability & Load Testing
 
-- **Prometheus** scrapes FastAPI `/metrics` and Flower every 15 s (`monitoring/prometheus.yml`, embedded in `k8s/prometheus.yml`).
+- **Prometheus** scrapes FastAPI `/metrics` every 15 s (`monitoring/prometheus.yml`, embedded in `k8s/prometheus.yml`).
 - **Grafana** ships with a prebuilt pipeline dashboard (`monitoring/grafana/dashboards/pipeline.json`).
-- **Flower** provides real-time Celery introspection (task rates, worker state).
 
 Run a load test against the kind deployment (expects a sample file at `test/videos/test_eng.mp3`):
 

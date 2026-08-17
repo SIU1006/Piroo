@@ -14,9 +14,18 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:7
+        image: redis:7.4.10
         ports:
         - containerPort: 6379
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+       
 
 ---
 

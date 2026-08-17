@@ -34,5 +34,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def root():
     return FileResponse("static/index.html")
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 Instrumentator().instrument(app).expose(app) # expose /metrics endpoint for Prometheus
 # must be after all routes are registered, otherwise it will not instrument them
