@@ -15,7 +15,6 @@ services:
       - "8000:8000"
     environment:
       - BROKER_URL=redis://redis:6379/0
-      - BACKEND_URL=redis://redis:6379/0
       - WHISPER_URL=http://whisper-service:3000
     depends_on:
       redis:
@@ -32,7 +31,6 @@ services:
     command: python -m celery -A worker.tasks worker --loglevel=info --pool=solo
     environment:
       - BROKER_URL=redis://redis:6379/0
-      - BACKEND_URL=redis://redis:6379/0
       - WHISPER_URL=http://whisper-service:3000
       - OLLAMA_HOST=http://ollama:11434
       - LLM_MODEL=llama3.2

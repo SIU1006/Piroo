@@ -268,12 +268,11 @@ Each run records `model_size`, `device`, `compute_type`, and an approximate real
 | Variable | Default (local) | Purpose |
 |---|---|---|
 | `BROKER_URL` | `redis://localhost:6379/0` | Celery broker + Redis pub/sub |
-| `BACKEND_URL` | `redis://localhost:6379/0` | Celery result backend |
 | `WHISPER_URL` | `http://localhost:3000` | BentoML Whisper service endpoint |
 | `OLLAMA_HOST` | `http://localhost:11434` | Ollama server |
 | `WHISPER_MODEL_SIZE` | `base` | faster-whisper model size (`small` on the canary) |
 
-In Docker Compose these are injected per service; in Kubernetes they live in the `pipeline-config` ConfigMap (`k8s/configmap.yml`). A local `.env` (gitignored) holds `BROKER_URL` / `BACKEND_URL` for bare-metal development.
+In Docker Compose these are injected per service; in Kubernetes they live in the `pipeline-config` ConfigMap (`k8s/configmap.yml`). A local `.env` (gitignored) holds `BROKER_URL` for bare-metal development.
 
 ---
 
