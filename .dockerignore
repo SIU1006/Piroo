@@ -8,3 +8,4 @@ test/videos/
 k8s/
 monitoring/
 *.md
+*.ruff_cache

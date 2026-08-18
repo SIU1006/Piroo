@@ -1,3 +1,4 @@
+import os
 import uuid
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from app.schemas.task import UploadResponse
 from worker.tasks import process_video
 
 router = APIRouter()
-UPLOAD_DIR = Path("uploads")  # Create path object for uploads folder
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))  # Create path object for uploads folder
 UPLOAD_DIR.mkdir(exist_ok=True)  # exist_ok = ok to already have the folder, dont crash
 
 # File Validation

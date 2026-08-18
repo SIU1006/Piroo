@@ -23,6 +23,6 @@ def test_upload_returns_taskid():
     mock_delay.assert_called_once()  # Ensure the Celery task was called
 
 
-def test_upload_no_file_returns_400():
+def test_upload_no_file_returns_422():
     response = client.post("/api/v1/upload")
     assert response.status_code == 422
