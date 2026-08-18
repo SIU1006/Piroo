@@ -13,7 +13,12 @@
     </div>
 
     <div class="input-row">
-      <input type="text" id="task_id" placeholder="Paste task_id here" />
+      <input type="file" id="file_input" accept=".mp3, .mp4, .mov, .wav, .m4a" />
+      <button onclick="upload()">Upload & Track</button>
+    </div>
+    
+    <div class="input-row">
+      <input type="text" id="task_id" placeholder="...or paste an existing task_id" />
       <button onclick="connect()">Connect</button>
     </div>
 

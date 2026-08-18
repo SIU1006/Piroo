@@ -1,5 +1,30 @@
-const API_BASE = "http://localhost:8080";
-const WS_BASE = "ws://localhost:8080";
+// auto picks the matching websocket scheme
+const API_BASE = location.origin;
+const WS_BASE = (location.protocol === "https:" ? "wss://" : "ws://") + location.host;
+
+async function upload() {
+  const f = document.getElementById("file_input").files[0];
+  if (!f) {
+    setStage("Choose a file", "error");
+    return;
+  }
+}
+  const form = new FormData();
+  form.append("file", f);
+  setStage("Uploading…", "active");
+
+  const res = await fetch(`${API_BASE}/api/v1/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    setStage(`Upload failed: HTTP ${res.status}`, "error");
+    return;
+  }
+
+  const data = await res.json();
+  document.getElementById("task_id").value = data.task_id;
+  connect(); // hand off to websocket
 
 function setStage(text, state){
   const dot = document.getElementById("stage_dot");

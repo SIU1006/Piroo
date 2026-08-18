@@ -24,6 +24,31 @@ spec:
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
+
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 3000
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"   
+
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
