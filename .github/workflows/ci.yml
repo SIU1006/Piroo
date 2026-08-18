@@ -1,0 +1,116 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: # Changes to these files never affect images or tests - skip CI
+      - '**.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip' # store dependencies in cache to speed up future runs
+
+    - name: Install dependencies
+      run: pip install -r requirements-dev.txt
+    
+    - name: Lint
+      run: ruff check .
+
+    - name: Run tests
+      env:
+        BROKER_URL: redis://redis-service:6379/0
+        WHISPER_URL: http://whisper-service:3000
+        OLLAMA_HOST: http://ollama-service:11434
+        LLM_MODEL: llama3.2
+      run: python -m pytest tests/ -v
+
+  build-check: # before actual pushing
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build FastAPI/Celery image (no push)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        push: false
+        tags: fastapi:pr-check
+        cache-from: type=gha,scope=fastapi
+        # no cache-to here — PR builds shouldn't overwrite main's cache
+
+    - name: Build Whisper image (no push)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.inference
+        push: false
+        tags: whisper:pr-check
+        cache-from: type=gha,scope=whisper      
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test    # only build if tests pass !!!
+    if: github.event_name == 'push' # only push images after code lands on main
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }} # from github
+
+    - name: Set up Docker Buildx # save/load build cache to speed up future builds
+      uses: docker/setup-buildx-action@v3       
+
+    - name: Build and push FastAPI/Celery image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/fastapi:latest
+          ghcr.io/${{ github.repository_owner }}/celery:latest
+        cache-from: type=gha,scope=fastapi # Read previous image layers from GHA cache
+        cache-to: type=gha,mode=max,scope=fastapi # Buildx recognizes unchanged layer's hash and restores from GHA cache, no need reinstalling ML dependencies
+
+
+    - name: Build and push Whisper image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.inference
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/whisper:latest
+        cache-from: type=gha,scope=whisper 
+        cache-to: type=gha,mode=max,scope=whisper 
+

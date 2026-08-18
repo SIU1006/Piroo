@@ -1,14 +1,16 @@
-import redis
-from fastapi import APIRouter, WebSocket
 import asyncio
 import os
 
+import redis
+from fastapi import APIRouter, WebSocket
+
 router = APIRouter()
+
 
 @router.websocket("/ws/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: str):
     await websocket.accept()
-    r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))  
+    r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))
 
     # Need to sub first before checking cache to avoid race condition
     pubsub = r.pubsub()
@@ -17,17 +19,19 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
     # Check cache in Redis
     stored = r.get(f"result:{task_id}")
     if stored:
-        await websocket.send_text(stored.decode("utf-8"))  
+        await websocket.send_text(stored.decode("utf-8"))
         await websocket.close()
         return
 
-
-    loop = asyncio.get_event_loop() # Separate thread
+    loop = asyncio.get_event_loop()  # Separate thread
     data = await loop.run_in_executor(None, wait_for_message, pubsub)
-    await websocket.send_text(data.decode('utf-8'))
+    await websocket.send_text(data.decode("utf-8"))
     await websocket.close()
 
-def wait_for_message(pubsub): # regular function that does the blocking listen loop for redis pubsub.listen()
+
+def wait_for_message(
+    pubsub,
+):  # regular function that does the blocking listen loop for redis pubsub.listen()
     for message in pubsub.listen():
-        if message['type'] == 'message':
-            return message['data']
+        if message["type"] == "message":
+            return message["data"]
