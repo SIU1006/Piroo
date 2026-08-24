@@ -17,7 +17,7 @@ env/
 .env/
 .env
 
-test/videos/
+test_video/
 uploads/
 
 .pytest_cache/

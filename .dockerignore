@@ -4,7 +4,7 @@
 **/*.pyc
 **/.pytest_cache/
 uploads/
-test/videos/
+test_video/
 k8s/
 monitoring/
 *.md
