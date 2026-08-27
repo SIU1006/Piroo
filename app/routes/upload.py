@@ -1,4 +1,3 @@
-import os
 import uuid
 from pathlib import Path
 
@@ -6,10 +5,10 @@ import aiofiles
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.schemas.task import UploadResponse
+from settings import UPLOAD_DIR
 from worker.tasks import process_video
 
 router = APIRouter()
-UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "uploads"))  # Create path object for uploads folder
 UPLOAD_DIR.mkdir(exist_ok=True)  # exist_ok = ok to already have the folder, dont crash
 
 # File Validation
@@ -31,7 +30,7 @@ async def upload_file(file: UploadFile = File(...)):
         )
 
     task_id = str(uuid.uuid4())
-    file_path = UPLOAD_DIR / task_id  # / join path
+    file_path = UPLOAD_DIR / f"{task_id}{extension}"  # keep extension
 
     file_size = 0
     try:

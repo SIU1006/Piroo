@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+
+spec:
+  replicas: 1 # Must not change
+  selector:
+    matchLabels:
+      app: celery-beat
+
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+
+    spec:
+      containers:
+      - name: celery-beat
+        image: asyncvtp-celery: latest
+        imagePullPolicy: Never
+        command: ["python", "-m", "celery"]
+        args: ["-A", "worker.tasks", "beat", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

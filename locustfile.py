@@ -9,7 +9,7 @@ class VideoStreamingUser(HttpUser):
 
     @task
     def upload_video(self):
-        test_file_path = "test/videos/test_eng.mp3"
+        test_file_path = "test_videos/test_eng_2.mp4"
         with open(test_file_path, "rb") as f:
             self.client.post(
                 "/api/v1/upload",

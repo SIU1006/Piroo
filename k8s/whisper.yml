@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: whisper
 spec:
-  replicas: 9 
+  replicas: 1
   selector:
     matchLabels:
       app: whisper
@@ -47,7 +47,7 @@ spec:
             cpu: "500m"
           limits:
             memory: "2Gi"
-            cpu: "2000m"   
+            cpu: "2000m"
 
       volumes:
       - name: uploads-storage

@@ -8,7 +8,6 @@ async function upload() {
     setStage("Choose a file", "error");
     return;
   }
-}
   const form = new FormData();
   form.append("file", f);
   setStage("Uploading…", "active");
@@ -25,6 +24,7 @@ async function upload() {
   const data = await res.json();
   document.getElementById("task_id").value = data.task_id;
   connect(); // hand off to websocket
+}
 
 function setStage(text, state){
   const dot = document.getElementById("stage_dot");

@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -12,7 +12,7 @@ def test_cache_hit(monkeypatch):
 
     with patch("app.routes.websocket.redis") as mock_redis_module, \
          patch("app.routes.websocket.wait_for_message") as mock_wait:
-        mock_redis_instance = MagicMock()
+        mock_redis_instance = AsyncMock()
         mock_redis_module.Redis.from_url.return_value = mock_redis_instance
 
         cached_result = json.dumps({
@@ -22,8 +22,9 @@ def test_cache_hit(monkeypatch):
         })
         mock_redis_instance.get.return_value = cached_result.encode("utf-8") # Redis return by bytes
 
-        mock_pubsub = MagicMock()
-        mock_redis_instance.pubsub.return_value = mock_pubsub
+        mock_pubsub = AsyncMock()
+        # need set as MagicMock since mock_redis_instance is AsyncMock, which auto-generates every child attribute as async too, i.e. .pubsub, but .pubsub needs to be sync, no I/O
+        mock_redis_instance.pubsub = MagicMock(return_value=mock_pubsub)
 
         with client.websocket_connect("/api/v1/ws/cached-task") as websocket: # Connect
             data = websocket.receive_text()
@@ -41,7 +42,7 @@ def test_cache_miss(monkeypatch):
 
     with patch("app.routes.websocket.redis") as mock_redis_module, \
         patch("app.routes.websocket.wait_for_message") as mock_wait:
-        mock_redis_instance = MagicMock()
+        mock_redis_instance = AsyncMock()
         mock_redis_module.Redis.from_url.return_value = mock_redis_instance
 
         live_result = json.dumps({
@@ -52,8 +53,8 @@ def test_cache_miss(monkeypatch):
 
         mock_redis_instance.get.return_value = None # No Cache
 
-        mock_pubsub = MagicMock()
-        mock_redis_instance.pubsub.return_value = mock_pubsub
+        mock_pubsub = AsyncMock()
+        mock_redis_instance.pubsub = MagicMock(return_value=mock_pubsub)
 
         mock_wait.return_value = live_result.encode("utf-8")
 

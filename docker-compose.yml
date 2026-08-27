@@ -43,7 +43,16 @@ services:
         condition: service_started
     volumes:
       - uploads_data:/app/uploads
-        
+
+  celery-beat:
+    build: .
+    command: python -m celery -A worker.tasks beat --loglevel=info
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
 
   whisper-service:
     build:

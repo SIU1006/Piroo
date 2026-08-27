@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import bentoml
 from faster_whisper import WhisperModel
@@ -14,9 +15,9 @@ class WhisperService:
         self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
     @bentoml.api
-    def transcribe(self, audio_file: str) -> str:
+    def transcribe(self, audio_file: Path) -> str:
         segments, info = self.model.transcribe(audio_file)
         logger.info(
             f"Detected language '{info.language}' with probability {info.language_probability:f}"
-        )        
+        )
         return " ".join([segment.text for segment in segments])

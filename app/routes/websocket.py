@@ -1,37 +1,56 @@
 import asyncio
 import os
 
-import redis
 from fastapi import APIRouter, WebSocket
+from redis import asyncio as redis
 
 router = APIRouter()
+
+BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
+
+RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
+
+# One shared client & connection pool reused by every websocket connection
+def get_client():
+    return redis.Redis.from_url(BROKER_URL)
 
 
 @router.websocket("/ws/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: str):
     await websocket.accept()
-    r = redis.Redis.from_url(os.getenv("BROKER_URL", "redis://localhost:6379/0"))
 
-    # Need to sub first before checking cache to avoid race condition
-    pubsub = r.pubsub()
-    pubsub.subscribe(f"task:{task_id}")
+    r_client = get_client()
+    pubsub = r_client.pubsub()
+    try:
+        # Need to sub first before checking cache to avoid race condition
+        await pubsub.subscribe(f"task:{task_id}")
 
-    # Check cache in Redis
-    stored = r.get(f"result:{task_id}")
-    if stored:
-        await websocket.send_text(stored.decode("utf-8"))
+        # Check cache in Redis
+        stored = await r_client.get(f"result:{task_id}")
+        if stored:
+            await websocket.send_text(stored.decode("utf-8"))
+            return
+
+        try:
+            data = await asyncio.wait_for(
+                wait_for_message(pubsub), timeout=RESULT_WAIT_TIMEOUT_SEC
+            )
+        except TimeoutError:
+            await websocket.send_text(
+                '{"status": "error", "message": "Timed out waiting for the task to finish."}'
+            )
+            return
+
+        await websocket.send_text(data.decode("utf-8"))
+
+    finally: # Always close redis sub and socket
+        await pubsub.unsubscribe(f"task:{task_id}")
+        await pubsub.close()
         await websocket.close()
-        return
-
-    loop = asyncio.get_event_loop()  # Separate thread
-    data = await loop.run_in_executor(None, wait_for_message, pubsub)
-    await websocket.send_text(data.decode("utf-8"))
-    await websocket.close()
 
 
-def wait_for_message(
-    pubsub,
-):  # regular function that does the blocking listen loop for redis pubsub.listen()
-    for message in pubsub.listen():
-        if message["type"] == "message":
+async def wait_for_message(pubsub):
+    while True:
+        message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+        if message is not None and message["type"] == "message":
             return message["data"]
