@@ -11,6 +11,13 @@ BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
 RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
 
 # One shared client & connection pool reused by every websocket connection
+r_client = redis.Redis.from_url(BROKER_URL)
+
+BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
+
+RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
+
+# One shared client & connection pool reused by every websocket connection
 def get_client():
     return redis.Redis.from_url(BROKER_URL)
 

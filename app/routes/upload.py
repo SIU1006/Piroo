@@ -14,28 +14,29 @@ UPLOAD_DIR.mkdir(exist_ok=True)  # exist_ok = ok to already have the folder, don
 # File Validation
 MAX_SIZE = 1024 * 1024 * 1024  # 1 GB
 ALLOWED_EXTENSIONS = {".mp4", ".mp3", ".mov", ".wav", ".m4a"}
-CHUNK_SIZE = 1024 * 1024
+CHUNK_SIZE = 1024 * 1024 #1mb
 
-
-@router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-
+# =================== upload_file() helpers ========================
+def validate_extension(filename: str | None) -> str:
     # Checkings - filename, extension
-    if not file.filename:
+    if not filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
-    extension = Path(file.filename).suffix.lower()
+    extension = Path(filename).suffix.lower()
     if extension not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=415, detail=f"File type {extension} not allowed"
         )
+    return extension
 
-    task_id = str(uuid.uuid4())
-    file_path = UPLOAD_DIR / f"{task_id}{extension}"  # keep extension
-
+async def save_upload(file: UploadFile, file_path: Path) -> None:
+    '''Send upload to disk in chunks.
+    Removes partial file and re-raises on any failure,
+    so callers never need to handle their own cleanup.
+    '''
     file_size = 0
     try:
         async with aiofiles.open(file_path, "wb") as buffer:
-            while chunk := await file.read(1024 * 1024):  # Read in 1MB chunks
+            while chunk := await file.read(CHUNK_SIZE):
                 file_size += len(chunk)
                 if file_size > MAX_SIZE:  # Check size
                     raise HTTPException(
@@ -45,6 +46,15 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception:
         file_path.unlink(missing_ok=True)
         raise
+# ===================================================================
+
+@router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    extension = validate_extension(file.filename)
+    task_id = str(uuid.uuid4())
+    file_path = UPLOAD_DIR / f"{task_id}{extension}"  # keep extension
+
+    await save_upload(file,file_path)
 
     process_video.delay(task_id, str(file_path))  # Pass next step to celery worker
     return UploadResponse(filename=file.filename, task_id=task_id, status="queued")

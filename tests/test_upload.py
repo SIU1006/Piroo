@@ -1,12 +1,39 @@
 import io
 from unittest.mock import patch  # MagicMock for async
 
+import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.routes.upload import validate_extension
 
 client = TestClient(app)
 
+def test_accepts_allowed_type():
+    assert validate_extension("clip.mp4") == ".mp4"
+
+
+def test_case_insensitive():
+    assert validate_extension("CLIP.MP4") == ".mp4"
+
+
+def test_rejects_disallowed_type():
+    with pytest.raises(HTTPException) as exc_info:
+        validate_extension("document.pdf")
+    assert exc_info.value.status_code == 415
+
+
+def test_rejects_missing_filename():
+    with pytest.raises(HTTPException) as exc_info:
+        validate_extension(None)
+    assert exc_info.value.status_code == 400
+
+
+def test_rejects_empty_filename():
+    with pytest.raises(HTTPException) as exc_info:
+        validate_extension("")
+    assert exc_info.value.status_code == 400
 
 def test_returns_taskid():
     file = io.BytesIO(b"fake video content")
