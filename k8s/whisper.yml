@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: whisper
-        image: asyncvtp-whisper-service:latest
+        image: asyncvtp-whisper-service:base
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
@@ -30,7 +30,7 @@ spec:
             path: /healthz
             port: 3000
           periodSeconds: 10
-          failureThreshold: 30
+          failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /healthz

@@ -1,22 +1,43 @@
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+COPY requirements-inference.txt .
+RUN pip install --no-cache-dir --user -r requirements-inference.txt
+
+
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
-COPY requirements-inference.txt .
-RUN pip install --no-cache-dir -r requirements-inference.txt
+# created before the model download so the model lands in appuser's own cache dir
+RUN useradd --create-home appuser
 
-# Copy application code
-COPY . .
-
-# add a non-root user
-RUN useradd --create-home appuser 
+COPY --from=builder --chown=appuser:appuser /root/.local /home/appuser/.local
+ENV PATH=/home/appuser/.local/bin:$PATH
 
 RUN mkdir -p /app/uploads
 
+# Bake the whisper model into the image at build time instead of
+# downloading it on every pod start.
+ARG WHISPER_MODEL_SIZE=base
+ENV WHISPER_MODEL_SIZE=${WHISPER_MODEL_SIZE}
+
+
+ENV HF_HOME=/home/appuser/.cache/huggingface
+RUN mkdir -p /home/appuser/.cache/huggingface && chown -R appuser:appuser /home/appuser/.cache
+
+USER appuser
+RUN python -c "import os; from faster_whisper import WhisperModel; WhisperModel(os.environ['WHISPER_MODEL_SIZE'], device='cpu', compute_type='int8')"
+
+# force offline mode so huggingface_hub/faster-whisper never makes a network call to check for updated files at runtime
+USER root
+ENV HF_HUB_OFFLINE=1
+
+COPY --chown=appuser:appuser . .
+
 # Makes appuser owner of /app - non-root user could not write to /app/uploads without this
 RUN chown -R appuser:appuser /app
-# Run as appuser
 USER appuser
 
 CMD ["bentoml", "serve", "inference.whisper_service:WhisperService", "--port", "3000"]

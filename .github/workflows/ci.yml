@@ -73,6 +73,8 @@ jobs:
         file: Dockerfile.inference
         push: false
         tags: whisper:pr-check
+        build-args: |
+          WHISPER_MODEL_SIZE=base
         cache-from: type=gha,scope=whisper
 
   build:
@@ -123,7 +125,11 @@ jobs:
         context: .
         file: Dockerfile.inference
         push: true
-        tags: ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
+        tags: |
+          ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
+          ghcr.io/${{ env.GH_USERNAME }}/whisper:base
+        build-args: |
+          WHISPER_MODEL_SIZE=base
         cache-from: type=gha,scope=whisper
         cache-to: type=gha,mode=max,scope=whisper
 

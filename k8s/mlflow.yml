@@ -16,7 +16,15 @@ spec:
       - name: mlflow
         image: ghcr.io/mlflow/mlflow:v3.13.0
         command: ["mlflow", "server"]
-        args: ["--host", "0.0.0.0", "--port", "5000"]
+        args:
+          - "--host"
+          - "0.0.0.0"
+          - "--port"
+          - "5000"
+          - "--backend-store-uri"
+          - "sqlite:////mlflow/mlflow.db"
+          - "--default-artifact-root"
+          - "/mlflow/artifacts"
         ports:
         - containerPort: 5000
 ---

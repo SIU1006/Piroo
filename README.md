@@ -67,7 +67,7 @@ FastAPI and the Celery workers are **separate processes communicating exclusivel
 - **Local LLM summarisation** — Ollama running llama3.2, no external API dependency
 - **Real-time delivery** — WebSocket push with a Redis-backed result cache that survives late connections
 - **Kubernetes-native** — Deployments, Services, PVCs, ConfigMaps, and a CPU-based HorizontalPodAutoscaler
-- **Canary inference releases** — stable and canary Whisper pods served behind one Service via label selectors
+- **Canary inference releases (opt-in)** — stable and canary Whisper pods can be served behind one Service via label selectors; not applied by default, see [Model Management & Canary Releases](#model-management--canary-releases)
 - **Full observability** — Prometheus metrics, prebuilt Grafana dashboard and Locust for load testing
 - **MLOps lifecycle** — MLflow experiment tracking and model registry; GitHub Actions CI that tests, builds, and pushes images to GHCR
 
@@ -147,17 +147,24 @@ Build the images and load them into kind (`imagePullPolicy: Never` is set in the
 ```bash
 docker build -t asyncvtp-fastapi:latest .
 docker build -t asyncvtp-celery:latest .
-docker build -t asyncvtp-whisper-service:latest -f Dockerfile.inference .
+docker build -f Dockerfile.inference --build-arg WHISPER_MODEL_SIZE=base -t asyncvtp-whisper-service:base .
 
-kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:latest
+kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:base
 ```
 
-Deploy everything:
+> The Whisper model is baked into the image at build time via the `WHISPER_MODEL_SIZE` build arg (default `base`), so it doesn't need to be downloaded again on every pod restart. If you also want to build the canary's `small`-model image, see [Model Management & Canary Releases](#model-management--canary-releases).
+
+Deploy the stable stack:
 
 ```bash
-kubectl apply -f k8s/
+kubectl apply -f k8s/fastapi.yml -f k8s/celery.yml -f k8s/hpa.yml \
+  -f k8s/redis.yml -f k8s/ollama.yml -f k8s/whisper.yml \
+  -f k8s/prometheus.yml -f k8s/grafana.yml -f k8s/mlflow.yml \
+  -f k8s/configmap.yml -f k8s/pvc.yml
 kubectl exec -it deploy/ollama -- ollama pull llama3.2
 ```
+
+> **Note:** `k8s/whisper-canary.yml` is intentionally excluded from the default deploy — see [Model Management & Canary Releases](#model-management--canary-releases) below if you want to apply it.
 
 | Service | URL |
 |---|---|
@@ -241,23 +248,37 @@ python mlflow/register_model.py   # logs runs to the tracking server at localhos
 
 Each run records `model_size`, `device`, `compute_type`, and an approximate real-time factor (RTF) for `base`, `small`, and `medium`.
 
-**Canary deployment** uses native Kubernetes label selectors — no service mesh required:
+**Canary deployment** uses native Kubernetes label selectors — no service mesh required. The pattern is fully set up in this repo but **not applied by default** — the stable deploy above only runs `k8s/whisper.yml` (`base` model). This keeps the default footprint to one Whisper deployment instead of two.
 
-- `k8s/whisper.yml` runs the stable model (`base`).
-- `k8s/whisper-canary.yml` runs the candidate (`WHISPER_MODEL_SIZE=small`).
-- Both carry the label `app: whisper`, so the `whisper-service` ClusterIP Service load-balances inference traffic across stable and canary pods. Promote by updating the stable deployment; roll back by deleting the canary.
+If you want to see the canary pattern running:
+
+```bash
+# Build a "small" model image (see Getting Started for the "base" build)
+docker build -f Dockerfile.inference --build-arg WHISPER_MODEL_SIZE=small -t asyncvtp-whisper-service:small .
+kind load docker-image asyncvtp-whisper-service:small
+
+# Apply the canary deployment alongside the stable one
+kubectl apply -f k8s/whisper-canary.yml
+```
+
+- `k8s/whisper.yml` runs the stable model (image tag `:base`).
+- `k8s/whisper-canary.yml` runs the candidate (image tag `:small`).
+- Both carry the label `app: whisper`, so the `whisper-service` ClusterIP Service load-balances inference traffic across whichever stable and canary pods currently exist (roughly 50/50 with one replica each).
+- **Roll back / clean up** at any time with `kubectl delete -f k8s/whisper-canary.yml` — the stable deployment is unaffected and continues serving all traffic.
+- **Promote** the canary by pointing `k8s/whisper.yml` at the `:small` tag, then delete the canary deployment.
 
 ---
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` runs on every push and PR to `main`:
+`.github/workflows/ci.yml` runs on every push and PR to `main`:
 
-1. **Test** — installs dependencies and runs `pytest tests/ -v`.
-2. **Build & push** *(only if tests pass)* — builds three images and pushes them to GitHub Container Registry:
-   - `ghcr.io/siu1006/fastapi:latest`
-   - `ghcr.io/siu1006/celery:latest`
-   - `ghcr.io/siu1006/whisper:latest`
+1. **Test** — installs dependencies, lints with `ruff`, and runs `pytest tests/ -v`.
+2. **Build-check** *(PRs only)* — builds the FastAPI/Celery and Whisper (`base` model) images without pushing, as a sanity check before merge.
+3. **Build & push** *(pushes to `main` only, after tests pass)* — builds and pushes to GitHub Container Registry:
+   - `ghcr.io/<owner>/fastapi:latest`
+   - `ghcr.io/<owner>/celery:latest`
+   - `ghcr.io/<owner>/whisper:latest` and `ghcr.io/<owner>/whisper:base` (same image, two tags — the Whisper build always bakes in the `base` model via `WHISPER_MODEL_SIZE=base`; the canary's `small`-model image is not built in CI, see [Model Management & Canary Releases](#model-management--canary-releases))
 
 ---
 
@@ -268,7 +289,8 @@ Each run records `model_size`, `device`, `compute_type`, and an approximate real
 | `BROKER_URL` | `redis://localhost:6379/0` | Celery broker + Redis pub/sub |
 | `WHISPER_URL` | `http://localhost:3000` | BentoML Whisper service endpoint |
 | `OLLAMA_HOST` | `http://localhost:11434` | Ollama server |
-| `WHISPER_MODEL_SIZE` | `base` | faster-whisper model size (`small` on the canary) |
+
+The Whisper model size is a **build-time** choice, not a runtime env var — see `WHISPER_MODEL_SIZE` build arg in [Getting Started](#getting-started) and [Model Management & Canary Releases](#model-management--canary-releases). Baking the model into the image at build time avoids re-downloading it on every pod restart.
 
 In Docker Compose these are injected per service; in Kubernetes they live in the `pipeline-config` ConfigMap (`k8s/configmap.yml`). A local `.env` (gitignored) holds `BROKER_URL` for bare-metal development.
 
@@ -303,7 +325,7 @@ AsyncVTP/
 │   ├── hpa.yml                   # Celery HPA: 70 % CPU, 1–5 replicas
 │   ├── redis.yml / ollama.yml    # Broker + LLM (with model-weight PVC)
 │   ├── whisper.yml               # Stable inference Deployment + Service
-│   ├── whisper-canary.yml        # Canary inference (WHISPER_MODEL_SIZE=small)
+│   ├── whisper-canary.yml        # Canary inference (opt-in, not applied by default; image tag :small)
 │   ├── prometheus.yml / grafana.yml / mlflow.yml
 │   ├── configmap.yml             # pipeline-config env
 │   └── pvc.yml                   # Shared uploads volume
@@ -334,7 +356,7 @@ AsyncVTP/
 
 - **WebSocket over polling.** The server pushes the moment a result lands. With 500 concurrent users that means 500 silent connections rather than 500 requests per second hammering the API.
 
-- **Canary via native label selectors.** Stable and canary inference pods share a selector behind one ClusterIP Service, giving weighted rollout and instant rollback without Istio/Linkerd overhead.
+- **Canary via native label selectors (opt-in).** Stable and canary inference pods can share a selector behind one ClusterIP Service, giving weighted rollout and instant rollback without Istio/Linkerd overhead — see [Model Management & Canary Releases](#model-management--canary-releases) for how to enable it.
 
 ---
 

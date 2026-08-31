@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: whisper-canary
 spec:
-  replicas: 1     
+  replicas: 1
   selector:
     matchLabels:
       app: whisper
@@ -16,14 +16,14 @@ spec:
     spec:
       containers:
       - name: whisper
-        image: asyncvtp-whisper-service:latest
+        image: asyncvtp-whisper-service:small
         imagePullPolicy: Never
         envFrom:
         - configMapRef:
             name: pipeline-config
         env:
         - name: WHISPER_MODEL_SIZE
-          value: "small"    
+          value: "small"
         ports:
         - containerPort: 3000
         volumeMounts:
@@ -35,7 +35,7 @@ spec:
             path: /healthz
             port: 3000
           periodSeconds: 10
-          failureThreshold: 30    # 5 mins for model download + load
+          failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /healthz
