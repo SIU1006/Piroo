@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 
-FROM python:3.11-slim
+FROM python:3.11-slim AS runner
 
 # Install ffmpeg at OS level
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \

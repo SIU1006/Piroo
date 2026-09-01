@@ -22,6 +22,10 @@ uploads/
 
 .pytest_cache/
 
+mlflow.db
+mlruns/
+mlartifacts/
+
 # OS
 .DS_Store
 Thumbs.db

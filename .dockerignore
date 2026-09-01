@@ -9,3 +9,9 @@ k8s/
 monitoring/
 *.md
 *.ruff_cache
+
+mlflow.db
+mlruns/
+mlartifacts/
+
+model_eval/eval_data/

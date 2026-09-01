@@ -86,7 +86,7 @@ FastAPI and the Celery workers are **separate processes communicating exclusivel
 | Orchestration | **Kubernetes (kind)** | All services as manifests; HPA scales Celery on 70 % CPU |
 | Monitoring | **Prometheus + Grafana** | API metrics, dashboards, Celery introspection |
 | Load testing | **Locust** | Simulated concurrent uploads against the cluster |
-| Experiment tracking | **MLflow** | Logs Whisper model candidates (params + RTF) for selection |
+| Experiment tracking | **MLflow** | Logs Whisper model candidates (params, RTF, WER against a labeled eval set), registers + promotes via aliases |
 | CI/CD | **GitHub Actions** | pytest gate → Docker builds → push to GHCR |
 
 ---
@@ -240,13 +240,15 @@ Use this to watch the Celery HPA scale workers from 1 to 5 replicas as CPU cross
 
 ## Model Management & Canary Releases
 
-**MLflow** tracks Whisper model candidates so model selection is data-driven rather than anecdotal:
+**MLflow** tracks Whisper model candidates so model selection is data-driven rather than anecdotal - real WER against a fixed, labeled eval set, not just latency:
 
 ```bash
-python mlflow/register_model.py   # logs runs to the tracking server at localhost:3002
+python model_eval/prepare_eval_set.py          # one-time: builds a fixed 5-clip labeled eval set from LibriSpeech dev-clean
+python model_eval/register_model.py --sizes tiny base small   # benchmarks, logs, and registers each candidate
+python model_eval/promote_model.py             # re-verifies @staging's WER and promotes it to @production
 ```
 
-Each run records `model_size`, `device`, `compute_type`, and an approximate real-time factor (RTF) for `base`, `small`, and `medium`.
+Each run actually transcribes every clip in the eval set and logs `model_size`, `device`, `compute_type`, real-time factor (RTF), and word error rate (WER) against ground-truth transcripts. `register_model.py` registers every candidate as a model version and promotes the best one (lowest WER within an RTF budget) to the `@staging` alias; `promote_model.py` re-checks that WER and moves `@production` to point at it - the tradeoff curve behind picking `base` is in the MLflow UI, not just asserted in this README.
 
 **Canary deployment** uses native Kubernetes label selectors — no service mesh required. The pattern is fully set up in this repo but **not applied by default** — the stable deploy above only runs `k8s/whisper.yml` (`base` model). This keeps the default footprint to one Whisper deployment instead of two.
 
@@ -332,7 +334,7 @@ AsyncVTP/
 ├── monitoring/
 │   ├── prometheus.yml            # Scrape configuration
 │   └── grafana/dashboards/       # Prebuilt pipeline dashboard
-├── mlflow/register_model.py      # Logs Whisper candidates + RTF metrics
+├── model_eval/register_model.py  # Benchmarks Whisper candidates: real WER + RTF, registers + promotes
 ├── tests/test_upload.py          # API tests (Celery mocked)
 ├── static/                       # Web UI served by FastAPI
 ├── .github/workflows/deploy.yml  # CI: test → build → push to GHCR

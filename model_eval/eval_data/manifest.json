@@ -1,0 +1,1402 @@
+[
+  {
+    "filename": "clip_00.wav",
+    "reference_text": "FOR SOME REASON HE FELT AS IF SOMETHING MIGHT COME THAT WAY AND WAS RELIEVED WHEN ALL THE ENVELOPES HAD BEEN SCANNED AND NOTHING SUSPICIOUS NOTICED",
+    "duration_seconds": 6.94,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0008"
+  },
+  {
+    "filename": "clip_01.wav",
+    "reference_text": "HIS AMBITION WAS SOME DAY TO BUILD A HOUSE ON THEM",
+    "duration_seconds": 3.215,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0004"
+  },
+  {
+    "filename": "clip_02.wav",
+    "reference_text": "HE DID NOT GO WITHIN A BLOCK OF THE HOUSE",
+    "duration_seconds": 2.55,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0030"
+  },
+  {
+    "filename": "clip_03.wav",
+    "reference_text": "ANY ANSWER I GUESS NOT",
+    "duration_seconds": 2.88,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0008"
+  },
+  {
+    "filename": "clip_04.wav",
+    "reference_text": "A FAINT FETID SMELL CAME FROM HIM AND A THREAD OF GREEN LIQUID OOZED FROM HIS CRUSHED HEAD",
+    "duration_seconds": 6.21,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0008"
+  },
+  {
+    "filename": "clip_05.wav",
+    "reference_text": "MINNIE BEGAN TO EXPLAIN BUT HER HUSBAND TOOK THIS PART OF THE CONVERSATION TO HIMSELF",
+    "duration_seconds": 5.08,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0012"
+  },
+  {
+    "filename": "clip_06.wav",
+    "reference_text": "I WHIRLED ROUND AND THERE ON ONE OF THOSE DRY GRAVEL BEDS WAS THE BIGGEST SNAKE I HAD EVER SEEN",
+    "duration_seconds": 6.585,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0005"
+  },
+  {
+    "filename": "clip_07.wav",
+    "reference_text": "DEAR SIR WE BEG TO INFORM YOU THAT WE ARE INSTRUCTED TO WAIT UNTIL TO MORROW THURSDAY AT ONE O'CLOCK BEFORE FILING SUIT AGAINST YOU ON BEHALF OF MISSUS JULIA HURSTWOOD FOR DIVORCE AND ALIMONY",
+    "duration_seconds": 12.16,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0034"
+  },
+  {
+    "filename": "clip_08.wav",
+    "reference_text": "THEN HE SAT DOWN IN HIS CHAIR AND GAZED WITHOUT SEEING CONTEMPLATING THE RESULT OF HIS WORK",
+    "duration_seconds": 5.285,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0020"
+  },
+  {
+    "filename": "clip_09.wav",
+    "reference_text": "WHILE THE DANGER HAD NOT LESSENED IT HAD NOT AS YET MATERIALISED AND WITH HIM NO NEWS WAS GOOD NEWS",
+    "duration_seconds": 5.815,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0009"
+  },
+  {
+    "filename": "clip_10.wav",
+    "reference_text": "HOW ABOUT THAT NOW HIS PAIN AT HER FAILURE TO MEET OR WRITE HIM RAPIDLY INCREASED AS HE DEVOTED HIMSELF TO THIS SUBJECT",
+    "duration_seconds": 7.3,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0017"
+  },
+  {
+    "filename": "clip_11.wav",
+    "reference_text": "ONE DAY WHEN I RODE OVER TO THE SHIMERDAS I FOUND ANTONIA STARTING OFF ON FOOT FOR RUSSIAN PETER'S HOUSE TO BORROW A SPADE AMBROSCH NEEDED",
+    "duration_seconds": 8.84,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0002"
+  },
+  {
+    "filename": "clip_12.wav",
+    "reference_text": "MINNIE'S FLAT AS THE ONE FLOOR RESIDENT APARTMENTS WERE THEN BEING CALLED WAS IN A PART OF WEST VAN BUREN STREET INHABITED BY FAMILIES OF LABOURERS AND CLERKS MEN WHO HAD COME AND WERE STILL COMING WITH THE RUSH OF POPULATION POURING IN AT THE RATE OF FIFTY THOUSAND A YEAR",
+    "duration_seconds": 15.505,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0000"
+  },
+  {
+    "filename": "clip_13.wav",
+    "reference_text": "HE WAS OF A CLEAN SAVING DISPOSITION AND HAD ALREADY PAID A NUMBER OF MONTHLY INSTALMENTS ON TWO LOTS FAR OUT ON THE WEST SIDE",
+    "duration_seconds": 7.7,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0003"
+  },
+  {
+    "filename": "clip_14.wav",
+    "reference_text": "SO HERE IT WAS SPREAD OUT CLEAR BEFORE HIM AND NOW HE KNEW WHAT TO EXPECT",
+    "duration_seconds": 4.42,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0036"
+  },
+  {
+    "filename": "clip_15.wav",
+    "reference_text": "SHE HAD SOME SLIGHT GIFT OF OBSERVATION AND THAT SENSE SO RICH IN EVERY WOMAN INTUITION",
+    "duration_seconds": 6.37,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0005"
+  },
+  {
+    "filename": "clip_16.wav",
+    "reference_text": "HE FANCIED AS HE SAT AT HIS DESK THAT NOTHING WOULD BE DONE FOR A WEEK OR TWO MEANWHILE HE WOULD HAVE TIME TO THINK",
+    "duration_seconds": 6.5400625,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0016"
+  },
+  {
+    "filename": "clip_17.wav",
+    "reference_text": "SHE HAD NOT BEEN ABLE TO GET AWAY THIS MORNING",
+    "duration_seconds": 2.495,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0012"
+  },
+  {
+    "filename": "clip_18.wav",
+    "reference_text": "NOW NOW HE SAID WALKING THERE THERE AND THERE WAS A CERTAIN SWEDISH ACCENT NOTICEABLE IN HIS VOICE",
+    "duration_seconds": 7.42,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0010"
+  },
+  {
+    "filename": "clip_19.wav",
+    "reference_text": "HE WAS BEATEN FOR TO NIGHT AND HE MIGHT JUST AS WELL MAKE THE BEST OF IT",
+    "duration_seconds": 3.625,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0010"
+  },
+  {
+    "filename": "clip_20.wav",
+    "reference_text": "IN ABOUT AN HOUR AND THREE QUARTERS THE BOY RETURNED",
+    "duration_seconds": 3.04,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0015"
+  },
+  {
+    "filename": "clip_21.wav",
+    "reference_text": "NO LETTER HAD COME NO WORD OF ANY KIND AND YET HERE IT WAS LATE IN THE EVENING AND SHE HAD AGREED TO MEET HIM THAT MORNING",
+    "duration_seconds": 6.54,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0002"
+  },
+  {
+    "filename": "clip_22.wav",
+    "reference_text": "HIS FIRST IMPULSE WAS TO WRITE BUT FOUR WORDS IN REPLY GO TO THE DEVIL",
+    "duration_seconds": 4.545,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0018"
+  },
+  {
+    "filename": "clip_23.wav",
+    "reference_text": "NARROW BOARD WALKS EXTENDED OUT PASSING HERE A HOUSE AND THERE A STORE AT FAR INTERVALS EVENTUALLY ENDING ON THE OPEN PRAIRIE",
+    "duration_seconds": 8.45,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0019"
+  },
+  {
+    "filename": "clip_24.wav",
+    "reference_text": "THE POETS OF SUCCEEDING AGES HAVE DWELT MUCH IN DETAIL ON THE OCCURRENCES OF THIS MEMORABLE DAY",
+    "duration_seconds": 6.415,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0003"
+  },
+  {
+    "filename": "clip_25.wav",
+    "reference_text": "HE DID MANAGE TO BRING HIMSELF INTO THE MOOD TO GO OUT TO CARRIE BUT WHEN HE GOT IN OGDEN PLACE HE THOUGHT HE SAW A MAN WATCHING HIM AND WENT AWAY",
+    "duration_seconds": 7.645,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0029"
+  },
+  {
+    "filename": "clip_26.wav",
+    "reference_text": "IT WAS WITH GREAT OPPOSITION AFTER TWO OR THREE HOURS OF THE MOST URGENT MENTAL AFFIRMATION AND DENIAL THAT AT LAST HE GOT AN ENVELOPE PLACED IN IT THE REQUESTED AMOUNT AND SLOWLY SEALED IT UP",
+    "duration_seconds": 11.465,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0005"
+  },
+  {
+    "filename": "clip_27.wav",
+    "reference_text": "ONE COULD SEE THAT HE WAS VERY MUCH WRAPPED UP IN HIS OFFSPRING",
+    "duration_seconds": 3.35,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0009"
+  },
+  {
+    "filename": "clip_28.wav",
+    "reference_text": "THREE O'CLOCK CAME FOUR FIVE SIX AND NO LETTER",
+    "duration_seconds": 4.85,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0019"
+  },
+  {
+    "filename": "clip_29.wav",
+    "reference_text": "THE BOY HASTENED AWAY AND THE MANAGER FELL TO HIS MUSINGS",
+    "duration_seconds": 3.725,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0009"
+  },
+  {
+    "filename": "clip_30.wav",
+    "reference_text": "THE ONLY CONFLICTS THAT OCCURRED ON IRISH SOIL WITH A PICTISH OR AN ANGLO SAXON FORCE IF WE EXCEPT THOSE WHO FORMED A CONTINGENT OF CONGAL'S ARMY AT MOIRA OCCURRED IN THE TIME OF THE HOSPITABLE FINNACTA",
+    "duration_seconds": 12.94,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0007"
+  },
+  {
+    "filename": "clip_31.wav",
+    "reference_text": "LATER HOWEVER HIS OLD DISCRETION ASSERTED ITSELF",
+    "duration_seconds": 3.38,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0022"
+  },
+  {
+    "filename": "clip_32.wav",
+    "reference_text": "HE COULD STAND RIGHT UP AND TALK TO YOU HE COULD DID HE FIGHT HARD",
+    "duration_seconds": 4.4650625,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0014"
+  },
+  {
+    "filename": "clip_33.wav",
+    "reference_text": "THE HELPLESS MANAGER PACED THE FLOOR AND GRIMLY ENDURED THE GLOOM OF DEFEAT",
+    "duration_seconds": 4.62,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0020"
+  },
+  {
+    "filename": "clip_34.wav",
+    "reference_text": "SHE WANTED TO MAKE SOME REFERENCE TO THEIR RELATIONS UPON THE TRAIN BUT WAS TOO TIMID",
+    "duration_seconds": 4.73,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0015"
+  },
+  {
+    "filename": "clip_35.wav",
+    "reference_text": "HE COULD ARRANGE THAT SATISFACTORILY FOR CARRIE WOULD BE GLAD TO WAIT IF NECESSARY",
+    "duration_seconds": 4.97,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0006"
+  },
+  {
+    "filename": "clip_36.wav",
+    "reference_text": "I EXPLAINED TO ANTONIA HOW THIS MEANT THAT HE WAS TWENTY FOUR YEARS OLD THAT HE MUST HAVE BEEN THERE WHEN WHITE MEN FIRST CAME LEFT ON FROM BUFFALO AND INDIAN TIMES",
+    "duration_seconds": 9.585,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0010"
+  },
+  {
+    "filename": "clip_37.wav",
+    "reference_text": "HERE THE HOLY PRELATE OF FERNS MET HIM AND RELATED A VISION IN WHICH HE HAD BEEN INSTRUCTED TO DEMAND THE ABOLITION OF THE IMPOST",
+    "duration_seconds": 8.51,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0015"
+  },
+  {
+    "filename": "clip_38.wav",
+    "reference_text": "HURSTWOOD ALMOST EXCLAIMED OUT LOUD AT THE INSISTENCY OF THIS THING",
+    "duration_seconds": 3.595,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0027"
+  },
+  {
+    "filename": "clip_39.wav",
+    "reference_text": "HE WOULD EXPLAIN TO HER JUST WHERE HE STOOD AND HOW MUCH HE NEEDED HER",
+    "duration_seconds": 3.625,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0028"
+  },
+  {
+    "filename": "clip_40.wav",
+    "reference_text": "FORTUNATELY THERE WAS NOTHING FROM HIS WIFE EITHER",
+    "duration_seconds": 2.785,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0016"
+  },
+  {
+    "filename": "clip_41.wav",
+    "reference_text": "TO HIM THE PRESENCE OR ABSENCE OF HIS WIFE'S SISTER WAS A MATTER OF INDIFFERENCE",
+    "duration_seconds": 5.095,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0002"
+  },
+  {
+    "filename": "clip_42.wav",
+    "reference_text": "VERY TRULY YOURS ET CETERA COMPROMISE",
+    "duration_seconds": 3.45,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0035"
+  },
+  {
+    "filename": "clip_43.wav",
+    "reference_text": "WHEN HURSTWOOD GOT BACK TO HIS OFFICE AGAIN HE WAS IN A GREATER QUANDARY THAN EVER",
+    "duration_seconds": 4.395,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0000"
+  },
+  {
+    "filename": "clip_44.wav",
+    "reference_text": "THE LITTLE HOUSE ON THE HILLSIDE WAS SO MUCH THE COLOR OF THE NIGHT THAT WE COULD NOT SEE IT AS WE CAME UP THE DRAW",
+    "duration_seconds": 5.965,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0004"
+  },
+  {
+    "filename": "clip_45.wav",
+    "reference_text": "A SNAKE OF HIS SIZE IN FIGHTING TRIM WOULD BE MORE THAN ANY BOY COULD HANDLE",
+    "duration_seconds": 4.895,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0016"
+  },
+  {
+    "filename": "clip_46.wav",
+    "reference_text": "SAINT MOLING SURVIVED HIM THREE YEARS AND SAINT ADAMNAN SO INTIMATELY CONNECTED WITH HIS REIGN TEN YEARS",
+    "duration_seconds": 7.855,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0017"
+  },
+  {
+    "filename": "clip_47.wav",
+    "reference_text": "ANYTHING WAS GOOD ENOUGH SO LONG AS IT PAID SAY FIVE DOLLARS A WEEK TO BEGIN WITH",
+    "duration_seconds": 5.325,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0016"
+  },
+  {
+    "filename": "clip_48.wav",
+    "reference_text": "HE STAYED AT HIS DESK LONG AFTER ALL OTHERS HAD GONE AND ONLY QUITTED IT WHEN THE NIGHT WATCHMAN ON HIS ROUND PULLED AT THE FRONT DOOR TO SEE IF IT WAS SAFELY LOCKED",
+    "duration_seconds": 8.69,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0032"
+  },
+  {
+    "filename": "clip_49.wav",
+    "reference_text": "I KNOW I AM JUST AWFUL JIM I WAS SO SCARED",
+    "duration_seconds": 3.315,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0006"
+  },
+  {
+    "filename": "clip_50.wav",
+    "reference_text": "HE SEEMED TO BE CURSING PEOPLE WHO HAD WRONGED HIM",
+    "duration_seconds": 2.91,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0010"
+  },
+  {
+    "filename": "clip_51.wav",
+    "reference_text": "BUT HE COMPROMISED BY TELLING THE BOY THAT THERE WOULD BE NO REPLY",
+    "duration_seconds": 3.56,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0019"
+  },
+  {
+    "filename": "clip_52.wav",
+    "reference_text": "HE COULD HARDLY REALISE HOW IT HAD ALL COME ABOUT",
+    "duration_seconds": 2.755,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0001"
+  },
+  {
+    "filename": "clip_53.wav",
+    "reference_text": "SHE WOULD TAKE THE ENVELOPE AND KNOW THAT SHE HAD TRIUMPHED",
+    "duration_seconds": 3.3,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0011"
+  },
+  {
+    "filename": "clip_54.wav",
+    "reference_text": "ALL THE TIME HIS THOUGHTS WOULD RUN OUT TO HIS HOME AND SEE THE SCENE BEING THEREIN ENACTED",
+    "duration_seconds": 4.62,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0014"
+  },
+  {
+    "filename": "clip_55.wav",
+    "reference_text": "HOW WOULD THE PAPERS TALK ABOUT IT",
+    "duration_seconds": 1.955,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0004"
+  },
+  {
+    "filename": "clip_56.wav",
+    "reference_text": "THE TRIBUTE WAS AT THIS PERIOD ENORMOUS FIFTEEN THOUSAND HEAD OF CATTLE ANNUALLY",
+    "duration_seconds": 6.59,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0016"
+  },
+  {
+    "filename": "clip_57.wav",
+    "reference_text": "HE WENT IN AND EXAMINED HIS LETTERS BUT THERE WAS NOTHING FROM CARRIE",
+    "duration_seconds": 3.675,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0015"
+  },
+  {
+    "filename": "clip_58.wav",
+    "reference_text": "TO CARRIE THE SOUND OF THE LITTLE BELLS UPON THE HORSE CARS AS THEY TINKLED IN AND OUT OF HEARING WAS AS PLEASING AS IT WAS NOVEL",
+    "duration_seconds": 7.04,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0001"
+  },
+  {
+    "filename": "clip_59.wav",
+    "reference_text": "ON WEDNESDAY HE RECEIVED ANOTHER POLITE NOTE FROM MC GREGOR JAMES AND HAY IT READ",
+    "duration_seconds": 5.065,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0033"
+  },
+  {
+    "filename": "clip_60.wav",
+    "reference_text": "THE BARREN ROCK ABOUT THREE MILES IN LENGTH WAS COVERED WITH MONASTIC BUILDINGS AND ITS CEMETERY WAS ALREADY ADORNED WITH THE TOMBS OF SAINTS AND KINGS",
+    "duration_seconds": 10.465,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0011"
+  },
+  {
+    "filename": "clip_61.wav",
+    "reference_text": "YES HOW MANY",
+    "duration_seconds": 2.875,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0027"
+  },
+  {
+    "filename": "clip_62.wav",
+    "reference_text": "SOMETHING HAPPENED TO THE HINDMOST SLEDGE THE DRIVER LOST CONTROL HE WAS PROBABLY VERY DRUNK THE HORSES LEFT THE ROAD THE SLEDGE WAS CAUGHT IN A CLUMP OF TREES AND OVERTURNED",
+    "duration_seconds": 10.895,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0021"
+  },
+  {
+    "filename": "clip_63.wav",
+    "reference_text": "THIS CHANGE CAME ABOUT FROM AN ADVENTURE WE HAD TOGETHER",
+    "duration_seconds": 3.925,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0001"
+  },
+  {
+    "filename": "clip_64.wav",
+    "reference_text": "THEN HE CALLED HARRY THE BOY OF ALL WORK AROUND THE PLACE",
+    "duration_seconds": 3.385,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0006"
+  },
+  {
+    "filename": "clip_65.wav",
+    "reference_text": "BY THE TIME HE REACHED HIS OWN STREET HE WAS KEENLY ALIVE TO THE DIFFICULTIES OF HIS SITUATION AND WISHED OVER AND OVER THAT SOME SOLUTION WOULD OFFER ITSELF THAT HE COULD SEE HIS WAY OUT",
+    "duration_seconds": 10.77,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0032"
+  },
+  {
+    "filename": "clip_66.wav",
+    "reference_text": "A SHOP GIRL WAS THE DESTINY PREFIGURED FOR THE NEWCOMER",
+    "duration_seconds": 3.36,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0017"
+  },
+  {
+    "filename": "clip_67.wav",
+    "reference_text": "THE SAXONS OF KENT AND THE SOUTHERN KINGDOMS GENERALLY WERE CONVERTED BY MISSIONARIES FROM FRANCE OR ROME OR NATIVE PREACHERS OF THE FIRST OR SECOND CHRISTIAN GENERATION THOSE OF NORTHUMBRIA RECOGNISE AS THEIR APOSTLES SAINT AIDAN AND SAINT CUTHBERT TWO FATHERS FROM IONA",
+    "duration_seconds": 17.32,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0009"
+  },
+  {
+    "filename": "clip_68.wav",
+    "reference_text": "HE WOULD SEE HOW THINGS TURNED OUT TO MORROW AND THEN HE WOULD TALK TO HER THEY WERE GOING TO MEET AS USUAL",
+    "duration_seconds": 5.375,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0007"
+  },
+  {
+    "filename": "clip_69.wav",
+    "reference_text": "THE SHRIEKS THAT FOLLOWED MADE EVERYBODY SOBER",
+    "duration_seconds": 3.415,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0022"
+  },
+  {
+    "filename": "clip_70.wav",
+    "reference_text": "THE WALLS OF THE ROOMS WERE DISCORDANTLY PAPERED",
+    "duration_seconds": 2.745,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0006"
+  },
+  {
+    "filename": "clip_71.wav",
+    "reference_text": "THE KINGDOM OF NORTHUMBRIA AS THE NAME IMPLIES EMBRACED NEARLY ALL THE COUNTRY FROM THE HUMBER TO THE PICTISH BORDER",
+    "duration_seconds": 7.6,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0010"
+  },
+  {
+    "filename": "clip_72.wav",
+    "reference_text": "THE LOSS OF HIS TWO FRIENDS HAD A DEPRESSING EFFECT UPON OLD MISTER SHIMERDA",
+    "duration_seconds": 4.715,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0038"
+  },
+  {
+    "filename": "clip_73.wav",
+    "reference_text": "IT WAS THE SEASON WHEN THE ANCIENT SUN GOD HAD BEEN ACCUSTOMED TO RECEIVE HIS ANNUAL OBLATIONS AND WE CAN WELL BELIEVE THAT THOSE WHOSE HEARTS STILL TREMBLED AT THE NAME OF BEL MUST HAVE CONNECTED THE ECLIPSE AND THE PLAGUE WITH THE REVOLUTION IN THE NATIONAL WORSHIP AND THE OVERTHROW OF THE ANCIENT GODS ON THAT PLAIN OF PROSTRATION WHERE THEY HAD SO LONG RECEIVED THE HOMAGE OF AN ENTIRE PEOPLE",
+    "duration_seconds": 24.03,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0005"
+  },
+  {
+    "filename": "clip_74.wav",
+    "reference_text": "TWENTY THIRTY ENOUGH",
+    "duration_seconds": 2.705,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0028"
+  },
+  {
+    "filename": "clip_75.wav",
+    "reference_text": "IF HE ONLY HAD THAT LETTER BACK HE WOULDN'T SEND IT",
+    "duration_seconds": 3.09,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0012"
+  },
+  {
+    "filename": "clip_76.wav",
+    "reference_text": "THEN HE RANG THE BELL NO ANSWER",
+    "duration_seconds": 2.845,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0033"
+  },
+  {
+    "filename": "clip_77.wav",
+    "reference_text": "PETER TOLD HIS TROUBLES TO MISTER SHIMERDA HE WAS UNABLE TO MEET A NOTE WHICH FELL DUE ON THE FIRST OF NOVEMBER HAD TO PAY AN EXORBITANT BONUS ON RENEWING IT AND TO GIVE A MORTGAGE ON HIS PIGS AND HORSES AND EVEN HIS MILK COW",
+    "duration_seconds": 15.07,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0000"
+  },
+  {
+    "filename": "clip_78.wav",
+    "reference_text": "HE SAW A BUSY SATURDAY USHERED OUT THE SABBATH IN AND NOTHING DONE",
+    "duration_seconds": 4.685,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0021"
+  },
+  {
+    "filename": "clip_79.wav",
+    "reference_text": "HE TROUBLED OVER MANY LITTLE DETAILS AND TALKED PERFUNCTORILY TO EVERYBODY",
+    "duration_seconds": 4.405,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0031"
+  },
+  {
+    "filename": "clip_80.wav",
+    "reference_text": "THESE VAST BUILDINGS WHAT WERE THEY",
+    "duration_seconds": 2.985,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0021"
+  },
+  {
+    "filename": "clip_81.wav",
+    "reference_text": "LOOK TONY THAT'S HIS POISON I SAID",
+    "duration_seconds": 3.5,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0009"
+  },
+  {
+    "filename": "clip_82.wav",
+    "reference_text": "THE SICK MAN RAGED AND SHOOK HIS FIST",
+    "duration_seconds": 2.875,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0009"
+  },
+  {
+    "filename": "clip_83.wav",
+    "reference_text": "LASTLY THE ROYAL BROTHERS FELL THEMSELVES VICTIMS TO THE EPIDEMIC WHICH SO SADLY SIGNALIZES THEIR REIGN",
+    "duration_seconds": 7.71,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0006"
+  },
+  {
+    "filename": "clip_84.wav",
+    "reference_text": "HE WOULD GO TO HER AND TELL HER ALL HIS FAMILY COMPLICATIONS",
+    "duration_seconds": 3.515,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0027"
+  },
+  {
+    "filename": "clip_85.wav",
+    "reference_text": "QUICKLY IT WAS COVERED WITH BRIGHT RED SPOTS I THOUGHT I HAD NEVER SEEN ANY BLOOD SO BRIGHT",
+    "duration_seconds": 5.72,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0011"
+  },
+  {
+    "filename": "clip_86.wav",
+    "reference_text": "PETER COULD GIVE NO VERY CLEAR ACCOUNT OF HIS TRANSACTIONS WITH CUTTER",
+    "duration_seconds": 4.415,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0001"
+  },
+  {
+    "filename": "clip_87.wav",
+    "reference_text": "HE WOULD GO IN AND SEE ANYHOW HE WOULD HAVE NO ROW",
+    "duration_seconds": 3.61,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0031"
+  },
+  {
+    "filename": "clip_88.wav",
+    "reference_text": "THE ANCESTORS OF THE PRESENT PRETENDER CONGAL SURNAMED THE SQUINT EYED HAD TWICE RECEIVED AND CHERISHED THE LICENTIOUS BARDS WHEN UNDER THE BAN OF TARA AND HIS POPULARITY WITH THAT STILL POWERFUL ORDER WAS ONE PROP OF HIS AMBITION",
+    "duration_seconds": 16.67,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0001"
+  },
+  {
+    "filename": "clip_89.wav",
+    "reference_text": "THIS WAS A FOUNTAIN SET ROUND WITH A RIM OF OLD MOSSY STONES AND PAVED IN ITS BED WITH WHAT APPEARED TO BE A SORT OF MOSAIC WORK OF VARIOUSLY COLORED PEBBLES",
+    "duration_seconds": 10.35,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0006"
+  },
+  {
+    "filename": "clip_90.wav",
+    "reference_text": "PHOEBE WONDERED WHOSE CARE AND TOIL IT COULD HAVE BEEN THAT HAD PLANTED THESE VEGETABLES AND KEPT THE SOIL SO CLEAN AND ORDERLY",
+    "duration_seconds": 7.22,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0004"
+  },
+  {
+    "filename": "clip_91.wav",
+    "reference_text": "THE FLOORS WERE COVERED WITH MATTING AND THE HALL LAID WITH A THIN RAG CARPET",
+    "duration_seconds": 4.4,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0007"
+  },
+  {
+    "filename": "clip_92.wav",
+    "reference_text": "HE SEEMED TO BE THINKING OF SOMETHING ELSE",
+    "duration_seconds": 2.465,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0011"
+  },
+  {
+    "filename": "clip_93.wav",
+    "reference_text": "HE SAW THAT IN THE EXCITEMENT OF RECENT EVENTS HE HAD NOT FORMULATED A PLAN UPON THAT SCORE",
+    "duration_seconds": 4.84,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0003"
+  },
+  {
+    "filename": "clip_94.wav",
+    "reference_text": "WITHOUT A WORD PETER GOT UP AND LIT HIS LANTERN",
+    "duration_seconds": 3.265,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0016"
+  },
+  {
+    "filename": "clip_95.wav",
+    "reference_text": "HE PUT ON HIS HAT AND LOOKED AROUND FOR HIS UMBRELLA",
+    "duration_seconds": 2.9,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0028"
+  },
+  {
+    "filename": "clip_96.wav",
+    "reference_text": "SOMETHING HAD TO BE DONE A CLIMAX WAS NEAR AND SHE WOULD NOT SIT IDLE",
+    "duration_seconds": 3.89,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0023"
+  },
+  {
+    "filename": "clip_97.wav",
+    "reference_text": "THE AUTHOR HAS CONSIDERED IT HARDLY WORTH HIS WHILE THEREFORE RELENTLESSLY TO IMPALE THE STORY WITH ITS MORAL AS WITH AN IRON ROD OR RATHER AS BY STICKING A PIN THROUGH A BUTTERFLY THUS AT ONCE DEPRIVING IT OF LIFE AND CAUSING IT TO STIFFEN IN AN UNGAINLY AND UNNATURAL ATTITUDE",
+    "duration_seconds": 16.745,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149214-0002"
+  },
+  {
+    "filename": "clip_98.wav",
+    "reference_text": "IT SEEMED TO ME THAT HE DESPISED HIM FOR BEING SO SIMPLE AND DOCILE",
+    "duration_seconds": 4.25,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0008"
+  },
+  {
+    "filename": "clip_99.wav",
+    "reference_text": "HE WOULD GET ONE TO DAY IT WOULD PROBABLY BE ON HIS DESK WHEN HE GOT BACK HE WOULD LOOK FOR IT AT ONCE",
+    "duration_seconds": 6.09,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0013"
+  },
+  {
+    "filename": "clip_100.wav",
+    "reference_text": "THE CHICKEN CREPT THROUGH THE PALES OF THE COOP AND RAN WITH SOME SHOW OF LIVELINESS TO HER FEET WHILE CHANTICLEER AND THE LADIES OF HIS HOUSEHOLD REGARDED HER WITH QUEER SIDELONG GLANCES AND THEN CROAKED ONE TO ANOTHER AS IF COMMUNICATING THEIR SAGE OPINIONS OF HER CHARACTER",
+    "duration_seconds": 14.995,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0012"
+  },
+  {
+    "filename": "clip_101.wav",
+    "reference_text": "A BLACK DROVE CAME UP OVER THE HILL BEHIND THE WEDDING PARTY",
+    "duration_seconds": 3.63,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0020"
+  },
+  {
+    "filename": "clip_102.wav",
+    "reference_text": "HE HELD A HOE IN HIS HAND AND WHILE PHOEBE WAS GONE IN QUEST OF THE CRUMBS HAD BEGUN TO BUSY HIMSELF WITH DRAWING UP FRESH EARTH ABOUT THE ROOTS OF THE TOMATOES",
+    "duration_seconds": 9.58,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0014"
+  },
+  {
+    "filename": "clip_103.wav",
+    "reference_text": "HE WAS IN A FEVERED STATE OF MIND OWING TO THE BLIGHT HIS WIFE'S ACTION THREATENED TO CAST UPON HIS ENTIRE FUTURE",
+    "duration_seconds": 6.59,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0000"
+  },
+  {
+    "filename": "clip_104.wav",
+    "reference_text": "WHEN HE WAS OUT HUNTING HE USED TO GO INTO THE EMPTY LOG HOUSE AND SIT THERE BROODING",
+    "duration_seconds": 5.35,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0039"
+  },
+  {
+    "filename": "clip_105.wav",
+    "reference_text": "NOW EVERY MISSIONARY THAT EVER WENT OUT FROM IONA HAD TAUGHT THAT TO REDUCE CHRISTIANS TO SLAVERY WAS WHOLLY INCONSISTENT WITH A BELIEF IN THE DOCTRINES OF THE GOSPEL",
+    "duration_seconds": 10.23,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0012"
+  },
+  {
+    "filename": "clip_106.wav",
+    "reference_text": "PHOEBE MERELY GLANCED AT IT AND GAVE IT BACK",
+    "duration_seconds": 2.855,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0028"
+  },
+  {
+    "filename": "clip_107.wav",
+    "reference_text": "THERE WERE ALSO A FEW SPECIES OF ANTIQUE AND HEREDITARY FLOWERS IN NO VERY FLOURISHING CONDITION BUT SCRUPULOUSLY WEEDED AS IF SOME PERSON EITHER OUT OF LOVE OR CURIOSITY HAD BEEN ANXIOUS TO BRING THEM TO SUCH PERFECTION AS THEY WERE CAPABLE OF ATTAINING",
+    "duration_seconds": 16.01,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0002"
+  },
+  {
+    "filename": "clip_108.wav",
+    "reference_text": "IF PERMITTED BY THE HISTORICAL CONNECTION WHICH THOUGH SLIGHT WAS ESSENTIAL TO HIS PLAN THE AUTHOR WOULD VERY WILLINGLY HAVE AVOIDED ANYTHING OF THIS NATURE",
+    "duration_seconds": 8.9949375,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149214-0003"
+  },
+  {
+    "filename": "clip_109.wav",
+    "reference_text": "IT WAS EVIDENT THAT THE RACE HAD DEGENERATED LIKE MANY A NOBLE RACE BESIDES IN CONSEQUENCE OF TOO STRICT A WATCHFULNESS TO KEEP IT PURE",
+    "duration_seconds": 8.89,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0008"
+  },
+  {
+    "filename": "clip_110.wav",
+    "reference_text": "THE SHARP SMELL OF SPIRITS WENT THROUGH THE ROOM",
+    "duration_seconds": 3.1,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0007"
+  },
+  {
+    "filename": "clip_111.wav",
+    "reference_text": "I CAN ASSURE YOU THAT THIS IS A MODERN FACE AND ONE WHICH YOU WILL VERY PROBABLY MEET",
+    "duration_seconds": 5.58,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0029"
+  },
+  {
+    "filename": "clip_112.wav",
+    "reference_text": "SHE ASKED PETER TO WAIT A MOMENT AND WHEN SHE CAME BACK FROM THE KITCHEN SHE BROUGHT A BAG OF SANDWICHES AND DOUGHNUTS FOR US",
+    "duration_seconds": 6.995,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0002"
+  },
+  {
+    "filename": "clip_113.wav",
+    "reference_text": "NOTHING COULD BE MORE NATURAL THAN SUCH AN ASSEMBLY IN SUCH A PLACE AT SUCH A PERIOD",
+    "duration_seconds": 6.015,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0018"
+  },
+  {
+    "filename": "clip_114.wav",
+    "reference_text": "AS LEADING TO THE MENTION OF OTHER INTERESTING EVENTS WE MUST SET THIS INROAD CLEARLY BEFORE THE READER",
+    "duration_seconds": 6.665,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0008"
+  },
+  {
+    "filename": "clip_115.wav",
+    "reference_text": "THE WHITE DOUBLE ROSEBUSH HAD EVIDENTLY BEEN PROPPED UP ANEW AGAINST THE HOUSE SINCE THE COMMENCEMENT OF THE SEASON AND A PEAR TREE AND THREE DAMSON TREES WHICH EXCEPT A ROW OF CURRANT BUSHES CONSTITUTED THE ONLY VARIETIES OF FRUIT BORE MARKS OF THE RECENT AMPUTATION OF SEVERAL SUPERFLUOUS OR DEFECTIVE LIMBS",
+    "duration_seconds": 19.78,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0001"
+  },
+  {
+    "filename": "clip_116.wav",
+    "reference_text": "HE ALSO THOUGHT OF HIS MANAGERIAL POSITION",
+    "duration_seconds": 2.84,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0003"
+  },
+  {
+    "filename": "clip_117.wav",
+    "reference_text": "IF YOU WOULD PERMIT ME SAID THE ARTIST LOOKING AT PHOEBE I SHOULD LIKE TO TRY WHETHER THE DAGUERREOTYPE CAN BRING OUT DISAGREEABLE TRAITS ON A PERFECTLY AMIABLE FACE",
+    "duration_seconds": 9.265,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0022"
+  },
+  {
+    "filename": "clip_118.wav",
+    "reference_text": "HE KNEW HER WELL ENOUGH TO KNOW THAT WHEN SHE HAD DECIDED UPON A PLAN SHE WOULD FOLLOW IT UP",
+    "duration_seconds": 4.5,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0024"
+  },
+  {
+    "filename": "clip_119.wav",
+    "reference_text": "HE GREW RESTLESS AS HE RUMINATED AND THEN DECIDED THAT PERHAPS IT WAS NOTHING",
+    "duration_seconds": 4.465,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0011"
+  },
+  {
+    "filename": "clip_120.wav",
+    "reference_text": "SO WISE AS WELL AS ANTIQUE WAS THEIR ASPECT AS TO GIVE COLOR TO THE IDEA NOT MERELY THAT THEY WERE THE DESCENDANTS OF A TIME HONORED RACE BUT THAT THEY HAD EXISTED IN THEIR INDIVIDUAL CAPACITY EVER SINCE THE HOUSE OF THE SEVEN GABLES WAS FOUNDED AND WERE SOMEHOW MIXED UP WITH ITS DESTINY",
+    "duration_seconds": 17.57,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0013"
+  },
+  {
+    "filename": "clip_121.wav",
+    "reference_text": "THE SUN AS YOU SEE TELLS QUITE ANOTHER STORY AND WILL NOT BE COAXED OUT OF IT AFTER HALF A DOZEN PATIENT ATTEMPTS ON MY PART",
+    "duration_seconds": 8.1,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0030"
+  },
+  {
+    "filename": "clip_122.wav",
+    "reference_text": "I NEVER KNOW YOU WAS SO BRAVE JIM SHE WENT ON COMFORTINGLY",
+    "duration_seconds": 4.6,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0007"
+  },
+  {
+    "filename": "clip_123.wav",
+    "reference_text": "HERE WE HAVE THE MAN SLY SUBTLE HARD IMPERIOUS AND WITHAL COLD AS ICE LOOK AT THAT EYE",
+    "duration_seconds": 8.58,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0031"
+  },
+  {
+    "filename": "clip_124.wav",
+    "reference_text": "THEY MADE ME THINK OF DEFEATED ARMIES RETREATING OR OF GHOSTS WHO WERE TRYING DESPERATELY TO GET IN FOR SHELTER AND THEN WENT MOANING ON",
+    "duration_seconds": 9.42,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0005"
+  },
+  {
+    "filename": "clip_125.wav",
+    "reference_text": "SO WE WILL BE FELLOW LABORERS SOMEWHAT ON THE COMMUNITY SYSTEM",
+    "duration_seconds": 4.35,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0038"
+  },
+  {
+    "filename": "clip_126.wav",
+    "reference_text": "EVERY ONE SAID PETER KISSED THE COW BEFORE SHE WAS LED AWAY BY HER NEW OWNER",
+    "duration_seconds": 4.835,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0037"
+  },
+  {
+    "filename": "clip_127.wav",
+    "reference_text": "THE DISTINGUISHING MARK OF THE HENS WAS A CREST OF LAMENTABLY SCANTY GROWTH IN THESE LATTER DAYS BUT SO ODDLY AND WICKEDLY ANALOGOUS TO HEPZIBAH'S TURBAN THAT PHOEBE TO THE POIGNANT DISTRESS OF HER CONSCIENCE BUT INEVITABLY WAS LED TO FANCY A GENERAL RESEMBLANCE BETWIXT THESE FORLORN BIPEDS AND HER RESPECTABLE RELATIVE",
+    "duration_seconds": 19.43,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0011"
+  },
+  {
+    "filename": "clip_128.wav",
+    "reference_text": "ALL DAY THE BAR BEING CLOSED HE BROODED ALONE SHUT OUT FROM HOME FROM THE EXCITEMENT OF HIS RESORT FROM CARRIE AND WITHOUT THE ABILITY TO ALTER HIS CONDITION ONE IOTA",
+    "duration_seconds": 10.05,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0022"
+  },
+  {
+    "filename": "clip_129.wav",
+    "reference_text": "IT IS LIKE A BANDAGE OVER ONE'S EYES TO COME INTO IT",
+    "duration_seconds": 3.335,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0021"
+  },
+  {
+    "filename": "clip_130.wav",
+    "reference_text": "WHILE THUS DISMISSING HER THE MAIDEN LADY STEPT FORWARD KISSED PHOEBE AND PRESSED HER TO HER HEART WHICH BEAT AGAINST THE GIRL'S BOSOM WITH A STRONG HIGH AND TUMULTUOUS SWELL",
+    "duration_seconds": 11.31,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0048"
+  },
+  {
+    "filename": "clip_131.wav",
+    "reference_text": "IS THERE NOTHING WILD IN THE EYE CONTINUED HOLGRAVE SO EARNESTLY THAT IT EMBARRASSED PHOEBE AS DID ALSO THE QUIET FREEDOM WITH WHICH HE PRESUMED ON THEIR SO RECENT ACQUAINTANCE",
+    "duration_seconds": 10.5499375,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0035"
+  },
+  {
+    "filename": "clip_132.wav",
+    "reference_text": "THESE FEATHERED PEOPLE HAD EXISTED TOO LONG IN THEIR DISTINCT VARIETY A FACT OF WHICH THE PRESENT REPRESENTATIVES JUDGING BY THEIR LUGUBRIOUS DEPORTMENT SEEMED TO BE AWARE",
+    "duration_seconds": 10.6,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0009"
+  },
+  {
+    "filename": "clip_133.wav",
+    "reference_text": "HAVE PITY UPON A POOR UNFORTUNATE ONE HE CALLED OUT",
+    "duration_seconds": 4.735,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0004"
+  },
+  {
+    "filename": "clip_134.wav",
+    "reference_text": "HE EXHIBITED A DAGUERREOTYPE MINIATURE IN A MOROCCO CASE",
+    "duration_seconds": 4.245,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0027"
+  },
+  {
+    "filename": "clip_135.wav",
+    "reference_text": "HE BEGAN TO WISH THAT HE HAD COMPROMISED IN SOME WAY OR OTHER THAT HE HAD SENT THE MONEY PERHAPS HE COULD DO IT UP HERE",
+    "duration_seconds": 6.3,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0030"
+  },
+  {
+    "filename": "clip_136.wav",
+    "reference_text": "HE WAS QUITE CERTAIN NOW THAT SHE KNEW HE WAS MARRIED AND WAS ANGERED AT HIS PERFIDY",
+    "duration_seconds": 4.285,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0025"
+  },
+  {
+    "filename": "clip_137.wav",
+    "reference_text": "SHE DID NOT ALTOGETHER LIKE HIM",
+    "duration_seconds": 2.48,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0039"
+  },
+  {
+    "filename": "clip_138.wav",
+    "reference_text": "HE RANG AGAIN THIS TIME HARDER STILL NO ANSWER",
+    "duration_seconds": 4.005,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0034"
+  },
+  {
+    "filename": "clip_139.wav",
+    "reference_text": "WHAT AN INSTRUMENT IS THE HUMAN VOICE",
+    "duration_seconds": 2.77,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0043"
+  },
+  {
+    "filename": "clip_140.wav",
+    "reference_text": "THERE HAD BEEN ANOTHER BLACK FROST THE NIGHT BEFORE AND THE AIR WAS CLEAR AND HEADY AS WINE",
+    "duration_seconds": 5.84,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0003"
+  },
+  {
+    "filename": "clip_141.wav",
+    "reference_text": "WHAT WOULD SHE DO ABOUT THAT THE CONFOUNDED WRETCH",
+    "duration_seconds": 3.37,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0021"
+  },
+  {
+    "filename": "clip_142.wav",
+    "reference_text": "WELL I DON'T WISH TO SEE IT ANY MORE OBSERVED PHOEBE TURNING AWAY HER EYES IT IS CERTAINLY VERY LIKE THE OLD PORTRAIT",
+    "duration_seconds": 7.435,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0033"
+  },
+  {
+    "filename": "clip_143.wav",
+    "reference_text": "SO SLOW AND PATIENT IS THE PROCESS BY WHICH CHRISTIANITY INFUSES ITSELF INTO THE SOCIAL LIFE OF A CONVERTED PEOPLE",
+    "duration_seconds": 7.35,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0014"
+  },
+  {
+    "filename": "clip_144.wav",
+    "reference_text": "IT WAS ON ONE OF THESE GRAVEL BEDS THAT I MET MY ADVENTURE",
+    "duration_seconds": 4.17,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0004"
+  },
+  {
+    "filename": "clip_145.wav",
+    "reference_text": "I WILL SIT IN THE PARLOR AWHILE AND COLLECT MY THOUGHTS",
+    "duration_seconds": 3.92,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0047"
+  },
+  {
+    "filename": "clip_146.wav",
+    "reference_text": "HOWEVER IN SPITE OF ALL SHE COULD SAY THE ELDER SISTERS OPENED THE DOOR AND ADMITTED THE BEGGAR",
+    "duration_seconds": 6.61,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0010"
+  },
+  {
+    "filename": "clip_147.wav",
+    "reference_text": "MY NAME IS PHOEBE PYNCHEON SAID THE GIRL WITH A MANNER OF SOME RESERVE FOR SHE WAS AWARE THAT HER NEW ACQUAINTANCE COULD BE NO OTHER THAN THE DAGUERREOTYPIST OF WHOSE LAWLESS PROPENSITIES THE OLD MAID HAD GIVEN HER A DISAGREEABLE IDEA",
+    "duration_seconds": 13.18,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0019"
+  },
+  {
+    "filename": "clip_148.wav",
+    "reference_text": "I COULD NOT TAKE MY EYES OFF THE MAN IN THE BED",
+    "duration_seconds": 2.795,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0006"
+  },
+  {
+    "filename": "clip_149.wav",
+    "reference_text": "MANY LITTLE WRINKLES GATHERED BETWEEN HIS EYES AS HE CONTEMPLATED THIS AND HIS BROW MOISTENED",
+    "duration_seconds": 5.6,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0005"
+  },
+  {
+    "filename": "clip_150.wav",
+    "reference_text": "THE MERCHANT'S DAUGHTER AT FIRST DID NOT ANSWER BUT AS HE KEPT ON CALLING TO HER SHE FINALLY ASKED HIM WHAT IT WAS THAT HE WANTED",
+    "duration_seconds": 8.075,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0018"
+  },
+  {
+    "filename": "clip_151.wav",
+    "reference_text": "I PREFER TO THINK AND SO WOULD MISS HEPZIBAH THAT THEY RECOGNIZE THE FAMILY TONE FOR YOU ARE A PYNCHEON",
+    "duration_seconds": 6.83,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0018"
+  },
+  {
+    "filename": "clip_152.wav",
+    "reference_text": "IT WAS UNDER SUCH AUSPICIOUS CIRCUMSTANCES THAT SHE STARTED OUT THIS MORNING TO LOOK FOR WORK",
+    "duration_seconds": 5.02,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0018"
+  },
+  {
+    "filename": "clip_153.wav",
+    "reference_text": "HE WOULD HAVE SOME ARRANGEMENT OF THIS THING",
+    "duration_seconds": 2.6,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0029"
+  },
+  {
+    "filename": "clip_154.wav",
+    "reference_text": "WHILE THEY WERE TALKING THE BEGGAR HAD TAKEN THE APPLES WHICH THE GIRLS WERE TO EAT FOR DESSERT AND HAD SPRINKLED A SLEEPING POWDER OVER THEM",
+    "duration_seconds": 8.295,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0012"
+  },
+  {
+    "filename": "clip_155.wav",
+    "reference_text": "HOW WONDERFULLY RESPONSIVE TO EVERY EMOTION OF THE HUMAN SOUL",
+    "duration_seconds": 3.95,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0044"
+  },
+  {
+    "filename": "clip_156.wav",
+    "reference_text": "IN GOOD FAITH HOWEVER HE IS NOT SUFFICIENTLY IMAGINATIVE TO FLATTER HIMSELF WITH THE SLIGHTEST HOPE OF THIS KIND",
+    "duration_seconds": 6.97,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149214-0001"
+  },
+  {
+    "filename": "clip_157.wav",
+    "reference_text": "IT'S SURELY A TERRIBLE STORM OUTSIDE SAID THE MERCHANT'S ELDEST DAUGHTER AS THE WIND RATTLED THE TILES OF THE ROOF AND THE RAIN BEAT IN TORRENTS AGAINST THE DOORS AND WINDOWS",
+    "duration_seconds": 10.62,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0006"
+  },
+  {
+    "filename": "clip_158.wav",
+    "reference_text": "SINCE YOU ARE A FRIEND OF MY COUSIN HEPZIBAH'S YOU SHOULD ASK HER TO SHOW YOU THE PICTURE",
+    "duration_seconds": 4.835,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0037"
+  },
+  {
+    "filename": "clip_159.wav",
+    "reference_text": "IF THE ORIGINAL IS STILL IN THE WORLD I THINK HE MIGHT DEFY THE SUN TO MAKE HIM LOOK STERN AND HARD",
+    "duration_seconds": 5.91,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0034"
+  },
+  {
+    "filename": "clip_160.wav",
+    "reference_text": "PERHAPS YOU CAN OUTWIT HER YET CRIED ANOTHER",
+    "duration_seconds": 2.685,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0017"
+  },
+  {
+    "filename": "clip_161.wav",
+    "reference_text": "OUR BRIGADE WAS FEARFULLY OUTNUMBERED",
+    "duration_seconds": 3.045,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0002"
+  },
+  {
+    "filename": "clip_162.wav",
+    "reference_text": "IT WAS THE YOUNGEST ONE WHO DECEIVED ME CRIED THE ROBBER CHIEFTAIN",
+    "duration_seconds": 4.18,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0016"
+  },
+  {
+    "filename": "clip_163.wav",
+    "reference_text": "IT WAS NOT A QUESTION WHO WAS DEAD OR WOUNDED BUT WHO WAS NOT",
+    "duration_seconds": 4.045,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0009"
+  },
+  {
+    "filename": "clip_164.wav",
+    "reference_text": "THEY WERE RUN OUT OF THEIR VILLAGE",
+    "duration_seconds": 1.945,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0033"
+  },
+  {
+    "filename": "clip_165.wav",
+    "reference_text": "THEN SHE WALKED AND SANG TO IT UNTIL HANSON DISTURBED IN HIS READING CAME AND TOOK IT",
+    "duration_seconds": 5.385,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0008"
+  },
+  {
+    "filename": "clip_166.wav",
+    "reference_text": "WHEREVER THEY WENT THE STORY FOLLOWED THEM",
+    "duration_seconds": 2.805,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0034"
+  },
+  {
+    "filename": "clip_167.wav",
+    "reference_text": "BEES TOO STRANGE TO SAY HAD THOUGHT IT WORTH THEIR WHILE TO COME HITHER POSSIBLY FROM THE RANGE OF HIVES BESIDE SOME FARM HOUSE MILES AWAY",
+    "duration_seconds": 9.09,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0005"
+  },
+  {
+    "filename": "clip_168.wav",
+    "reference_text": "HE TRUSTS NOT TO BE CONSIDERED AS UNPARDONABLY OFFENDING BY LAYING OUT A STREET THAT INFRINGES UPON NOBODY'S PRIVATE RIGHTS AND APPROPRIATING A LOT OF LAND WHICH HAD NO VISIBLE OWNER AND BUILDING A HOUSE OF MATERIALS LONG IN USE FOR CONSTRUCTING CASTLES IN THE AIR",
+    "duration_seconds": 15.22,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149214-0004"
+  },
+  {
+    "filename": "clip_169.wav",
+    "reference_text": "HURSTWOOD WALKED THE FLOOR MENTALLY ARRANGING THE CHIEF POINTS OF HIS SITUATION",
+    "duration_seconds": 4.835,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0002"
+  },
+  {
+    "filename": "clip_170.wav",
+    "reference_text": "SO LITTLE DID HE CONSIDER DROUET THAT IT NEVER ONCE OCCURRED TO HIM TO WORRY ABOUT HIS FINDING OUT",
+    "duration_seconds": 5.275,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149896-0010"
+  },
+  {
+    "filename": "clip_171.wav",
+    "reference_text": "LET ME ENTER I PRAY YOU TO PASS THE NIGHT UNDER YOUR ROOF",
+    "duration_seconds": 5.21,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0005"
+  },
+  {
+    "filename": "clip_172.wav",
+    "reference_text": "AFTER THE CEREMONY AT THE CHURCH THE PARTY WENT TO A DINNER GIVEN BY THE PARENTS OF THE BRIDE",
+    "duration_seconds": 5.59,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0018"
+  },
+  {
+    "filename": "clip_173.wav",
+    "reference_text": "IF HE DIDN'T GO AND SEE THEM THEY WOULD SUE HIM PROMPTLY",
+    "duration_seconds": 3.01,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149897-0037"
+  },
+  {
+    "filename": "clip_174.wav",
+    "reference_text": "I FOLLOWED WITH THE SPADE OVER MY SHOULDER DRAGGING MY SNAKE",
+    "duration_seconds": 4.255,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0012"
+  },
+  {
+    "filename": "clip_175.wav",
+    "reference_text": "THE NARRATIVE IT MAY BE IS WOVEN OF SO HUMBLE A TEXTURE AS TO REQUIRE THIS ADVANTAGE AND AT THE SAME TIME TO RENDER IT THE MORE DIFFICULT OF ATTAINMENT",
+    "duration_seconds": 9.81,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149214-0000"
+  },
+  {
+    "filename": "clip_176.wav",
+    "reference_text": "IT IS PRETTY CLEAR ALSO THAT THE LAST RALLY OF DRUIDISM AGAINST CHRISTIANITY TOOK PLACE BEHIND HIS BANNER ON THE PLAIN OF MOIRA",
+    "duration_seconds": 9.34,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-152373-0002"
+  },
+  {
+    "filename": "clip_177.wav",
+    "reference_text": "THAT EVENING AN ORDER CAME FOR US HAMILTON'S DIVISION TO ASSAULT THE ENEMY'S LEFT FLANK AT MIDNIGHT",
+    "duration_seconds": 7.49,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0014"
+  },
+  {
+    "filename": "clip_178.wav",
+    "reference_text": "THEY WORKED IN CHICAGO DES MOINES FORT WAYNE BUT THEY WERE ALWAYS UNFORTUNATE",
+    "duration_seconds": 5.445,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0035"
+  },
+  {
+    "filename": "clip_179.wav",
+    "reference_text": "NO BATTERY IN THE WHOLE FOUR YEARS WAR LOST SO MANY MEN IN SO SHORT A TIME",
+    "duration_seconds": 5.56,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0005"
+  },
+  {
+    "filename": "clip_180.wav",
+    "reference_text": "IT GAVE AN IMPOSING APPEARANCE TO MOST OF THE WHOLESALE HOUSES WHOSE OFFICES WERE UPON THE GROUND FLOOR AND IN PLAIN VIEW OF THE STREET",
+    "duration_seconds": 7.38,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2277-149874-0020"
+  },
+  {
+    "filename": "clip_181.wav",
+    "reference_text": "THEY WERE WITHIN A FEW MILES OF THEIR VILLAGE NOW",
+    "duration_seconds": 2.875,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0026"
+  },
+  {
+    "filename": "clip_182.wav",
+    "reference_text": "THE ROAD WAS CLEAR AND WHITE AND THE GROOM'S THREE BLACKS WENT LIKE THE WIND",
+    "duration_seconds": 4.31,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0023"
+  },
+  {
+    "filename": "clip_183.wav",
+    "reference_text": "THE CLOUD OF REBELS WE HAD SEEN DIVIDED ITSELF INTO THREE COLUMNS",
+    "duration_seconds": 4.655,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0021"
+  },
+  {
+    "filename": "clip_184.wav",
+    "reference_text": "A WEEK AFTER THE BATTLE MY BROTHER RODE BY THERE ON A CAVALRY EXPEDITION AND MADE THE HORRIBLE DISCOVERY THAT HOGS WERE EATING UP THE BODIES OF OUR DEAD HEROES THAT TOO WAS WAR",
+    "duration_seconds": 11.79,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0029"
+  },
+  {
+    "filename": "clip_185.wav",
+    "reference_text": "GRADUALLY RELIEF CAME TO ALL OF US",
+    "duration_seconds": 2.785,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0015"
+  },
+  {
+    "filename": "clip_186.wav",
+    "reference_text": "THAT NIGHT I STOOD GUARD UNDER AN OAK TREE ON THE BATTLEFIELD AMONG THE UNBURIED DEAD",
+    "duration_seconds": 6.135,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0024"
+  },
+  {
+    "filename": "clip_187.wav",
+    "reference_text": "MISS HEPZIBAH I SUPPOSE WILL INTERWEAVE THE FACT WITH HER OTHER TRADITIONS AND SET IT DOWN THAT THE FOWLS KNOW YOU TO BE A PYNCHEON",
+    "duration_seconds": 7.52,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0016"
+  },
+  {
+    "filename": "clip_188.wav",
+    "reference_text": "YOU SHALL NOT COME INTO MY FATHER'S HOUSE",
+    "duration_seconds": 2.54,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0020"
+  },
+  {
+    "filename": "clip_189.wav",
+    "reference_text": "IF WE DECIDE TO SHOW MERCY TO THIS POOR BEGGAR IT IS NOT FOR YOU TO OPPOSE IT",
+    "duration_seconds": 5.295,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0008"
+  },
+  {
+    "filename": "clip_190.wav",
+    "reference_text": "I TURN UP THE EARTH BY WAY OF PASTIME",
+    "duration_seconds": 2.93,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0020"
+  },
+  {
+    "filename": "clip_191.wav",
+    "reference_text": "HOW DO YOU KNOW ASKED THEIR FATHER I AM OLDER AND WISER THAN YOU ARE AND I KNOW THAT THERE ARE MANY EVILS WHICH MIGHT COME UPON YOU",
+    "duration_seconds": 7.845,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0002"
+  },
+  {
+    "filename": "clip_192.wav",
+    "reference_text": "BUI WE SHOULD NOT FORGET OUR PROMISE TO OUR FATHER CRIED THE YOUNGEST DAUGHTER",
+    "duration_seconds": 4.81,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0009"
+  },
+  {
+    "filename": "clip_193.wav",
+    "reference_text": "PETER CROUCHING IN THE FRONT SEAT SAW NOTHING",
+    "duration_seconds": 3.55,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0031"
+  },
+  {
+    "filename": "clip_194.wav",
+    "reference_text": "SHE WAS FOUR YEARS OLDER THAN I TO BE SURE AND HAD SEEN MORE OF THE WORLD BUT I WAS A BOY AND SHE WAS A GIRL AND I RESENTED HER PROTECTING MANNER",
+    "duration_seconds": 9.02,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0000"
+  },
+  {
+    "filename": "clip_195.wav",
+    "reference_text": "WE DECIDED THAT ANTONIA SHOULD RIDE DUDE HOME AND I WOULD WALK",
+    "duration_seconds": 4.38,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147960-0011"
+  },
+  {
+    "filename": "clip_196.wav",
+    "reference_text": "IT IS A FEARFUL NIGHT TO SEND AWAY A BEGGAR SAID THE ELDEST SISTER WHILE THEY WERE EATING",
+    "duration_seconds": 5.47,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-110124-0011"
+  },
+  {
+    "filename": "clip_197.wav",
+    "reference_text": "BUT PUT IT ON THE TABLE IN THE CORNER OF THE PASSAGE",
+    "duration_seconds": 2.84,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2086-149220-0042"
+  },
+  {
+    "filename": "clip_198.wav",
+    "reference_text": "UNDER THE SAME QUIET MOONLIGHT AND ONLY SIX HUNDRED YARDS AWAY FROM US ALSO LAY THE VICTORIOUS REBEL ARMY",
+    "duration_seconds": 7.355,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "7976-105575-0015"
+  },
+  {
+    "filename": "clip_199.wav",
+    "reference_text": "THE FIRST THING EITHER OF THEM NOTICED WAS A NEW SOUND THAT BROKE INTO THE CLEAR AIR LOUDER THAN THEY HAD EVER HEARD IT BEFORE THE BELL OF THE MONASTERY OF THEIR OWN VILLAGE RINGING FOR EARLY PRAYERS",
+    "duration_seconds": 13.86,
+    "source": "librispeech_asr/clean/validation",
+    "source_id": "2035-147961-0032"
+  }
+]

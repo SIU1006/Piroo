@@ -43,6 +43,35 @@ jobs:
         LLM_MODEL: llama3.2
       run: python -m pytest tests/ -v
 
+  model-ci:
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: pip install -r requirements-dev.txt
+
+    - name: Check fixed eval set is committed
+      run: |
+        if [ ! -f model_eval/eval_data/manifest.json ]; then
+          echo "::error::model_eval/eval_data/manifest.json is missing. Run 'python model_eval/prepare_eval_set.py' locally and commit model_eval/eval_data/ first."
+          exit 1
+        fi
+
+    - name: WER regression gate
+      working-directory: model_eval
+      run: python check_regression.py
+
   build-check: # before actual pushing
     runs-on: ubuntu-latest
     needs: test
@@ -79,7 +108,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: test    # only build if tests pass !!!
+    needs: [test, model-ci]    # only build if tests pass AND the model hasn't regressed
     if: github.event_name == 'push' # only push images after code lands on main
     timeout-minutes: 20
     permissions:
@@ -95,6 +124,15 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Resolve production model size
+      id: model-size
+      run: echo "size=$(python model_eval/get_production_size.py)" >> "$GITHUB_OUTPUT"
 
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
@@ -127,9 +165,8 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:base
+          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ steps.model-size.outputs.size }}
         build-args: |
-          WHISPER_MODEL_SIZE=base
-        cache-from: type=gha,scope=whisper
-        cache-to: type=gha,mode=max,scope=whisper
-
+          WHISPER_MODEL_SIZE=${{ steps.model-size.outputs.size }}
+        cache-from: type=gha,scope=whisper-${{ steps.model-size.outputs.size }}
+        cache-to: type=gha,mode=max,scope=whisper-${{ steps.model-size.outputs.size }}

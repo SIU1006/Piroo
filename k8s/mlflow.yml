@@ -4,6 +4,8 @@ metadata:
   name: mlflow
 spec:
   replicas: 1
+  strategy:
+    type: Recreate # avoid two pods fighting over the same ReadWriteOnce PVC during a rollout
   selector:
     matchLabels:
       app: mlflow
@@ -14,7 +16,7 @@ spec:
     spec:
       containers:
       - name: mlflow
-        image: ghcr.io/mlflow/mlflow:v3.13.0
+        image: ghcr.io/mlflow/mlflow:v3.15.0
         command: ["mlflow", "server"]
         args:
           - "--host"
@@ -27,6 +29,13 @@ spec:
           - "/mlflow/artifacts"
         ports:
         - containerPort: 5000
+        volumeMounts:
+        - name: mlflow-storage
+          mountPath: /mlflow
+      volumes:
+      - name: mlflow-storage
+        persistentVolumeClaim:
+          claimName: mlflow-pvc
 ---
 apiVersion: v1
 kind: Service
