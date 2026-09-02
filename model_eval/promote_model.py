@@ -22,12 +22,16 @@ Usage:
 DEFAULT_MODEL_NAME = "video-transcriber-whisper"
 BASELINE_PATH = Path(__file__).parent / "baseline.json"
 
-def main():
+def _parser_add_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tracking-uri", default="http://localhost:3002")
     parser.add_argument("--registered-model-name", default=DEFAULT_MODEL_NAME)
     parser.add_argument("--wer-threshold", type=float, default=0.20)
     args = parser.parse_args()
+    return args
+
+def main():
+    args = _parser_add_arguments()
 
     mlflow.set_tracking_uri(args.tracking_uri)
     client = MlflowClient()

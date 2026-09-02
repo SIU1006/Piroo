@@ -9,7 +9,6 @@ from benchmark import benchmark_model
 - fails if WER regressed past threshold vs baseline.json
 
 Usage:
-    python model_eval/check_regression.py
     python model_eval/check_regression.py --model-size base --max-regression 0.02
 '''
 
@@ -20,8 +19,7 @@ def load_baseline() -> dict | None:
         return None
     return json.loads(BASELINE_PATH.read_text())
 
-
-def main():
+def _parser_add_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--model-size", default=None,
@@ -39,7 +37,13 @@ def main():
         "--hard-ceiling", type=float, default=0.30,
         help="Absolute WER ceiling regardless of baseline - catches a bad/stale baseline too (default: 0.30)",
     )
+
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = _parser_add_arguments()
 
     baseline = load_baseline()
     model_size = args.model_size or (baseline["model_size"] if baseline else "base")

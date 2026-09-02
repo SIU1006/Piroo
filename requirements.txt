@@ -9,3 +9,5 @@ python-multipart==0.0.28
 requests==2.33.1
 aiofiles==25.1.0
 prometheus-fastapi-instrumentator==8.1.0
+prometheus-client==0.24.1
+jiwer==4.0.0

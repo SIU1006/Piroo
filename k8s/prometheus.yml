@@ -7,9 +7,41 @@ data:
     global:
       scrape_interval: 15s
     scrape_configs:
-      - job_name: 'fastapi'
-        static_configs:
-          - targets: ['fastapi-service:8000']
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          # only keep pods that opted in
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+
+          # scrape on the annotated port instead of whatever port the pod happens to expose first
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+
+          # honor a custom metrics path if set, default to /metrics
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            regex: (.+)
+            target_label: __metrics_path__
+
+          # surface useful pod metadata as real labels for querying/filtering in Grafana
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: replace
+            target_label: app
+          - source_labels: [__meta_kubernetes_pod_label_track]
+            action: replace
+            target_label: track
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,6 +57,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
       - name: prometheus
         image: prom/prometheus:v3.8.1

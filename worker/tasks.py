@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 
 import ffmpeg
 import ollama
@@ -10,10 +11,18 @@ from dotenv import load_dotenv
 
 from settings import BROKER_URL, LLM_MODEL, UPLOAD_DIR, WHISPER_URL
 from worker.celery_app import celery_app
+from worker.metrics import (
+    CANARY_WER,  # noqa: F401 - re-exported so worker/canary.py can share one metrics module
+    TASK_DURATION_SECONDS,
+    TASK_FAILURES_TOTAL,
+    TASK_TOTAL,
+    ensure_metrics_server_started,
+)
 
 load_dotenv()
 assert os.getenv("LLM_MODEL") is not None, "LLM_MODEL is not set in .env"
 logger = logging.getLogger(__name__)
+ensure_metrics_server_started()
 
 RESULT_TTL_SECONDS = 3600
 
@@ -45,7 +54,7 @@ def extract_audio(file_path: str, audio_path: str) -> None:
     ffmpeg.input(file_path).output(
         audio_path, vn=None, acodec="mp3", ac=1, audio_bitrate="128k"
     ).overwrite_output().run()
-    logger.info(f"Audio Extracted: {audio_path}")   
+    logger.info(f"Audio Extracted: {audio_path}")
 
 def transcribe(audio_path: str, whisper_url: str) -> str:
     # Send audio file to Whisper service for transcription
@@ -90,7 +99,7 @@ def publish_result(r, task_id: str, payload: dict) -> None:
 def store_success(r, task_id, summary):
     message = {
         "status": "completed",
-        "task_id": task_id, 
+        "task_id": task_id,
         "summary": summary
     }
     publish_result(r, task_id, message)
@@ -99,16 +108,30 @@ def store_success(r, task_id, summary):
 def store_failure(r, task_id, e):
     message = {
         "status": "error",
-        "task_id": task_id, 
+        "task_id": task_id,
         "error": str(e)
     }
-    publish_result(r, task_id, message)  
+    publish_result(r, task_id, message)
     logger.error(f"Task ID: {task_id}, error: {e}")
 
 def cleanup(*paths: str) -> None:
     for path in paths:
         if os.path.exists(path):
             os.remove(path)
+
+def metrics(
+    task_name: str,
+    status: str | None = None,
+    exception_type: str | None = None,
+    start: float | None = None,
+):
+    '''Perform Prometheus metrics'''
+    if status:
+        TASK_TOTAL.labels(task_name=task_name, status=status).inc()
+    if exception_type:
+        TASK_FAILURES_TOTAL.labels(task_name=task_name, exception_type=exception_type).inc()
+    if start is not None:
+        TASK_DURATION_SECONDS.labels(task_name=task_name).observe(time.perf_counter() - start)
 # =======================================================
 
 
@@ -119,6 +142,7 @@ def cleanup(*paths: str) -> None:
         max_retries=3)
 def process_video(task_id: str, file_path: str):
     r, audio_path = start_running(task_id, file_path)
+    start = time.perf_counter()
     try:
         validate_duration(ffmpeg.probe(file_path))
         extract_audio(file_path, audio_path)
@@ -128,9 +152,11 @@ def process_video(task_id: str, file_path: str):
 
     except Exception as e:
         store_failure(r, task_id, e)
+        metrics(task_name="process_video", status="failure", exception_type=type(e).__name__)
         raise
 
     finally:
+        metrics(task_name="process_video", start=start)
         cleanup(file_path, audio_path)
 
 
@@ -149,7 +175,7 @@ def find_stuck(r):
         if ttl > STUCK_TTL_THRESHOLD_SECONDS:
             continue
 
-        yield task_id, key 
+        yield task_id, key
 
 def report_stuck(r, task_id: str) -> None:
     logger.warning(f"Task {task_id} stuck/killed, reporting error")
@@ -188,10 +214,24 @@ def sweep_stuck_tasks():
     >> sweep
     """
     r = redis.Redis.from_url(BROKER_URL)
+    start = time.perf_counter()
 
-    for task_id, heartbeat_key in find_stuck(r):
-        report_stuck(r, task_id)
-        cleanup_stuck(r, task_id, heartbeat_key)
+    try:
+        for task_id, heartbeat_key in find_stuck(r):
+            report_stuck(r, task_id)
+            cleanup_stuck(r, task_id, heartbeat_key)
+        TASK_TOTAL.labels(task_name="sweep_stuck_tasks", status="success").inc()
+
+    except Exception as e:
+        logger.error(f"Error sweeping stuck tasks: {e}")
+        metrics(task_name="sweep_stuck_tasks", status="failure", exception_type=type(e).__name__)
+        raise
+
+    finally:
+        metrics(task_name="sweep_stuck_tasks", start=start)
+
+# registers check_canary_wer with celery_app as a side effect of this import
+from worker import canary  # noqa: F401
 
 
 

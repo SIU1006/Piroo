@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()  # Load .env into os env
@@ -17,7 +18,18 @@ celery_app.conf.update(
     task_time_limit=1900,  # force-kill
     task_acks_late=True,  # Redis will re-queue the force-killed tasks
     worker_prefetch_multiplier=1,  # 1 worker 1 task
-    
+
     # prevent worker crashing if redis is not ready yet
-    broker_connection_retry_on_startup=True,  
+    broker_connection_retry_on_startup=True,
 )
+
+celery_app.conf.beat_schedule = {
+    "sweep-stuck-tasks": {
+        "task": "sweep_stuck_tasks",
+        "schedule": 60.0,
+    },
+    "check-canary-wer": {
+    "task": "check_canary_wer",
+    "schedule": crontab(minute=0),
+    }
+}

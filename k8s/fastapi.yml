@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: fastapi
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
 
     spec:
       containers:
@@ -27,7 +30,7 @@ spec:
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
-          
+
         livenessProbe:
           httpGet:
             path: /healthz

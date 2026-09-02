@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         app: celery
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9808"
 
     spec:
       containers:
@@ -24,6 +27,8 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        ports:
+        - containerPort: 9808
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
