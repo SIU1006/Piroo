@@ -16,3 +16,12 @@ spec:
       target:
         type: Utilization
         averageUtilization: 70
+
+  # Requires prometheus-adapter (k8s/prometheus-adapter.yml) to be deployed and its TLS certs generated first, or this metric simply won't resolve and HPA falls back to CPU alone.
+  - type: External
+    external:
+      metric:
+        name: celery_queue_depth
+      target:
+        type: AverageValue # scale so each replica carries ~5 queued tasks
+        averageValue: "5"

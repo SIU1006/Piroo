@@ -4,13 +4,17 @@ from celery import Celery
 from celery.schedules import crontab
 from dotenv import load_dotenv
 
+from settings import with_password
+
 load_dotenv()  # Load .env into os env
-assert os.getenv("BROKER_URL") is not None, "BROKER_URL is not set in .env"
+_broker_url = os.getenv("BROKER_URL")
+assert _broker_url is not None, "BROKER_URL is not set in .env"
+BROKER_URL = with_password(_broker_url, os.getenv("REDIS_PASSWORD"))
 
 
 celery_app = Celery(
     "worker",
-    broker=os.getenv("BROKER_URL"),
+    broker=BROKER_URL,
 )
 
 celery_app.conf.update(

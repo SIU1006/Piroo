@@ -27,6 +27,12 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads

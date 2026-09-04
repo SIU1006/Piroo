@@ -19,8 +19,8 @@ TASK_TOTAL = Counter(
 
 TASK_DURATION_SECONDS = Histogram(
     "celery_task_duration_seconds",
-    "Task execution wall-clock time, by task name.",
-    labelnames=["task_name"],
+    "Task execution wall-clock time, by task name and input video length bucket.",
+    labelnames=["task_name", "video_length_bucket"],
     buckets=(1, 5, 15, 30, 60, 120, 300, 600, 900, 1800, float("inf")),
 )
 

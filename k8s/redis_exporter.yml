@@ -23,6 +23,11 @@ spec:
         env:
         - name: REDIS_ADDR
           value: "redis://redis-service:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
         - name: REDIS_EXPORTER_CHECK_KEYS
           value: "celery"
         resources:

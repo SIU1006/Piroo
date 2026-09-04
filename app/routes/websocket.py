@@ -7,19 +7,21 @@ from redis import asyncio as redis
 router = APIRouter()
 
 BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
 RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
 
-# One shared client & connection pool reused by every websocket connection
-r_client = redis.Redis.from_url(BROKER_URL)
 
-BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
+def _redis_url() -> str:
+    if not REDIS_PASSWORD or "@" in BROKER_URL:
+        return BROKER_URL
+    scheme, _, rest = BROKER_URL.partition("://")
+    return f"{scheme}://default:{REDIS_PASSWORD}@{rest}"
 
-RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
 
 # One shared client & connection pool reused by every websocket connection
 def get_client():
-    return redis.Redis.from_url(BROKER_URL)
+    return redis.Redis.from_url(_redis_url())
 
 
 @router.websocket("/ws/{task_id}")

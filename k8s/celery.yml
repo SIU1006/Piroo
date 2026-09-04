@@ -27,6 +27,12 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
         ports:
         - containerPort: 9808
         volumeMounts:

@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alert-rules
+data:
+  asyncvtp.rules.yml: |
+    groups:
+      - name: asyncvtp-slos
+        rules:
+        '''
+          SLO 1 (latency): 95% of sub-10-minute videos complete process_video within 2 minutes.
+        '''
+          - alert: ProcessVideoLatencySLOBreach
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(celery_task_duration_seconds_bucket{task_name="process_video", video_length_bucket="under_10min"}[1h])) by (le)
+              ) > 120
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "process_video p95 latency SLO breached (sub-10-min videos)"
+              description: >-
+                95th percentile process_video latency for sub-10-minute videos has
+                exceeded the 2-minute SLO target for 15+ minutes.
+                SLO: 95% of sub-10-minute videos complete within 120s.
+
+          '''
+          SLO 2 (reliability): process_video failure rate < 1%.
+          '''
+          - alert: TaskFailureRateSLOBreach
+            expr: |
+              (
+                sum(rate(celery_task_total{task_name="process_video", status="failure"}[1h]))
+                /
+                sum(rate(celery_task_total{task_name="process_video"}[1h]))
+              ) > 0.01
+            for: 15m
+            labels:
+              severity: warning
+            annotations:
+              summary: "process_video failure rate SLO breached"
+              description: >-
+                process_video failure rate over the last hour has exceeded the 1%
+                SLO target for 15+ minutes.
+
+          '''
+          SLO 3 (model quality): canary WER stays close to what model_eval/baseline.json recorded at the last promotion.
+          '''
+          - alert: CanaryWERSLOBreach
+            expr: canary_wer > 0.05
+            for: 30m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Canary WER SLO breached"
+              description: >-
+                Rolling canary WER has exceeded 0.05 for 30+ minutes. Keep this
+                threshold in sync with model_eval/baseline.json's wer value
+                whenever model_eval/promote_model.py promotes a new model.
+
+        '''
+          Meta-alert: an SLO you can't measure isn't actually being
+          enforced - if the canary task itself stops running (celery-beat
+          down, whisper-service unreachable, etc.), canary_wer stops
+          updating and CanaryWERSLOBreach would silently go quiet instead
+          of firing.
+        '''
+          - alert: CanaryCheckNotRunning
+            expr: absent_over_time(canary_wer[2h])
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "No canary WER check has reported in 2+ hours"
+              description: >-
+                check_canary_wer should run hourly via celery-beat. No canary_wer
+                sample has been observed in 2 hours - the canary task may be
+                failing, or celery-beat may be down.

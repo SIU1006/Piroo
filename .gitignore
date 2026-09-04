@@ -26,6 +26,10 @@ mlflow.db
 mlruns/
 mlartifacts/
 
+# Kubernetes secrets (real values — never commit)
+secrets/*
+!secrets/*.example
+
 # OS
 .DS_Store
 Thumbs.db

@@ -166,6 +166,17 @@ kubectl exec -it deploy/ollama -- ollama pull llama3.2
 
 > **Note:** `k8s/whisper-canary.yml` is intentionally excluded from the default deploy — see [Model Management & Canary Releases](#model-management--canary-releases) below if you want to apply it.
 
+Before deploying, create the required Secrets (they are **not** committed — see [Secrets](#secrets)):
+
+```bash
+kubectl create secret generic redis-secret \
+  --from-file=redis-password=secrets/redis-password
+kubectl create secret generic grafana-secret \
+  --from-file=admin-password=secrets/grafana-admin-password
+kubectl create secret generic alertmanager-secret \
+  --from-file=slack-webhook-url=secrets/slack-webhook-url
+```
+
 | Service | URL |
 |---|---|
 | FastAPI (NodePort 30000) | http://localhost:8080 |
@@ -174,6 +185,35 @@ kubectl exec -it deploy/ollama -- ollama pull llama3.2
 | MLflow (NodePort 30050) | http://localhost:3002 |
 
 > **Note:** the Celery HPA requires [metrics-server](https://github.com/kubernetes-sigs/metrics-server) in the cluster (not shipped with kind by default). Verify with `kubectl top pods`, then watch autoscaling under load via `kubectl get hpa -w`.
+
+---
+
+## Secrets
+
+Kubernetes Secrets in this project are **not committed to git**. Instead, `secrets/` ships example templates — copy one to a gitignored file, fill in the real value, and create the Secret imperatively:
+
+```bash
+cp secrets/slack-webhook-url.example secrets/slack-webhook-url
+# edit secrets/slack-webhook-url with your real Slack Incoming Webhook URL
+kubectl create secret generic alertmanager-secret \
+  --from-file=slack-webhook-url=secrets/slack-webhook-url
+
+cp secrets/redis-password.example secrets/redis-password
+kubectl create secret generic redis-secret \
+  --from-file=redis-password=secrets/redis-password
+
+cp secrets/grafana-admin-password.example secrets/grafana-admin-password
+kubectl create secret generic grafana-secret \
+  --from-file=admin-password=secrets/grafana-admin-password
+```
+
+| Secret | Key | Used by |
+|---|---|---|
+| `alertmanager-secret` | `slack-webhook-url` | Alertmanager Slack receiver |
+| `redis-secret` | `redis-password` | Redis `requirepass`, consumers, and the exporter |
+| `grafana-secret` | `admin-password` | Grafana admin login |
+
+All files under `secrets/` except `*.example` are ignored by git, so a real webhook URL or password can never be committed by accident. The Redis password must be kept identical between `redis-secret` and the `REDIS_PASSWORD` used by FastAPI / Celery — see [Configuration](#configuration).
 
 ---
 
@@ -289,12 +329,13 @@ kubectl apply -f k8s/whisper-canary.yml
 | Variable | Default (local) | Purpose |
 |---|---|---|
 | `BROKER_URL` | `redis://localhost:6379/0` | Celery broker + Redis pub/sub |
+| `REDIS_PASSWORD` | `change-me-dev-only` | Redis `requirepass`; injected into `BROKER_URL` at runtime |
 | `WHISPER_URL` | `http://localhost:3000` | BentoML Whisper service endpoint |
 | `OLLAMA_HOST` | `http://localhost:11434` | Ollama server |
 
 The Whisper model size is a **build-time** choice, not a runtime env var — see `WHISPER_MODEL_SIZE` build arg in [Getting Started](#getting-started) and [Model Management & Canary Releases](#model-management--canary-releases). Baking the model into the image at build time avoids re-downloading it on every pod restart.
 
-In Docker Compose these are injected per service; in Kubernetes they live in the `pipeline-config` ConfigMap (`k8s/configmap.yml`). A local `.env` (gitignored) holds `BROKER_URL` for bare-metal development.
+In Docker Compose these are injected per service; in Kubernetes they live in the `pipeline-config` ConfigMap (`k8s/configmap.yml`), with `REDIS_PASSWORD` sourced from the `redis-secret` Secret. A local `.env` (gitignored) holds `BROKER_URL` for bare-metal development.
 
 ---
 
@@ -331,6 +372,10 @@ AsyncVTP/
 │   ├── prometheus.yml / grafana.yml / mlflow.yml
 │   ├── configmap.yml             # pipeline-config env
 │   └── pvc.yml                   # Shared uploads volume
+├── secrets/                      # Secret templates (real values are gitignored)
+│   ├── slack-webhook-url.example
+│   ├── redis-password.example
+│   └── grafana-admin-password.example
 ├── monitoring/
 │   ├── prometheus.yml            # Scrape configuration
 │   └── grafana/dashboards/       # Prebuilt pipeline dashboard
