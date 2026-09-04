@@ -1,7 +1,7 @@
 fastapi==0.139.2
-uvicorn==0.47.0
+uvicorn[standard]==0.47.0
 celery==5.6.3
-redis==8.0.1
+redis==5.3.1
 python-dotenv==1.2.2
 ffmpeg-python==0.2.0
 ollama==0.6.2

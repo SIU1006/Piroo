@@ -4,7 +4,7 @@ import settings
 def test_with_password_injects_password_when_absent():
     assert (
         settings.with_password("redis://redis-service:6379/0", "hunter2")
-        == "redis://default:hunter2@redis-service:6379/0"
+        == "redis://:hunter2@redis-service:6379/0"
     )
 
 

@@ -9,14 +9,13 @@ router = APIRouter()
 BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
-RESULT_WAIT_TIMEOUT_SEC = 1900 + 30
-
+RESULT_WAIT_TIMEOUT_SEC = int(os.getenv("RESULT_WAIT_TIMEOUT_SEC", "300"))
 
 def _redis_url() -> str:
     if not REDIS_PASSWORD or "@" in BROKER_URL:
         return BROKER_URL
     scheme, _, rest = BROKER_URL.partition("://")
-    return f"{scheme}://default:{REDIS_PASSWORD}@{rest}"
+    return f"{scheme}://:{REDIS_PASSWORD}@{rest}"
 
 
 # One shared client & connection pool reused by every websocket connection

@@ -10,11 +10,17 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
 
 def with_password(url: str, password: str | None) -> str:
-    """Inject a Redis password into a `redis://` URL when one is set and absent."""
+    """Inject a Redis password into a `redis://` URL when one is set and absent.
+
+    Uses the empty-username form (`redis://:pw@host`) rather than an explicit
+    `default` user: redis `requirepass` expects a bare `AUTH <password>`, and
+    an explicit `default` username forces the ACL-style `AUTH default <pw>`
+    path that some kombu/redis version combinations mishandle.
+    """
     if not password or "@" in url:
         return url
     scheme, _, rest = url.partition("://")
-    return f"{scheme}://default:{password}@{rest}"
+    return f"{scheme}://:{password}@{rest}"
 
 
 BROKER_URL = with_password(

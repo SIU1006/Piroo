@@ -1,9 +1,10 @@
 import logging
 import os
 import time
-from pathlib import Path
+from typing import BinaryIO
 
 import bentoml
+from bentoml.io import File
 from bentoml.metrics import Histogram
 from faster_whisper import WhisperModel
 
@@ -37,8 +38,8 @@ class WhisperService:
         self.model_size = model_size
         self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-    @bentoml.api
-    def transcribe(self, audio_file: Path) -> str:
+    @bentoml.api(input_spec=File())
+    def transcribe(self, audio_file: BinaryIO) -> str:
         start = time.perf_counter()
         segments, info = self.model.transcribe(audio_file)
         text = " ".join(segment.text for segment in segments)  # forces the lazy generator to run
