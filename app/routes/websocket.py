@@ -10,6 +10,7 @@ BROKER_URL = os.getenv("BROKER_URL", "redis://localhost:6379/0")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
 RESULT_WAIT_TIMEOUT_SEC = int(os.getenv("RESULT_WAIT_TIMEOUT_SEC", "300"))
+KEEPALIVE_INTERVAL_SEC = int(os.getenv("KEEPALIVE_INTERVAL_SEC", "30"))
 
 def _redis_url() -> str:
     if not REDIS_PASSWORD or "@" in BROKER_URL:
@@ -40,9 +41,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
             return
 
         try:
-            data = await asyncio.wait_for(
-                wait_for_message(pubsub), timeout=RESULT_WAIT_TIMEOUT_SEC
-            )
+            data = await wait_with_keepalive(websocket, pubsub, RESULT_WAIT_TIMEOUT_SEC)
         except TimeoutError:
             await websocket.send_text(
                 '{"status": "error", "message": "Timed out waiting for the task to finish."}'
@@ -56,6 +55,27 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
         await pubsub.close()
         await websocket.close()
 
+async def wait_with_keepalive(websocket: WebSocket, pubsub, overall_timeout_sec: float):
+    '''
+    Wait for a pubsub message up to overall_timeout_sec seconds, but pings the client every KEEPALIVE_INTERVAL_SEC while waiting to keep it alive.
+    A long asyncio.wait_for() sends nothing to the client for up to 5mins, many browsers/proxies/load balances will treat it as a dead connection and close before our own timeout ever fires.
+    '''
+    loop = asyncio.get_event_loop()
+    deadline = loop.time() + overall_timeout_sec
+
+    while True:
+        remaining = deadline - loop.time()
+        if remaining <= 0:
+            raise TimeoutError
+
+        try:
+            return await asyncio.wait_for(
+                wait_for_message(pubsub), timeout=min(KEEPALIVE_INTERVAL_SEC, remaining)
+            )
+        except TimeoutError:
+            # Still no message from pubsub but KEEPALIVE_INTERVAL_SEC has passed
+            # >> ping the client
+            await websocket.send_json({"status": "processing"})
 
 async def wait_for_message(pubsub):
     while True:

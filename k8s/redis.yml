@@ -4,6 +4,8 @@ metadata:
   name: redis
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: redis
@@ -15,8 +17,9 @@ spec:
       containers:
       - name: redis
         image: redis:7.4.10
-        command: ["redis-server"]
-        args: ["--requirepass", "$(REDIS_PASSWORD)"]
+        args: ["--requirepass", "$(REDIS_PASSWORD)", "--appendonly", "yes"]
+        securityContext:
+          allowPrivilegeEscalation: false
         ports:
         - containerPort: 6379
         env:
@@ -26,6 +29,10 @@ spec:
               name: redis-secret
               key: redis-password
 
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+
         resources:
           requests:
             memory: "64Mi"
@@ -33,7 +40,12 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "200m"
-       
+
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+
 
 ---
 
