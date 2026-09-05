@@ -1,0 +1,50 @@
+# Dev overlay — local `kind` cluster.
+#   helm install asyncvtp . -f values.yaml -f values-dev.yaml
+#
+# Assumes images were built locally and loaded with:
+#   kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:base
+
+global:
+  imageRegistry: ""       # local images, no registry prefix
+  imagePullPolicy: Never  # requires `kind load docker-image`
+
+# Convenience only: creates throwaway Secrets so the chart works out of the
+# box on a scratch kind cluster. Never do this for staging/prod — real
+# secrets belong in a proper secrets pipeline, not values files.
+secrets:
+  redis:
+    create: true
+    value: "dev-only-redis-password"
+  grafana:
+    create: true
+    value: "dev-only-admin-password"
+  alertmanager:
+    create: true
+    value: "https://hooks.slack.com/services/REPLACE/ME/dev"
+
+persistence:
+  uploads:
+    size: 10Gi
+  mlflow:
+    size: 2Gi
+  redis:
+    size: 1Gi
+  ollama:
+    size: 5Gi
+
+fastapi:
+  replicaCount: 1
+
+celery:
+  replicaCount: 1
+  hpa:
+    enabled: false # single-node kind cluster: HPA + prometheus-adapter add ceremony without payoff
+
+# Skip the metrics-server/prometheus-adapter dance entirely in dev by default.
+# Flip to true only if you're specifically testing autoscaling locally.
+prometheusAdapter:
+  enabled: false
+
+whisper:
+  canary:
+    enabled: false # opt-in per the original README; enable explicitly to test canary rollout locally

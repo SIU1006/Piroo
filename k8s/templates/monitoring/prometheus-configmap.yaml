@@ -1,7 +1,10 @@
+{{- if .Values.prometheus.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: prometheus-config
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 data:
   prometheus.yml: |
     global:
@@ -42,55 +45,4 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: pod
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prometheus
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: prometheus
-  template:
-    metadata:
-      labels:
-        app: prometheus
-    spec:
-      serviceAccountName: prometheus
-      containers:
-      - name: prometheus
-        image: prom/prometheus:v3.8.1
-        ports:
-        - containerPort: 9090
-        volumeMounts:
-        - name: config
-          mountPath: /etc/prometheus/prometheus.yml
-          subPath: prometheus.yml
-
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-
-      volumes:
-      - name: config
-        configMap:
-          name: prometheus-config
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: prometheus-service
-spec:
-  type: NodePort
-  selector:
-    app: prometheus
-  ports:
-    - port: 9090
-      targetPort: 9090
-      nodePort: 30090
+{{- end }}

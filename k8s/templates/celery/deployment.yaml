@@ -2,33 +2,33 @@ apiVersion: apps/v1
 kind: Deployment # Only Deployment cuz no other pod talks to it
 metadata:
   name: celery
-
+  labels:
+    app: celery
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.celery.replicaCount }}
   selector:
     matchLabels:
       app: celery
-
   template:
     metadata:
       labels:
         app: celery
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "9808"
-
+        prometheus.io/port: {{ .Values.celery.metricsPort | quote }}
     spec:
       containers:
       - name: celery
-        image: asyncvtp-celery:latest
-        imagePullPolicy: Never
+        image: {{ include "asyncvtp.image" (dict "image" .Values.celery.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         command: ["python", "-m", "celery"]
         # threads pool (not solo/prefork): the pipeline is I/O-bound (each task
         # blocks on HTTP calls to Whisper + Ollama for ~90% of its wall time), so
-        # CPU-based scaling and process pools waste capacity. 4 threads let one pod
+        # CPU-based scaling and process pools waste capacity. Threads let one pod
         # overlap several in-flight tasks while keeping the single-process metrics
         # server intact.
-        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=threads", "--concurrency=4"]
+        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=threads", "--concurrency={{ .Values.celery.concurrency }}"]
         envFrom:
         - configMapRef:
             name: pipeline-config
@@ -36,20 +36,15 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: redis-secret
-              key: redis-password
+              name: {{ .Values.secrets.redis.name }}
+              key: {{ .Values.secrets.redis.key }}
         ports:
-        - containerPort: 9808
+        - containerPort: {{ .Values.celery.metricsPort }}
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
         resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+          {{- toYaml .Values.celery.resources | nindent 10 }}
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:

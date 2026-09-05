@@ -1,0 +1,84 @@
+# Staging overlay — real cluster, real registry, real (but non-production-scale) resources.
+#   helm install asyncvtp . -f values.yaml -f values-staging.yaml \
+#     --set global.imageRegistry=ghcr.io/your-org \
+#     --set fastapi.image.tag=$GIT_SHA --set celery.image.tag=$GIT_SHA \
+#     --set celeryBeat.image.tag=$GIT_SHA \
+#     --set whisper.image.tag=$GIT_SHA
+#
+# Prefer passing registry/tag via --set (or a CI-generated values file) rather
+# than hardcoding a SHA here, so this file stays reusable across builds.
+
+global:
+  imageRegistry: "ghcr.io/your-org"  # override at install time
+  imagePullPolicy: Always
+
+# Secrets must already exist in-cluster before `helm install` (created by
+# CI/CD, sealed-secrets, or an External Secrets Operator sync). The chart
+# only references these names/keys — it never creates them here.
+secrets:
+  redis:
+    create: false
+    name: redis-secret
+    key: redis-password
+  grafana:
+    create: false
+    name: grafana-secret
+    key: admin-password
+  alertmanager:
+    create: false
+    name: alertmanager-secret
+    key: slack-webhook-url
+
+persistence:
+  uploads:
+    size: 20Gi
+    storageClass: "standard-rwo"    # set to your cluster's actual StorageClass
+  mlflow:
+    size: 5Gi
+    storageClass: "standard-rwo"
+  redis:
+    size: 2Gi
+    storageClass: "standard-rwo"
+  ollama:
+    size: 10Gi
+    storageClass: "standard-rwo"
+
+fastapi:
+  replicaCount: 2
+  service:
+    type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
+    nodePort: null
+
+celery:
+  replicaCount: 2
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+
+whisper:
+  canary:
+    enabled: false # enable per-rollout when actually testing a candidate model
+
+prometheus:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+grafana:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+alertmanager:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+mlflow:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+prometheusAdapter:
+  enabled: true

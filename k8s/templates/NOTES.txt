@@ -1,0 +1,41 @@
+AsyncVTP has been deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+{{- if eq .Values.global.imagePullPolicy "Never" }}
+
+⚠️  imagePullPolicy is "Never" (dev default). Make sure the app images are
+    loaded into your cluster's local image cache first, e.g. for kind:
+
+      kind load docker-image {{ include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" $) }}
+      kind load docker-image {{ include "asyncvtp.image" (dict "image" .Values.celery.image "root" $) }}
+      kind load docker-image {{ include "asyncvtp.image" (dict "image" .Values.whisper.image "root" $) }}
+{{- end }}
+
+{{- if not .Values.secrets.redis.create }}
+
+Required Secrets (not created by this chart — provision out-of-band before
+installing, e.g. via CI/CD, sealed-secrets, or External Secrets Operator):
+  - {{ .Values.secrets.redis.name }} (key: {{ .Values.secrets.redis.key }})
+  - {{ .Values.secrets.grafana.name }} (key: {{ .Values.secrets.grafana.key }})
+  - {{ .Values.secrets.alertmanager.name }} (key: {{ .Values.secrets.alertmanager.key }})
+{{- end }}
+
+{{- if .Values.prometheusAdapter.enabled }}
+
+prometheus-adapter is enabled, which backs the Celery HPA's external queue-depth
+metric. It expects a pre-existing TLS Secret named "cm-adapter-serving-certs"
+(same as the original k8s/generate_adapter_certs.sh workflow) — create that
+before the adapter pod will become healthy.
+{{- end }}
+
+Once ollama is running, pull the summarization model once per cluster:
+
+  kubectl exec -it deploy/ollama -n {{ .Release.Namespace }} -- ollama pull {{ .Values.pipelineConfig.LLM_MODEL }}
+
+{{- if eq .Values.fastapi.service.type "NodePort" }}
+
+FastAPI is exposed via NodePort {{ .Values.fastapi.service.nodePort }}.
+{{- else }}
+
+FastAPI is exposed via a {{ .Values.fastapi.service.type }} Service — front it
+with your Ingress/LoadBalancer of choice.
+{{- end }}

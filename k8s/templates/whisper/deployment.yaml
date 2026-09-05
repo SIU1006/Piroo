@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: whisper
+  labels:
+    app: whisper
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
@@ -13,14 +16,14 @@ spec:
         app: whisper
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
+        prometheus.io/port: {{ .Values.whisper.service.port | quote }}
     spec:
       containers:
       - name: whisper
-        image: asyncvtp-whisper-service:base
-        imagePullPolicy: Never
+        image: {{ include "asyncvtp.image" (dict "image" .Values.whisper.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         ports:
-        - containerPort: 3000
+        - containerPort: {{ .Values.whisper.service.port }}
         envFrom:
         - configMapRef:
             name: pipeline-config
@@ -31,41 +34,37 @@ spec:
         startupProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
           failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
         resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "2000m"
+          {{- toYaml .Values.whisper.resources | nindent 10 }}
 
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
           claimName: uploads-pvc
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   name: whisper-service
+  labels:
+    app: whisper
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   selector:
     app: whisper
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: {{ .Values.whisper.service.port }}
+      targetPort: {{ .Values.whisper.service.port }}

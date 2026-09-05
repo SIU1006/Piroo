@@ -1,0 +1,117 @@
+# Prod overlay — real cluster, pinned image tags, production capacity.
+#   helm install asyncvtp . -f values.yaml -f values-prod.yaml \
+#     --set global.imageRegistry=ghcr.io/your-org \
+#     --set fastapi.image.tag=v1.4.2 --set celery.image.tag=v1.4.2 \
+#     --set celeryBeat.image.tag=v1.4.2 --set whisper.image.tag=v1.4.2
+#
+# Always pin exact, immutable tags for prod (a git SHA or semver release tag)
+# — never `latest`, and never re-use a staging tag without re-verifying it.
+
+global:
+  imageRegistry: "ghcr.io/your-org"
+  imagePullPolicy: Always
+
+secrets:
+  redis:
+    create: false
+    name: redis-secret
+    key: redis-password
+  grafana:
+    create: false
+    name: grafana-secret
+    key: admin-password
+  alertmanager:
+    create: false
+    name: alertmanager-secret
+    key: slack-webhook-url
+
+persistence:
+  uploads:
+    size: 100Gi
+    storageClass: "standard-rwo" # set to your cluster's actual StorageClass; consider ReadWriteMany (e.g. EFS/Filestore) if fastapi/celery/whisper ever scale across nodes
+  mlflow:
+    size: 20Gi
+    storageClass: "standard-rwo"
+  redis:
+    size: 5Gi
+    storageClass: "standard-rwo"
+  ollama:
+    size: 20Gi
+    storageClass: "standard-rwo"
+
+fastapi:
+  replicaCount: 3
+  service:
+    type: ClusterIP
+    nodePort: null
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+
+celery:
+  replicaCount: 3
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 2000m
+
+whisper:
+  canary:
+    enabled: false # enable deliberately per-rollout, never left on by default
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 1000m
+    limits:
+      memory: 4Gi
+      cpu: 4000m
+
+ollama:
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 1000m
+    limits:
+      memory: 8Gi
+      cpu: 4000m
+
+prometheus:
+  service:
+    type: ClusterIP
+    nodePort: null
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+
+grafana:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+alertmanager:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+mlflow:
+  service:
+    type: ClusterIP
+    nodePort: null
+
+prometheusAdapter:
+  enabled: true

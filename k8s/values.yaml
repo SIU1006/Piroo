@@ -1,0 +1,276 @@
+# Default values for asyncvtp.
+# Environment overlays (values-dev.yaml, values-staging.yaml, values-prod.yaml)
+# override specific keys on top of this file:
+#   helm install asyncvtp . -f values.yaml -f values-dev.yaml
+
+global:
+  # Applied to app-owned images (fastapi/celery/whisper-service). Leave empty
+  # for local/kind images built with the project's own Dockerfiles.
+  imageRegistry: ""
+  # Never = expects `kind load docker-image ...` (local dev only).
+  # Always = pull from imageRegistry (staging/prod).
+  imagePullPolicy: Never
+
+# ------------------------------------------------------------------
+# Namespace-wide config consumed via envFrom (was k8s/configmap.yml)
+# ------------------------------------------------------------------
+pipelineConfig:
+  BROKER_URL: "redis://redis-service:6379/0"
+  WHISPER_URL: "http://whisper-service:3000"
+  OLLAMA_HOST: "http://ollama-service:11434"
+  LLM_MODEL: "llama3.2"
+
+# ------------------------------------------------------------------
+# Secrets. In dev these can be created inline by the chart (NOT safe
+# for staging/prod). In staging/prod, set create: false and pre-create
+# the named Secret out-of-band (sealed-secrets, External Secrets, CI/CD
+# vault injection, etc.) — the chart only references the name/key.
+# ------------------------------------------------------------------
+secrets:
+  redis:
+    create: false
+    name: redis-secret
+    key: redis-password
+    value: ""   # only used when create: true
+  grafana:
+    create: false
+    name: grafana-secret
+    key: admin-password
+    value: ""
+  alertmanager:
+    create: false
+    name: alertmanager-secret
+    key: slack-webhook-url
+    value: ""
+
+# ------------------------------------------------------------------
+# Persistent volumes
+# ------------------------------------------------------------------
+persistence:
+  uploads:
+    size: 10Gi
+    accessMode: ReadWriteOnce # real deployments needing multi-pod access should use ReadWriteMany (e.g. AWS EFS)
+    storageClass: ""
+  mlflow:
+    size: 2Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  redis:
+    size: 1Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+  ollama:
+    size: 5Gi
+    accessMode: ReadWriteOnce
+    storageClass: ""
+
+# ------------------------------------------------------------------
+# Redis
+# ------------------------------------------------------------------
+redis:
+  image:
+    repository: redis
+    tag: "7.4.10"
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+  service:
+    type: ClusterIP
+
+redisExporter:
+  enabled: true
+  image:
+    repository: oliver006/redis_exporter
+    tag: v1.66.0
+  resources:
+    requests:
+      memory: 32Mi
+      cpu: 25m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+
+# ------------------------------------------------------------------
+# FastAPI (app-owned image)
+# ------------------------------------------------------------------
+fastapi:
+  replicaCount: 1
+  image:
+    repository: asyncvtp-fastapi
+    tag: latest
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30000
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+# ------------------------------------------------------------------
+# Celery worker + beat (app-owned image)
+# ------------------------------------------------------------------
+celery:
+  replicaCount: 1
+  image:
+    repository: asyncvtp-celery
+    tag: latest
+  concurrency: 4
+  metricsPort: 9808
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 1000m
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    cpuTargetPercent: 70
+    queueDepthTarget: "5"
+
+celeryBeat:
+  image:
+    repository: asyncvtp-celery
+    tag: latest
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+# ------------------------------------------------------------------
+# Whisper transcription service (app-owned image) + optional canary
+# ------------------------------------------------------------------
+whisper:
+  image:
+    repository: asyncvtp-whisper-service
+    tag: base
+  service:
+    port: 3000
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 2000m
+  canary:
+    # Not applied by default (kubectl create -f k8s/whisper-canary.yml was
+    # opt-in). Enable per-environment via `--set whisper.canary.enabled=true`.
+    enabled: false
+    modelSize: small
+    image:
+      repository: asyncvtp-whisper-service
+      tag: small
+
+# ------------------------------------------------------------------
+# Ollama (summarization LLM)
+# ------------------------------------------------------------------
+ollama:
+  image:
+    repository: ollama/ollama
+    tag: "0.32.13"
+  resources:
+    requests:
+      memory: 2Gi
+      cpu: 500m
+    limits:
+      memory: 4Gi
+      cpu: 2000m
+
+# ------------------------------------------------------------------
+# MLflow
+# ------------------------------------------------------------------
+mlflow:
+  image:
+    repository: ghcr.io/mlflow/mlflow
+    tag: v3.15.0
+  service:
+    type: NodePort
+    port: 5000
+    nodePort: 30050
+  resources: {}
+
+# ------------------------------------------------------------------
+# Observability stack
+# ------------------------------------------------------------------
+prometheus:
+  enabled: true
+  image:
+    repository: prom/prometheus
+    tag: v3.8.1
+  service:
+    type: NodePort
+    port: 9090
+    nodePort: 30090
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "13.0.2"
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30030
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+alertmanager:
+  enabled: true
+  image:
+    repository: prom/alertmanager
+    tag: v0.28.1
+  service:
+    type: NodePort
+    port: 9093
+    nodePort: 30093
+  slackChannel: "#asyncvtp-alerts"
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+
+# prometheus-adapter powers the External metric (celery queue depth) the
+# Celery HPA scales on. Requires k8s/generate_adapter_certs.sh-equivalent
+# TLS material in a Secret named cm-adapter-serving-certs (not created by
+# this chart — see NOTES.txt).
+prometheusAdapter:
+  enabled: true
+  image:
+    repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
+    tag: v0.12.0
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    limits:
+      memory: 128Mi
+      cpu: 200m
