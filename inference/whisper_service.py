@@ -1,11 +1,13 @@
 import logging
 import os
 import time
-from typing import BinaryIO
+from pathlib import Path
+from typing import Annotated
 
 import bentoml
 from bentoml.io import File
 from bentoml.metrics import Histogram
+from bentoml.validators import FileSchema
 from faster_whisper import WhisperModel
 
 model_size = os.getenv("WHISPER_MODEL_SIZE", "base")
@@ -38,10 +40,12 @@ class WhisperService:
         self.model_size = model_size
         self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
-    @bentoml.api(input_spec=File())
-    def transcribe(self, audio_file: BinaryIO) -> str:
+    @bentoml.api
+    def transcribe(
+        self, audio_file: Annotated[Path, FileSchema(content_type="audio/mpeg")]
+    ) -> str:
         start = time.perf_counter()
-        segments, info = self.model.transcribe(audio_file)
+        segments, info = self.model.transcribe(str(audio_file))
         text = " ".join(segment.text for segment in segments)  # forces the lazy generator to run
         transcribe_seconds = time.perf_counter() - start
 

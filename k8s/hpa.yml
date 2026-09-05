@@ -10,6 +10,10 @@ spec:
   minReplicas: 1
   maxReplicas: 5
   metrics:
+  # Load testing showed Celery workers are I/O-bound (they block ~90% of wall
+  # time on HTTP calls to Whisper + Ollama), so their CPU sits at ~5-20m and the
+  # 70% CPU target below essentially never fires. It is kept only as a coarse
+  # fallback. Queue depth is the signal that actually correlates with the backlog.
   - type: Resource
     resource:
       name: cpu
@@ -17,7 +21,11 @@ spec:
         type: Utilization
         averageUtilization: 70
 
-  # Requires prometheus-adapter (k8s/prometheus-adapter.yml) to be deployed and its TLS certs generated first, or this metric simply won't resolve and HPA falls back to CPU alone.
+  # The effective scaling signal: number of tasks waiting in the Redis broker
+  # (`redis_key_size{key="celery"}`). With 4 worker threads per pod, each replica
+  # can absorb a few queued tasks before scale-out is warranted. Requires
+  # prometheus-adapter (k8s/prometheus-adapter.yml) deployed + its TLS certs
+  # generated, or this metric won't resolve and HPA falls back to CPU alone.
   - type: External
     external:
       metric:

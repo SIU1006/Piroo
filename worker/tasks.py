@@ -80,7 +80,7 @@ def transcribe(audio_path: str, whisper_url: str) -> str:
             f"Whisper service error: {response.status_code}: {response.text}"
         )
 
-    return response.json()
+    return response.text
 
 def summarize(transcript: str, model: str) -> str:
     client = ollama.Client(timeout=300)

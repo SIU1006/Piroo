@@ -23,7 +23,12 @@ spec:
         image: asyncvtp-celery:latest
         imagePullPolicy: Never
         command: ["python", "-m", "celery"]
-        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=solo"]
+        # threads pool (not solo/prefork): the pipeline is I/O-bound (each task
+        # blocks on HTTP calls to Whisper + Ollama for ~90% of its wall time), so
+        # CPU-based scaling and process pools waste capacity. 4 threads let one pod
+        # overlap several in-flight tasks while keeping the single-process metrics
+        # server intact.
+        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=threads", "--concurrency=4"]
         envFrom:
         - configMapRef:
             name: pipeline-config
