@@ -1,0 +1,39 @@
+# Manage staging + prod with ArgoCD
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: asyncvtp
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - env: staging
+            namespace: asyncvtp-staging
+            valuesFile: values-staging.yaml
+          - env: prod
+            namespace: asyncvtp-prod
+            valuesFile: values-prod.yaml
+  template:
+    metadata:
+      name: 'asyncvtp-{{env}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/SIU1006/piroo.git
+        targetRevision: main
+        path: k8s
+        helm:
+          valueFiles:
+            - values.yaml
+            - '{{valuesFile}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true    # remove resources that were deleted from the chart
+          selfHeal: true  # revert manual kubectl edits back to what git says
+        syncOptions:
+          - CreateNamespace=true

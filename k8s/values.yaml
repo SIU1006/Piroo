@@ -1,18 +1,11 @@
-# Default values for asyncvtp.
-# Environment overlays (values-dev.yaml, values-staging.yaml, values-prod.yaml)
-# override specific keys on top of this file:
-#   helm install asyncvtp . -f values.yaml -f values-dev.yaml
+# helm install asyncvtp . -f values.yaml -f values-dev.yaml
 
 global:
-  # Applied to app-owned images (fastapi/celery/whisper-service). Leave empty
-  # for local/kind images built with the project's own Dockerfiles.
   imageRegistry: ""
-  # Never = expects `kind load docker-image ...` (local dev only).
-  # Always = pull from imageRegistry (staging/prod).
-  imagePullPolicy: Never
+  imagePullPolicy: Never # local dev only. Set to Always for staging/prod.
 
 # ------------------------------------------------------------------
-# Namespace-wide config consumed via envFrom (was k8s/configmap.yml)
+# Configs
 # ------------------------------------------------------------------
 pipelineConfig:
   BROKER_URL: "redis://redis-service:6379/0"
@@ -21,10 +14,7 @@ pipelineConfig:
   LLM_MODEL: "llama3.2"
 
 # ------------------------------------------------------------------
-# Secrets. In dev these can be created inline by the chart (NOT safe
-# for staging/prod). In staging/prod, set create: false and pre-create
-# the named Secret out-of-band (sealed-secrets, External Secrets, CI/CD
-# vault injection, etc.) — the chart only references the name/key.
+# Secrets. For devs only. In staging/prod, try sealed-secrets, External Secrets, CI/CD vault injection, etc.
 # ------------------------------------------------------------------
 secrets:
   redis:
@@ -100,7 +90,7 @@ redisExporter:
 fastapi:
   replicaCount: 1
   image:
-    repository: asyncvtp-fastapi
+    repository: fastapi
     tag: latest
   service:
     type: NodePort
@@ -120,7 +110,7 @@ fastapi:
 celery:
   replicaCount: 1
   image:
-    repository: asyncvtp-celery
+    repository: celery
     tag: latest
   concurrency: 4
   metricsPort: 9808
@@ -140,7 +130,7 @@ celery:
 
 celeryBeat:
   image:
-    repository: asyncvtp-celery
+    repository: celery
     tag: latest
   resources:
     requests:
@@ -155,7 +145,7 @@ celeryBeat:
 # ------------------------------------------------------------------
 whisper:
   image:
-    repository: asyncvtp-whisper-service
+    repository: whisper
     tag: base
   service:
     port: 3000
@@ -167,12 +157,12 @@ whisper:
       memory: 2Gi
       cpu: 2000m
   canary:
-    # Not applied by default (kubectl create -f k8s/whisper-canary.yml was
-    # opt-in). Enable per-environment via `--set whisper.canary.enabled=true`.
+    # Not applied by default
+    # Enable per-environment via `--set whisper.canary.enabled=true`.
     enabled: false
     modelSize: small
     image:
-      repository: asyncvtp-whisper-service
+      repository: whisper
       tag: small
 
 # ------------------------------------------------------------------

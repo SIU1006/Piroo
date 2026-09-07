@@ -3,12 +3,9 @@
 #     --set global.imageRegistry=ghcr.io/your-org \
 #     --set fastapi.image.tag=v1.4.2 --set celery.image.tag=v1.4.2 \
 #     --set celeryBeat.image.tag=v1.4.2 --set whisper.image.tag=v1.4.2
-#
-# Always pin exact, immutable tags for prod (a git SHA or semver release tag)
-# — never `latest`, and never re-use a staging tag without re-verifying it.
 
 global:
-  imageRegistry: "ghcr.io/your-org"
+  imageRegistry: "ghcr.io/siu1006" # rewrite
   imagePullPolicy: Always
 
 secrets:
@@ -28,7 +25,7 @@ secrets:
 persistence:
   uploads:
     size: 100Gi
-    storageClass: "standard-rwo" # set to your cluster's actual StorageClass; consider ReadWriteMany (e.g. EFS/Filestore) if fastapi/celery/whisper ever scale across nodes
+    storageClass: "standard-rwo"
   mlflow:
     size: 20Gi
     storageClass: "standard-rwo"
@@ -41,6 +38,8 @@ persistence:
 
 fastapi:
   replicaCount: 3
+  image:
+    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
   service:
     type: ClusterIP
     nodePort: null
@@ -54,6 +53,8 @@ fastapi:
 
 celery:
   replicaCount: 3
+  image:
+    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
   hpa:
     enabled: true
     minReplicas: 3
@@ -66,7 +67,13 @@ celery:
       memory: 2Gi
       cpu: 2000m
 
+celeryBeat:
+  image:
+    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
+
 whisper:
+  image:
+    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
   canary:
     enabled: false # enable deliberately per-rollout, never left on by default
   resources:

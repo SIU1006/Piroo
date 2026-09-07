@@ -1,4 +1,4 @@
-# Staging overlay — real cluster, real registry, real (but non-production-scale) resources.
+# Staging overlay — real cluster, registry, resources but not production-scale.
 #   helm install asyncvtp . -f values.yaml -f values-staging.yaml \
 #     --set global.imageRegistry=ghcr.io/your-org \
 #     --set fastapi.image.tag=$GIT_SHA --set celery.image.tag=$GIT_SHA \
@@ -9,12 +9,11 @@
 # than hardcoding a SHA here, so this file stays reusable across builds.
 
 global:
-  imageRegistry: "ghcr.io/your-org"  # override at install time
+  imageRegistry: "ghcr.io/siu1006" # rewrite
   imagePullPolicy: Always
 
 # Secrets must already exist in-cluster before `helm install` (created by
-# CI/CD, sealed-secrets, or an External Secrets Operator sync). The chart
-# only references these names/keys — it never creates them here.
+# CI/CD, sealed-secrets, or an External Secrets Operator sync).
 secrets:
   redis:
     create: false
@@ -45,18 +44,28 @@ persistence:
 
 fastapi:
   replicaCount: 2
+  image:
+    tag: "latest"  # staging-auto
   service:
     type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
     nodePort: null
 
 celery:
   replicaCount: 2
+  image:
+    tag: "latest"
   hpa:
     enabled: true
     minReplicas: 2
     maxReplicas: 8
 
+celeryBeat:
+  image:
+    tag: "latest"
+
 whisper:
+  image:
+    tag: "latest"
   canary:
     enabled: false # enable per-rollout when actually testing a candidate model
 
