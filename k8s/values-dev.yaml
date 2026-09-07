@@ -2,7 +2,7 @@
 #   helm install asyncvtp . -f values.yaml -f values-dev.yaml
 #
 # Assumes images were built locally and loaded with:
-#   kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:base
+# kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:base
 
 global:
   imageRegistry: ""       # local images, no registry prefix
