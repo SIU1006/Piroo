@@ -89,7 +89,10 @@ spec:
     namespace: {{ .Release.Namespace }}
   group: external.metrics.k8s.io
   version: v1beta1
-  insecureSkipTLSVerify: false
+  # The adapter serves a self-signed cert (cm-adapter-serving-certs). Skipping
+  # verification keeps the aggregated API reachable without a per-cluster CA.
+  # Production should sign the serving cert with a real CA and set caBundle.
+  insecureSkipTLSVerify: true
   caBundle: ""
   groupPriorityMinimum: 100
   versionPriority: 100
