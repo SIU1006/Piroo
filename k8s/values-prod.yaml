@@ -25,16 +25,16 @@ secrets:
 persistence:
   uploads:
     size: 100Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
   mlflow:
     size: 20Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
   redis:
     size: 5Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
   ollama:
     size: 20Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
 
 fastapi:
   replicaCount: 3
