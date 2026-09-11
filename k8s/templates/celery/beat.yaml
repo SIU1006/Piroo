@@ -20,7 +20,7 @@ spec:
         image: {{ include "asyncvtp.image" (dict "image" .Values.celeryBeat.image "root" $) }}
         imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         command: ["python", "-m", "celery"]
-        args: ["-A", "worker.tasks", "beat", "--loglevel=info"]
+        args: ["-A", "worker.tasks", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule"]
         envFrom:
         - configMapRef:
             name: pipeline-config
