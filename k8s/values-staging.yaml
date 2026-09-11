@@ -45,7 +45,7 @@ persistence:
 fastapi:
   replicaCount: 2
   image:
-    tag: "latest"  # staging-auto
+    tag: "0cf921f41f3995a638291d4cc5734cc80b0753ed"  # staging-auto
   service:
     type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
     nodePort: null
