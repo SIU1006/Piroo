@@ -21,7 +21,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/SIU1006/piroo.git
+        repoURL: https://github.com/SIU1006/Piroo.git
         targetRevision: main
         path: k8s
         helm:

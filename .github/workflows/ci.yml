@@ -137,7 +137,7 @@ jobs:
     if: github.event_name == 'push' # only push images after code lands on main
     timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
