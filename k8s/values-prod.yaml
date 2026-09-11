@@ -39,7 +39,7 @@ persistence:
 fastapi:
   replicaCount: 3
   image:
-    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
+    tag: "24d8fd853b63e8ac788fb4ea8f40f5200f8e738a"  # bump via PR after verifying this SHA in staging
   service:
     type: ClusterIP
     nodePort: null
@@ -54,7 +54,7 @@ fastapi:
 celery:
   replicaCount: 3
   image:
-    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
+    tag: "24d8fd853b63e8ac788fb4ea8f40f5200f8e738a"  # bump via PR after verifying this SHA in staging
   hpa:
     enabled: true
     minReplicas: 3
@@ -69,11 +69,11 @@ celery:
 
 celeryBeat:
   image:
-    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
+    tag: "24d8fd853b63e8ac788fb4ea8f40f5200f8e738a"  # bump via PR after verifying this SHA in staging
 
 whisper:
   image:
-    tag: "REPLACE_ME"  # bump via PR after verifying this SHA in staging
+    tag: "24d8fd853b63e8ac788fb4ea8f40f5200f8e738a"  # bump via PR after verifying this SHA in staging
   canary:
     enabled: false # enable deliberately per-rollout, never left on by default
   resources:
