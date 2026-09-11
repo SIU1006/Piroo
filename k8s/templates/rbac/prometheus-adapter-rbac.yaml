@@ -12,7 +12,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-adapter:system:auth-delegator
+  name: prometheus-adapter:system:auth-delegator-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
@@ -29,7 +29,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: prometheus-adapter-auth-reader
+  name: prometheus-adapter-auth-reader-{{ .Release.Name }}
   namespace: kube-system
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
@@ -57,7 +57,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-adapter-resource-reader
+  name: prometheus-adapter-resource-reader-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
