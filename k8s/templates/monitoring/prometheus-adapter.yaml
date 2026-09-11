@@ -9,13 +9,15 @@ data:
   config.yml: |
     # Maps a plain PromQL query to a metric HPA can target via the external.metrics.k8s.io API.
     externalRules:
-      - seriesQuery: 'redis_key_size{key="celery"}'
+      - seriesQuery: '{__name__="redis_key_size",key="celery"}'
         resources:
-          overrides: {}
+          overrides:
+            namespace:
+              resource: namespace
         name:
           matches: "redis_key_size"
           as: "celery_queue_depth"
-        metricsQuery: 'redis_key_size{key="celery"}'
+        metricsQuery: 'redis_key_size{key="celery",<<.LabelMatchers>>}'
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -87,10 +89,13 @@ spec:
   service:
     name: prometheus-adapter-service
     namespace: {{ .Release.Namespace }}
+    port: 443
   group: external.metrics.k8s.io
   version: v1beta1
-  insecureSkipTLSVerify: false
-  caBundle: ""
+  # The adapter serves a self-signed cert (cm-adapter-serving-certs). Skipping
+  # verification keeps the aggregated API reachable without a per-cluster CA.
+  # Production should sign the serving cert with a real CA and set caBundle.
+  insecureSkipTLSVerify: true
   groupPriorityMinimum: 100
   versionPriority: 100
 {{- end }}
