@@ -9,13 +9,15 @@ data:
   config.yml: |
     # Maps a plain PromQL query to a metric HPA can target via the external.metrics.k8s.io API.
     externalRules:
-      - seriesQuery: 'redis_key_size{key="celery"}'
+      - seriesQuery: '{__name__="redis_key_size",key="celery"}'
         resources:
-          overrides: {}
+          overrides:
+            namespace:
+              resource: namespace
         name:
           matches: "redis_key_size"
           as: "celery_queue_depth"
-        metricsQuery: 'redis_key_size{key="celery"}'
+        metricsQuery: 'redis_key_size{key="celery",<<.LabelMatchers>>}'
 ---
 apiVersion: apps/v1
 kind: Deployment
