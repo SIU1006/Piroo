@@ -1,7 +1,11 @@
+{{- if .Values.redisExporter.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-exporter
+  labels:
+    app: redis-exporter
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
@@ -17,7 +21,7 @@ spec:
     spec:
       containers:
       - name: redis-exporter
-        image: oliver006/redis_exporter:v1.66.0
+        image: "{{ .Values.redisExporter.image.repository }}:{{ .Values.redisExporter.image.tag }}"
         ports:
         - containerPort: 9121
         env:
@@ -26,25 +30,24 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: redis-secret
-              key: redis-password
+              name: {{ .Values.secrets.redis.name }}
+              key: {{ .Values.secrets.redis.key }}
         - name: REDIS_EXPORTER_CHECK_KEYS
           value: "celery"
         resources:
-          requests:
-            memory: "32Mi"
-            cpu: "25m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.redisExporter.resources | nindent 10 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: redis-exporter-service
+  labels:
+    app: redis-exporter
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   selector:
     app: redis-exporter
   ports:
     - port: 9121
       targetPort: 9121
+{{- end }}

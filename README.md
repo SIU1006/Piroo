@@ -145,24 +145,28 @@ kind create cluster --config kind-config.yml
 Build the images and load them into kind (`imagePullPolicy: Never` is set in the manifests):
 
 ```bash
-docker build -t asyncvtp-fastapi:latest .
-docker build -t asyncvtp-celery:latest .
-docker build -f Dockerfile.inference --build-arg WHISPER_MODEL_SIZE=base -t asyncvtp-whisper-service:base .
+Install the chart:
+helm install asyncvtp k8s -f k8s/values.yaml -f k8s/values-dev.yaml
 
-kind load docker-image asyncvtp-fastapi:latest asyncvtp-celery:latest asyncvtp-whisper-service:base
+Wait for ollama to be ready, then pull the model:
+kubectl wait --for=condition=available --timeout=120s deployment/ollama
+kubectl exec -it deploy/ollama -- ollama pull llama3.2
+
+To preview the rendered manifests without installing:
+helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-dev.yaml
+
+To validate the chart:
+helm lint k8s
+
+Upgrade after changing values:
+helm upgrade asyncvtp k8s -f k8s/values.yaml -f k8s/values-dev.yaml
+
+Uninstall:
+helm uninstall asyncvtp
 ```
 
 > The Whisper model is baked into the image at build time via the `WHISPER_MODEL_SIZE` build arg (default `base`), so it doesn't need to be downloaded again on every pod restart. If you also want to build the canary's `small`-model image, see [Model Management & Canary Releases](#model-management--canary-releases).
 
-Deploy the stable stack:
-
-```bash
-kubectl apply -f k8s/fastapi.yml -f k8s/celery.yml -f k8s/hpa.yml \
-  -f k8s/redis.yml -f k8s/ollama.yml -f k8s/whisper.yml \
-  -f k8s/prometheus.yml -f k8s/grafana.yml -f k8s/mlflow.yml \
-  -f k8s/configmap.yml -f k8s/pvc.yml
-kubectl exec -it deploy/ollama -- ollama pull llama3.2
-```
 
 > **Note:** `k8s/whisper-canary.yml` is intentionally excluded from the default deploy — see [Model Management & Canary Releases](#model-management--canary-releases) below if you want to apply it.
 

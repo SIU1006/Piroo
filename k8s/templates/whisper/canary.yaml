@@ -1,7 +1,12 @@
+{{- if .Values.whisper.canary.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: whisper-canary
+  labels:
+    app: whisper
+    track: canary
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
@@ -15,20 +20,20 @@ spec:
         track: canary
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
+        prometheus.io/port: {{ .Values.whisper.service.port | quote }}
     spec:
       containers:
       - name: whisper
-        image: asyncvtp-whisper-service:small
-        imagePullPolicy: Never
+        image: {{ include "asyncvtp.image" (dict "image" .Values.whisper.canary.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         envFrom:
         - configMapRef:
             name: pipeline-config
         env:
         - name: WHISPER_MODEL_SIZE
-          value: "small"
+          value: {{ .Values.whisper.canary.modelSize | quote }}
         ports:
-        - containerPort: 3000
+        - containerPort: {{ .Values.whisper.service.port }}
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
@@ -36,30 +41,25 @@ spec:
         startupProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
           failureThreshold: 12
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 3000
+            port: {{ .Values.whisper.service.port }}
           periodSeconds: 10
 
         resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "2000m"
-
+          {{- toYaml .Values.whisper.resources | nindent 10 }}
 
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
           claimName: uploads-pvc
+{{- end }}

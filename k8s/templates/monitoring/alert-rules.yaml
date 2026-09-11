@@ -1,6 +1,11 @@
+{{- if .Values.prometheus.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-alert-rules
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+data:
   name: prometheus-alert-rules
 data:
   asyncvtp.rules.yml: |
@@ -77,3 +82,4 @@ data:
                 check_canary_wer should run hourly via celery-beat. No canary_wer
                 sample has been observed in 2 hours - the canary task may be
                 failing, or celery-beat may be down.
+{{- end }}

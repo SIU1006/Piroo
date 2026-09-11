@@ -2,13 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fastapi
-
+  labels:
+    app: fastapi
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.fastapi.replicaCount }}
   selector:
     matchLabels:
       app: fastapi
-
   template:
     metadata:
       labels:
@@ -16,12 +17,11 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
-
     spec:
       containers:
       - name: fastapi
-        image: asyncvtp-fastapi:latest
-        imagePullPolicy: Never
+        image: {{ include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         ports:
         - containerPort: 8000
         envFrom:
@@ -31,8 +31,8 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: redis-secret
-              key: redis-password
+              name: {{ .Values.secrets.redis.name }}
+              key: {{ .Values.secrets.redis.key }}
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
@@ -51,30 +51,27 @@ spec:
           periodSeconds: 5
 
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+          {{- toYaml .Values.fastapi.resources | nindent 10 }}
 
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
           claimName: uploads-pvc
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   name: fastapi-service
+  labels:
+    app: fastapi
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
-  type: NodePort
+  type: {{ .Values.fastapi.service.type }}
   selector:
     app: fastapi
-
   ports:
-    - port: 8000
-      targetPort: 8000
-      nodePort: 30000
+    - port: {{ .Values.fastapi.service.port }}
+      targetPort: {{ .Values.fastapi.service.port }}
+      {{- if and (eq .Values.fastapi.service.type "NodePort") .Values.fastapi.service.nodePort }}
+      nodePort: {{ .Values.fastapi.service.nodePort }}
+      {{- end }}

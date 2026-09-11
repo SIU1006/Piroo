@@ -1,15 +1,20 @@
+{{- if .Values.prometheusAdapter.enabled }}
 # RBAC prometheus-adapter needs to run as a Kubernetes aggregated API server
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus-adapter
-  namespace: default
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 ---
 # Lets the API server delegate auth decisions to this adapter
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: prometheus-adapter:system:auth-delegator
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -17,14 +22,17 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: prometheus-adapter
-    namespace: default
+    namespace: {{ .Release.Namespace }}
 ---
-# Lets the adapter read the extension-apiserver-authentication ConfigMap inkube-system, needed to validate requests from the aggregated API server.
+# Lets the adapter read the extension-apiserver-authentication ConfigMap in
+# kube-system, needed to validate requests from the aggregated API server.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: prometheus-adapter-auth-reader
   namespace: kube-system
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -32,13 +40,15 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: prometheus-adapter
-    namespace: default
+    namespace: {{ .Release.Namespace }}
 ---
 # Lets the adapter itself read Node/Pod/Namespace objects (used to resolve metric queries against real k8s resources).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: prometheus-adapter-resource-reader
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources: ["nodes", "namespaces", "pods", "services"]
@@ -48,6 +58,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: prometheus-adapter-resource-reader
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -55,13 +67,15 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: prometheus-adapter
-    namespace: default
+    namespace: {{ .Release.Namespace }}
 ---
 # Lets HPA actually query the external metrics.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: external-metrics-reader
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 rules:
   - apiGroups: ["external.metrics.k8s.io"]
     resources: ["*"]
@@ -71,6 +85,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: hpa-controller-external-metrics
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -79,3 +95,4 @@ subjects:
   - kind: ServiceAccount
     name: horizontal-pod-autoscaler
     namespace: kube-system
+{{- end }}

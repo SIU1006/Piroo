@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment # Only Deployment cuz no other pod talks to it
+metadata:
+  name: celery
+  labels:
+    app: celery
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.celery.replicaCount }}
+  selector:
+    matchLabels:
+      app: celery
+  template:
+    metadata:
+      labels:
+        app: celery
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.celery.metricsPort | quote }}
+    spec:
+      containers:
+      - name: celery
+        image: {{ include "asyncvtp.image" (dict "image" .Values.celery.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        command: ["python", "-m", "celery"]
+        # threads pool
+        args: ["-A", "worker.tasks", "worker", "--loglevel=info", "--pool=threads", "--concurrency={{ .Values.celery.concurrency }}"]
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secrets.redis.name }}
+              key: {{ .Values.secrets.redis.key }}
+        ports:
+        - containerPort: {{ .Values.celery.metricsPort }}
+        volumeMounts:
+        - name: uploads-storage
+          mountPath: /app/uploads
+        resources:
+          {{- toYaml .Values.celery.resources | nindent 10 }}
+      volumes:
+      - name: uploads-storage
+        persistentVolumeClaim:
+          claimName: uploads-pvc

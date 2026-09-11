@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-config
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+data:
+  BROKER_URL: {{ .Values.pipelineConfig.BROKER_URL | quote }}
+  WHISPER_URL: {{ .Values.pipelineConfig.WHISPER_URL | quote }}
+  OLLAMA_HOST: {{ .Values.pipelineConfig.OLLAMA_HOST | quote }}
+  LLM_MODEL: {{ .Values.pipelineConfig.LLM_MODEL | quote }}

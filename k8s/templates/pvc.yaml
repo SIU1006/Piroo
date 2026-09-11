@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads-pvc
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.uploads.accessMode }} # multi-pod access needs ReadWriteMany, e.g. AWS EFS
+  {{- if .Values.persistence.uploads.storageClass }}
+  storageClassName: {{ .Values.persistence.uploads.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.uploads.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-pvc
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.mlflow.accessMode }}
+  {{- if .Values.persistence.mlflow.storageClass }}
+  storageClassName: {{ .Values.persistence.mlflow.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.mlflow.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.redis.accessMode }}
+  {{- if .Values.persistence.redis.storageClass }}
+  storageClassName: {{ .Values.persistence.redis.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.redis.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+  labels:
+    {{- include "asyncvtp.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.ollama.accessMode }}
+  {{- if .Values.persistence.ollama.storageClass }}
+  storageClassName: {{ .Values.persistence.ollama.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.ollama.size }}

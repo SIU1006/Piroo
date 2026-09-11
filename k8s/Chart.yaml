@@ -1,0 +1,6 @@
+apiVersion: v2
+name: asyncvtp
+description: Async Video Transcription Pipeline — FastAPI + Celery + Whisper + Ollama + Redis, with Prometheus/Grafana/Alertmanager observability and HPA autoscaling.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
