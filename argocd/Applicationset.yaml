@@ -31,6 +31,24 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
+      ignoreDifferences:
+        # staging and prod both deploy the same chart into one cluster, so the
+        # shared cluster-scoped resources (RBAC + the external-metrics APIService)
+        # only differ by their per-release labels / target namespace. Ignore that
+        # so the two apps don't ping-pong each other into a permanent OutOfSync.
+        - group: apiregistration.k8s.io
+          kind: APIService
+          jsonPointers:
+            - /metadata/labels
+            - /spec/service/namespace
+        - group: rbac.authorization.k8s.io
+          kind: ClusterRole
+          jsonPointers:
+            - /metadata/labels
+        - group: rbac.authorization.k8s.io
+          kind: ClusterRoleBinding
+          jsonPointers:
+            - /metadata/labels
       syncPolicy:
         automated:
           prune: true    # remove resources that were deleted from the chart
