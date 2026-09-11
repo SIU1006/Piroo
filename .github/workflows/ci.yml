@@ -178,6 +178,8 @@ jobs:
         tags: |
           ghcr.io/${{ env.GH_USERNAME }}/fastapi:latest
           ghcr.io/${{ env.GH_USERNAME }}/celery:latest
+          ghcr.io/${{ env.GH_USERNAME }}/fastapi:${{ github.sha }}
+          ghcr.io/${{ env.GH_USERNAME }}/celery:${{ github.sha }}
         cache-from: type=gha,scope=fastapi # Read previous image layers from GHA cache
         cache-to: type=gha,mode=max,scope=fastapi # Buildx recognizes unchanged layer's hash and restores from GHA cache, no need reinstalling ML dependencies
 
@@ -191,6 +193,7 @@ jobs:
         tags: |
           ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
           ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ steps.model-size.outputs.size }}
+          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ github.sha }}
         build-args: |
           WHISPER_MODEL_SIZE=${{ steps.model-size.outputs.size }}
         cache-from: type=gha,scope=whisper-${{ steps.model-size.outputs.size }}
@@ -206,6 +209,6 @@ jobs:
         if git diff --cached --quiet; then
           echo "No tag change - skipping commit"
         else
-          git commit -m "chore(staging): bump image tags to ${SHA}"
+          git commit -m "chore(staging): bump image tags to ${SHA} [skip ci]"
           git push
         fi

@@ -53,7 +53,7 @@ fastapi:
 celery:
   replicaCount: 2
   image:
-    tag: "latest"
+    tag: "latest"  # staging-auto
   hpa:
     enabled: true
     minReplicas: 2
@@ -61,11 +61,11 @@ celery:
 
 celeryBeat:
   image:
-    tag: "latest"
+    tag: "latest"  # staging-auto
 
 whisper:
   image:
-    tag: "latest"
+    tag: "latest"  # staging-auto
   canary:
     enabled: false # enable per-rollout when actually testing a candidate model
 
