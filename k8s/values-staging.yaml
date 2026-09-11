@@ -31,21 +31,21 @@ secrets:
 persistence:
   uploads:
     size: 20Gi
-    storageClass: "standard-rwo"    # set to your cluster's actual StorageClass
+    storageClass: "standard"    # set to your cluster's actual StorageClass
   mlflow:
     size: 5Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
   redis:
     size: 2Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
   ollama:
     size: 10Gi
-    storageClass: "standard-rwo"
+    storageClass: "standard"
 
 fastapi:
   replicaCount: 2
   image:
-    tag: "latest"  # staging-auto
+    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
   service:
     type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
     nodePort: null
@@ -53,7 +53,7 @@ fastapi:
 celery:
   replicaCount: 2
   image:
-    tag: "latest"
+    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
   hpa:
     enabled: true
     minReplicas: 2
@@ -61,11 +61,11 @@ celery:
 
 celeryBeat:
   image:
-    tag: "latest"
+    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
 
 whisper:
   image:
-    tag: "latest"
+    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
   canary:
     enabled: false # enable per-rollout when actually testing a candidate model
 

@@ -12,7 +12,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-adapter:system:auth-delegator
+  name: prometheus-adapter:system:auth-delegator-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
@@ -29,7 +29,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: prometheus-adapter-auth-reader
+  name: prometheus-adapter-auth-reader-{{ .Release.Name }}
   namespace: kube-system
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
@@ -46,7 +46,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: prometheus-adapter-resource-reader
+  name: prometheus-adapter-resource-reader-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 rules:
@@ -57,13 +57,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: prometheus-adapter-resource-reader
+  name: prometheus-adapter-resource-reader-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-adapter-resource-reader
+  name: prometheus-adapter-resource-reader-{{ .Release.Name }}
 subjects:
   - kind: ServiceAccount
     name: prometheus-adapter
@@ -73,7 +73,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: external-metrics-reader
+  name: external-metrics-reader-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 rules:
@@ -84,13 +84,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: hpa-controller-external-metrics
+  name: hpa-controller-external-metrics-{{ .Release.Name }}
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: external-metrics-reader
+  name: external-metrics-reader-{{ .Release.Name }}
 subjects:
   - kind: ServiceAccount
     name: horizontal-pod-autoscaler

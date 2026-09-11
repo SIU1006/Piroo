@@ -31,6 +31,18 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{namespace}}'
+      ignoreDifferences:
+        # staging and prod deploy the same chart into one cluster. The external
+        # metrics APIService is a cluster-singleton (one v1beta1.external.metrics.k8s.io
+        # per cluster), so the two apps inevitably point it at their own adapter and
+        # its tracking/last-applied annotations differ. Ignore those fields so it
+        # doesn't ping-pong into a permanent OutOfSync.
+        - group: apiregistration.k8s.io
+          kind: APIService
+          jsonPointers:
+            - /metadata/labels
+            - /metadata/annotations
+            - /spec/service/namespace
       syncPolicy:
         automated:
           prune: true    # remove resources that were deleted from the chart
