@@ -31,21 +31,21 @@ secrets:
 persistence:
   uploads:
     size: 20Gi
-    storageClass: "standard"    # set to your cluster's actual StorageClass
+    storageClass: "gp3"    # EBS gp3 (created by terraform); kind-local-path is "standard"
   mlflow:
     size: 5Gi
-    storageClass: "standard"
+    storageClass: "gp3"
   redis:
     size: 2Gi
-    storageClass: "standard"
+    storageClass: "gp3"
   ollama:
     size: 10Gi
-    storageClass: "standard"
+    storageClass: "gp3"
 
 fastapi:
   replicaCount: 2
   image:
-    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
+    tag: "9978f06eeb15ad4002de73b4639bbbfabb26a7b6"  # staging-auto
   service:
     type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
     nodePort: null
@@ -53,7 +53,7 @@ fastapi:
 celery:
   replicaCount: 2
   image:
-    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
+    tag: "9978f06eeb15ad4002de73b4639bbbfabb26a7b6"  # staging-auto
   hpa:
     enabled: true
     minReplicas: 2
@@ -61,11 +61,11 @@ celery:
 
 celeryBeat:
   image:
-    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
+    tag: "9978f06eeb15ad4002de73b4639bbbfabb26a7b6"  # staging-auto
 
 whisper:
   image:
-    tag: "a8e2a18b4675cd04fb5731e232f4c6f57034638c"  # staging-auto
+    tag: "9978f06eeb15ad4002de73b4639bbbfabb26a7b6"  # staging-auto
   canary:
     enabled: false # enable per-rollout when actually testing a candidate model
 
