@@ -31,16 +31,16 @@ secrets:
 persistence:
   uploads:
     size: 20Gi
-    storageClass: "standard"    # set to your cluster's actual StorageClass
+    storageClass: "gp3"    # EBS gp3 (created by terraform); kind-local-path is "standard"
   mlflow:
     size: 5Gi
-    storageClass: "standard"
+    storageClass: "gp3"
   redis:
     size: 2Gi
-    storageClass: "standard"
+    storageClass: "gp3"
   ollama:
     size: 10Gi
-    storageClass: "standard"
+    storageClass: "gp3"
 
 fastapi:
   replicaCount: 2
