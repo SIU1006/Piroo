@@ -30,6 +30,21 @@ mlartifacts/
 secrets/*
 !secrets/*.example
 
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.tfstate.lock.info
+*.tfplan
+
 # OS
 .DS_Store
 Thumbs.db
@@ -41,3 +56,5 @@ Thumbs.db
 
 docs/loadtest/*.csv
 docs/loadtest/*_history.csv
+
+obsidian/
