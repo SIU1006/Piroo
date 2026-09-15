@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 from pathlib import Path
 
@@ -9,6 +11,7 @@ from settings import UPLOAD_DIR
 from worker.tasks import process_video
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 UPLOAD_DIR.mkdir(exist_ok=True)  # exist_ok = ok to already have the folder, dont crash
 
 # File Validation
@@ -56,5 +59,11 @@ async def upload_file(file: UploadFile = File(...)):
 
     await save_upload(file,file_path)
 
-    process_video.delay(task_id, str(file_path))  # Pass next step to celery worker
+    try:
+        # The broker call is synchronous. Keep it off the API event loop.
+        await asyncio.to_thread(process_video.delay, task_id, str(file_path))
+    except Exception as exc:
+        file_path.unlink(missing_ok=True)
+        logger.exception("Could not enqueue upload task %s", task_id)
+        raise HTTPException(status_code=503, detail="Task queue is unavailable") from exc
     return UploadResponse(filename=file.filename, task_id=task_id, status="queued")
