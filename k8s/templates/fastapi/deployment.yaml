@@ -18,6 +18,11 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
     spec:
+      securityContext:
+        # The EBS volume is mounted at /app/uploads.  The image runs as UID/GID
+        # 1000 (appuser), so Kubernetes must grant that group write access.
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
       - name: fastapi
         image: {{ include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" $) }}

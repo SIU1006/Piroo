@@ -18,6 +18,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.whisper.service.port | quote }}
     spec:
+      securityContext:
+        # Keep the shared uploads volume writable by the non-root appuser.
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
       - name: whisper
         image: {{ include "asyncvtp.image" (dict "image" .Values.whisper.image "root" $) }}
