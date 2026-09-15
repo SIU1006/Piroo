@@ -60,6 +60,9 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements-dev.txt
 
+    - name: Install ffmpeg for media tests
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
     - name: Lint
       run: ruff check . --fix
 
