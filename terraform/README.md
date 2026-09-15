@@ -10,10 +10,14 @@ Provision the AWS EKS cluster, bootstrap ArgoCD, and hand the rest off to GitOps
 | EKS control plane + node group | Terraform (`terraform-aws-modules/eks`) |
 | EBS CSI driver (StorageClass) | Terraform (EKS addon + `gp3` SC) |
 | ArgoCD | Terraform (`helm_release`) |
-| ApplicationSet (staging + prod) | Terraform (`kubernetes_manifest`) |
+| ApplicationSet (staging + prod) | `kubectl apply` after `terraform apply` (see demo-runbook) |
 | Apps (fastapi, celery, whisper, ...) | **ArgoCD** (GitOps, from `main`) |
 
-`terraform apply` gives you: cluster → ArgoCD → ApplicationSet → staging+prod auto-deploy.
+`terraform apply` gives you: cluster → ArgoCD. Then `kubectl apply -f ../argocd/Applicationset.yaml`
+hands off to GitOps: staging + prod auto-deploy from the repo.
+
+> The ApplicationSet is deliberately not a `kubernetes_manifest` — its CRD is
+> installed by the ArgoCD release in the same run, which breaks `terraform plan`.
 
 ## Prerequisites
 
