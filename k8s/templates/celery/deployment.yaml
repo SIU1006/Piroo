@@ -18,6 +18,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.celery.metricsPort | quote }}
     spec:
+      securityContext:
+        # Keep the shared uploads volume writable by the non-root appuser.
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
       - name: celery
         image: {{ include "asyncvtp.image" (dict "image" .Values.celery.image "root" $) }}
