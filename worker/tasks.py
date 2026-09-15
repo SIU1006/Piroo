@@ -1,9 +1,11 @@
 import json
 import logging
 import os
+import threading
 import time
 
 import ffmpeg
+import httpx
 import ollama
 import redis
 import requests
@@ -17,7 +19,7 @@ from settings import (
     WHISPER_URL,
     with_password,
 )
-from worker.celery_app import celery_app
+from worker.celery_app import TASK_HARD_TIME_LIMIT_SECONDS, celery_app
 from worker.metrics import (
     CANARY_WER,  # noqa: F401 - re-exported so worker/canary.py can share one metrics module
     TASK_DURATION_SECONDS,
@@ -33,14 +35,58 @@ logger = logging.getLogger(__name__)
 ensure_metrics_server_started()
 
 RESULT_TTL_SECONDS = 3600
-RETRYABLE_EXCEPTIONS = (requests.exceptions.RequestException,)
+STUCK_GRACE_SECONDS = 120
+HEARTBEAT_TTL_SECONDS = 4 * 3600
+STUCK_DEADLINE_TTL_SECONDS = (
+    HEARTBEAT_TTL_SECONDS - TASK_HARD_TIME_LIMIT_SECONDS - STUCK_GRACE_SECONDS
+)
+ACTIVE_ATTEMPT_TTL_SECONDS = 120
+ACTIVE_ATTEMPT_REFRESH_SECONDS = 30
+
+
+class TransientServiceError(Exception):
+    """A service failure that may succeed on another Celery attempt."""
+
+
+RETRYABLE_EXCEPTIONS = (
+    requests.exceptions.RequestException,
+    httpx.TimeoutException,
+    ConnectionError,
+    TransientServiceError,
+    redis.exceptions.RedisError,
+)
+
+
+def extracted_audio_path(task_id: str) -> str:
+    return str(UPLOAD_DIR / f"{task_id}.audio.mp3")
+
+
+def active_attempt_key(task_id: str) -> str:
+    return f"active:{task_id}"
+
+
+def keep_attempt_active(r, task_id: str) -> tuple[threading.Event, threading.Thread]:
+    """Renew a lease while this worker attempt is alive, including during slow I/O."""
+    stop = threading.Event()
+    lease_key = active_attempt_key(task_id)
+    r.setex(lease_key, ACTIVE_ATTEMPT_TTL_SECONDS, "running")
+
+    def refresh() -> None:
+        while not stop.wait(ACTIVE_ATTEMPT_REFRESH_SECONDS):
+            try:
+                r.setex(lease_key, ACTIVE_ATTEMPT_TTL_SECONDS, "running")
+            except redis.exceptions.RedisError:
+                logger.exception("Could not refresh active lease for task %s", task_id)
+
+    thread = threading.Thread(target=refresh, name=f"task-lease-{task_id}", daemon=True)
+    thread.start()
+    return stop, thread
 
 # ============= process_video() helpers =================
 def start_running(task_id: str, file_path: str):
-    HEARTBEAT_TTL_SECONDS = 1830 + 60  # hard time limit + 60s grace
     HEARTBEAT_KEY = f"heartbeat:{task_id}"
 
-    audio_path = str(UPLOAD_DIR / f"{task_id}.mp3")
+    audio_path = extracted_audio_path(task_id)
 
     r = redis.Redis.from_url(with_password(BROKER_URL, _redis_password))
     r.setex(
@@ -76,6 +122,10 @@ def transcribe(audio_path: str, whisper_url: str) -> str:
             timeout=700,
         )
 
+    if response.status_code == 429 or response.status_code >= 500:
+        raise TransientServiceError(
+            f"Whisper service error: {response.status_code}: {response.text}"
+        )
     if response.status_code != 200:
         raise ValueError(
             f"Whisper service error: {response.status_code}: {response.text}"
@@ -85,15 +135,20 @@ def transcribe(audio_path: str, whisper_url: str) -> str:
 
 def summarize(transcript: str, model: str) -> str:
     client = ollama.Client(timeout=300)
-    response_llm = client.chat(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Summarise this transcript in 3-5 sentences: {transcript}",
-            }
-        ],
-    )
+    try:
+        response_llm = client.chat(
+            model=model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Summarise this transcript in 3-5 sentences: {transcript}",
+                }
+            ],
+        )
+    except ollama.ResponseError as e:
+        if e.status_code == 429 or e.status_code >= 500:
+            raise TransientServiceError(f"Ollama service error: {e}") from e
+        raise
     return response_llm.message.content
 
 def publish_result(r, task_id: str, payload: dict) -> None:
@@ -156,25 +211,28 @@ def metrics(
         retry_backoff=True, # delay autoretries for f(x) * 2s
         max_retries=3)
 def process_video(self, task_id: str, file_path: str):
-    r, audio_path = start_running(task_id, file_path)
+    r = None
+    audio_path = extracted_audio_path(task_id)
+    active_stop = None
+    active_thread = None
     start = time.perf_counter()
     video_length_bucket = "unknown"
     will_retry = False
 
     try:
+        r, audio_path = start_running(task_id, file_path)
+        active_stop, active_thread = keep_attempt_active(r, task_id)
         duration_minutes = validate_duration(ffmpeg.probe(file_path))
         video_length_bucket = "under_10min" if duration_minutes < 10 else "over_10min"
         extract_audio(file_path, audio_path)
         transcript = transcribe(audio_path, WHISPER_URL)
         summary = summarize(transcript, LLM_MODEL)
         store_success(r, task_id, summary)
+        metrics(task_name="process_video", status="success")
 
     except Exception as e:
-        '''
-        Celery autoretry only works after process_video() is fully completed.
-        So we need to predict if the task will retry, then dont tell the client it failed yet,
-        otherwise cleanup() will delete the input file so client cant retry
-        '''
+        # Celery autoretry runs after this function exits. Keep the source and
+        # withhold a terminal result while another attempt is scheduled.
         will_retry = isinstance(e, RETRYABLE_EXCEPTIONS) and self.request.retries < self.max_retries
 
         if will_retry:
@@ -185,7 +243,10 @@ def process_video(self, task_id: str, file_path: str):
                 video_length_bucket=video_length_bucket,
             )
         else:
-            store_failure(r, task_id, e)
+            if r is not None:
+                store_failure(r, task_id, e)
+            else:
+                logger.error("Task %s failed before connecting to Redis: %s", task_id, e)
             metrics(
                 task_name="process_video",
                 status="failure",
@@ -195,6 +256,18 @@ def process_video(self, task_id: str, file_path: str):
         raise
 
     finally:
+        if active_stop is not None:
+            active_stop.set()
+            active_thread.join()
+            try:
+                r.delete(active_attempt_key(task_id))
+            except redis.exceptions.RedisError:
+                logger.exception("Could not release active lease for task %s", task_id)
+        if r is not None and not will_retry:
+            try:
+                r.delete(f"heartbeat:{task_id}")
+            except redis.exceptions.RedisError:
+                logger.exception("Could not remove heartbeat for task %s", task_id)
         metrics(task_name="process_video", start=start, video_length_bucket=video_length_bucket)
 
         if will_retry:
@@ -206,17 +279,18 @@ def process_video(self, task_id: str, file_path: str):
 
 # ============= sweep_stuck_tasks() helpers =============
 def find_stuck(r):
-    '''yield taskid & key for heartbeats with no stored result yet lived too long'''
-
-    STUCK_TTL_THRESHOLD_SECONDS = 90  # sweep treats <90s left on the heartbeat as stuck
+    """Find unfinished attempts past the hard limit plus the grace period."""
 
     for key in r.scan_iter("heartbeat:*"):
         task_id = key.decode("utf-8").removeprefix("heartbeat:")
         if r.exists(f"result:{task_id}"): # Task ended normally
             continue
 
+        if r.exists(active_attempt_key(task_id)):
+            continue
+
         ttl = r.ttl(key)
-        if ttl > STUCK_TTL_THRESHOLD_SECONDS:
+        if ttl < 0 or ttl > STUCK_DEADLINE_TTL_SECONDS:
             continue
 
         yield task_id, key
@@ -244,7 +318,7 @@ def cleanup_stuck(r, task_id: str, heartbeat_key) -> None:
     original_path = get_originalpath(r, heartbeat_key)
     r.delete(heartbeat_key)
 
-    cleanup_paths = [str(UPLOAD_DIR / f"{task_id}.mp3")]
+    cleanup_paths = [extracted_audio_path(task_id)]
 
     if original_path:
         cleanup_paths.append(original_path)
@@ -262,6 +336,9 @@ def sweep_stuck_tasks():
 
     try:
         for task_id, heartbeat_key in find_stuck(r):
+            # A result may have arrived since find_stuck inspected the key.
+            if r.exists(f"result:{task_id}") or r.exists(active_attempt_key(task_id)):
+                continue
             report_stuck(r, task_id)
             cleanup_stuck(r, task_id, heartbeat_key)
         TASK_TOTAL.labels(task_name="sweep_stuck_tasks", status="success").inc()

@@ -7,7 +7,7 @@ The point of this run was to find *where the pipeline falls over*, not just to p
 - **Ingestion (POST /upload) never fell over** — ~2.0 s avg, 0 failures, all the way to 50 concurrent users.
 - **Processing is the bottleneck**, and it is **Ollama-bound**: the single `llama3.2` pod was pegged at its 2-core CPU limit while Celery workers sat at ~5 % CPU.
 - **Celery was mis-tuned for the workload**: `--pool=solo` serialized one I/O-bound task at a time. Switching to `--pool=threads --concurrency=4` cut end-to-end latency ~30 %, but throughput is still capped by Ollama.
-- Two real bugs were found and fixed (WebSocket hang; Whisper file-upload regression), and one new bug was found but not yet fixed (Celery autoretry deletes its own input file).
+- Two bugs were fixed during the run (WebSocket hang; Whisper file-upload regression). The run also exposed a retry/cleanup bug, which has since been fixed in the worker and covered by retry tests.
 - **A longer saturation run (ramping to 1000 concurrent users) held up to 500 users with 0 failures, then fell over in a specific, explainable way** — see [§2.2 The 1000-user saturation run](#22-the-1000-user-saturation-run).
 
 ---
@@ -126,7 +126,7 @@ The CPU target (70 %) essentially **never fires** for this workload (workers sit
 
 - `kubectl scale deploy/whisper --replicas=0`, then submit a task.
 - The worker hit `Connection refused` on `/transcribe` and **autoretry kicked in** (`autoretry_for=(RequestException,)`, `max_retries=3`, backoff) — that part works.
-- **Bug found (not yet fixed):** the retry then failed with `ffprobe error` instead of recovering. Cause:
+- **Bug found during this run:** the retry then failed with `ffprobe error` instead of recovering. At the time, the worker deleted the source file and published an error before autoretry could run.
 
 ```python
 @celery_app.task(..., autoretry_for=(RequestException,), max_retries=3)
@@ -144,7 +144,7 @@ def process_video(task_id, file_path):
 1. `cleanup(file_path, audio_path)` runs in `finally` on **every** attempt, so the first attempt deletes the source file before the retry re-runs → retry dies at `ffmpeg.probe(file_path)`.
 2. `store_failure()` runs in `except` on the **first** transient failure, so a client receives `{"status":"error"}` even though the task will retry.
 
-Both are real correctness bugs in the retry path; the fix is to only clean up on the final attempt and only publish a failure once retries are exhausted.
+The current worker keeps the source file during a transient failure, retries Whisper connection errors and HTTP 429/5xx responses, and publishes a failure only after attempts are exhausted. The old code above records the failure observed in this load test. The corrected behavior is covered by `tests/test_workertasks.py`; rerunning this chaos experiment against a deployed cluster remains useful validation.
 
 ### 5.4 WebSocket "hangs forever" (fixed earlier)
 
@@ -167,4 +167,4 @@ Before this phase, a worker killed mid-task left the browser WebSocket waiting ~
 - **The API and Redis broker absorb load gracefully** — no upload failures even at 1000 concurrent users (the saturation run's only failures were WebSocket result timeouts, not ingestion errors).
 - **Throughput is bounded by the single Ollama pod**; end-to-end latency degrades gracefully (linear in queue depth) rather than crashing, until the queue exceeds the WebSocket result timeout (~5 min), at which point clients abandon with a clean error.
 - **Two scaling levers matter**: worker concurrency (fixed: solo → threads) and Ollama capacity (the actual ceiling; needs GPU or horizontal scaling to improve).
-- **Resilience is mostly good** (Redis reconnect, worker graceful shutdown, autoretry), with one genuine gap: the autoretry/cleanup interaction that breaks retries for Whisper outages.
+- **Resilience is mostly good** (Redis reconnect, worker graceful shutdown, autoretry). The retry/cleanup gap observed in this run has been fixed and unit-tested; a repeat deployment experiment would verify it under a real Whisper outage.
