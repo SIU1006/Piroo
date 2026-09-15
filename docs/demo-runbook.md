@@ -41,6 +41,17 @@ terraform output argocd_admin_password    # -> kubectl ... | base64 -d ; run it
 kubectl port-forward -n argocd svc/argocd-server 8080:443
 ```
 
+## 2b. Apply the ApplicationSet (hands GitOps off to ArgoCD)
+
+The ApplicationSet isn't managed by Terraform (its CRD is installed by the
+ArgoCD release, so referencing it in the same run breaks `terraform plan`).
+
+```bash
+kubectl apply -f ../argocd/Applicationset.yaml
+```
+
+ArgoCD now creates and reconciles `asyncvtp-staging` and `asyncvtp-prod`.
+
 ## 3. Secrets + adapter cert (create BEFORE ArgoCD syncs the apps)
 
 ```powershell

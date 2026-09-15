@@ -17,9 +17,9 @@ variable "cluster_version" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for the managed node group (4 vCPU / 16 GiB fits staging + prod)"
+  description = "EC2 instance type for the managed node group (8 vCPU / 32 GiB fits staging + prod, which request ~7 vCPU total)"
   type        = string
-  default     = "t3.xlarge"
+  default     = "t3.2xlarge"
 }
 
 variable "node_desired" {
