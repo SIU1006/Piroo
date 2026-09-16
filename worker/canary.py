@@ -3,12 +3,19 @@ import logging
 import time
 from pathlib import Path
 
+import ffmpeg
 import jiwer
 import requests
 
 from settings import WHISPER_URL
 from worker.celery_app import celery_app
-from worker.metrics import CANARY_WER, TASK_DURATION_SECONDS, TASK_FAILURES_TOTAL, TASK_TOTAL
+from worker.metrics import (
+    CANARY_LAST_SUCCESS_UNIX_SECONDS,
+    CANARY_WER,
+    TASK_DURATION_SECONDS,
+    TASK_FAILURES_TOTAL,
+    TASK_TOTAL,
+)
 
 '''
 Live whisper-service checker. Runs periodically on celery-beat's schedule to transcribe a set of known reference clips and record the WER against the known reference text.
@@ -54,14 +61,18 @@ def check_canary_wer():
 
         for clip in manifest:
             audio_path = CANARY_DIR / clip["filename"]
-            with open(audio_path, "rb") as f:
-                response = requests.post(
-                    f"{WHISPER_URL}/transcribe",
-                    files={"audio_file": (clip["filename"], f, "audio/wav")},
-                    timeout=120,
-                )
+            mp3, _ = (
+                ffmpeg.input(str(audio_path))
+                .output("pipe:", format="mp3", ac=1)
+                .run(capture_stdout=True, capture_stderr=True)
+            )
+            response = requests.post(
+                f"{WHISPER_URL}/transcribe",
+                files={"audio_file": (audio_path.with_suffix(".mp3").name, mp3, "audio/mpeg")},
+                timeout=120,
+            )
             response.raise_for_status()
-            hypothesis = response.json()
+            hypothesis = response.text
             references.append(clip["reference_text"])
             hypotheses.append(hypothesis)
 
@@ -70,6 +81,7 @@ def check_canary_wer():
             reference_transform=_WER_TRANSFORM, hypothesis_transform=_WER_TRANSFORM,
         )
         CANARY_WER.set(wer)
+        CANARY_LAST_SUCCESS_UNIX_SECONDS.set(time.time())
         logger.info(f"Canary WER check: {wer:.3f} across {len(manifest)} clips")
 
         TASK_TOTAL.labels(task_name="check_canary_wer", status="success").inc()

@@ -1,76 +1,98 @@
-<#
-.SYNOPSIS
-Creates/updates the real in-cluster Secrets that k8s/templates/secrets.yaml
-deliberately does NOT create when secrets.<name>.create is false
-(staging/prod) - see that template's own comment for why.
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-Renders the real secrets.yaml template with create forced to $true and the
-real value injected via --set, rather than hardcoding each Secret's
-name/key here - the chart stays the one source of truth for those.
+usage() {
+  cat <<'EOF'
+Usage: ./k8s/setup-secrets.sh --namespace NAMESPACE --values VALUES_FILE
 
-Nothing here is ever written to a file on disk, so there's nothing for
-`git add` to accidentally pick up.
+Creates the Redis and Grafana Secrets described by the Helm chart. A Slack
+webhook is optional. VALUES_FILE may be an absolute path or a filename inside
+k8s/, such as values-staging.yaml.
 
-Note: password prompts are NOT masked. Read-Host -AsSecureString doesn't
-reliably read piped/non-interactive input (confirmed - it silently hangs),
-and the value has to be converted straight back to plaintext anyway to pass
-to `helm --set`, which already gives up most of SecureString's benefit. If
-you want masking badly enough to accept that tradeoff, swap Read-Host calls
-back to `-AsSecureString` + the Marshal conversion - just verify it in your
-actual terminal first.
-
-.EXAMPLE
-.\k8s\setup-secrets.ps1 -Namespace asyncvtp-staging -ValuesFile values-staging.yaml
-.EXAMPLE
-.\k8s\setup-secrets.ps1 -Namespace asyncvtp-prod -ValuesFile values-prod.yaml
-#>
-param(
-    [Parameter(Mandatory = $true)]
-    [string]$Namespace,
-
-    [Parameter(Mandatory = $true)]
-    [string]$ValuesFile
-)
-
-$ErrorActionPreference = "Stop"
-$ChartDir = $PSScriptRoot
-
-function Invoke-RenderAndApply {
-    param(
-        [string]$SecretKey,
-        [string]$Value
-    )
-
-    $rendered = helm template asyncvtp $ChartDir `
-        -f "$ChartDir/values.yaml" -f "$ChartDir/$ValuesFile" `
-        --set "secrets.$SecretKey.create=true" `
-        --set "secrets.$SecretKey.value=$Value" `
-        --show-only templates/secrets.yaml
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "helm template failed for secrets.$SecretKey (exit $LASTEXITCODE)"
-    }
-
-    $rendered | kubectl apply --namespace $Namespace -f -
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "kubectl apply failed for secrets.$SecretKey (exit $LASTEXITCODE)"
-    }
+For non-interactive use, set REDIS_PASSWORD, GRAFANA_ADMIN_PASSWORD, and
+optionally SLACK_WEBHOOK_URL in the environment.
+EOF
 }
 
-$redisPassword = Read-Host -Prompt "Redis password"
-Invoke-RenderAndApply -SecretKey "redis" -Value $redisPassword
+namespace=""
+values_file=""
+while (($#)); do
+  case "$1" in
+    -n|--namespace) namespace="${2-}"; shift 2 ;;
+    -f|--values) values_file="${2-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
 
-$grafanaPassword = Read-Host -Prompt "Grafana admin password"
-Invoke-RenderAndApply -SecretKey "grafana" -Value $grafanaPassword
+if [[ -z "$namespace" || -z "$values_file" ]]; then
+  usage >&2
+  exit 2
+fi
 
-$slackWebhookUrl = Read-Host "Slack Incoming Webhook URL (blank to skip Alertmanager secret)"
-if ([string]::IsNullOrWhiteSpace($slackWebhookUrl)) {
-    Write-Host "Skipped alertmanager-secret - Alertmanager will run with no webhook until you set one."
-} else {
-    Invoke-RenderAndApply -SecretKey "alertmanager" -Value $slackWebhookUrl
+for command_name in helm kubectl; do
+  command -v "$command_name" >/dev/null || {
+    echo "Required command not found: $command_name" >&2
+    exit 1
+  }
+done
+
+chart_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$values_file" ]]; then
+  values_path="$values_file"
+elif [[ -f "$chart_dir/$values_file" ]]; then
+  values_path="$chart_dir/$values_file"
+else
+  echo "Values file not found: $values_file" >&2
+  exit 1
+fi
+
+temporary_dir="$(mktemp -d)"
+trap 'rm -rf -- "$temporary_dir"' EXIT
+
+kubectl get namespace "$namespace" >/dev/null 2>&1 || kubectl create namespace "$namespace"
+
+read_value() {
+  local variable_name="$1" prompt="$2" optional="$3" value=""
+  value="${!variable_name-}"
+  if [[ -z "$value" && -t 0 ]]; then
+    read -r -s -p "$prompt: " value
+    printf '\n' >&2
+  fi
+  if [[ -z "$value" && "$optional" != true ]]; then
+    echo "$variable_name must not be empty" >&2
+    exit 1
+  fi
+  printf '%s' "$value"
 }
 
-Write-Host ""
-Write-Host "Done. If pods were already crash-looping on the missing secret, they should recover on their next restart:"
-Write-Host "  kubectl get pods -n $Namespace --watch"
+render_and_apply() {
+  local secret_key="$1" value="$2" value_file
+  value_file="$temporary_dir/$secret_key"
+  printf '%s' "$value" >"$value_file"
+  helm template asyncvtp "$chart_dir" \
+    --namespace "$namespace" \
+    -f "$values_path" \
+    --set secrets.redis.create=false \
+    --set secrets.grafana.create=false \
+    --set secrets.alertmanager.create=false \
+    --set "secrets.$secret_key.create=true" \
+    --set-file "secrets.$secret_key.value=$value_file" \
+    --show-only templates/secrets.yaml |
+    kubectl apply --namespace "$namespace" -f -
+}
+
+redis_password="$(read_value REDIS_PASSWORD 'Redis password' false)"
+render_and_apply redis "$redis_password"
+
+grafana_password="$(read_value GRAFANA_ADMIN_PASSWORD 'Grafana admin password' false)"
+render_and_apply grafana "$grafana_password"
+
+slack_webhook="$(read_value SLACK_WEBHOOK_URL 'Slack Incoming Webhook URL (blank to skip)' true)"
+if [[ -n "$slack_webhook" ]]; then
+  render_and_apply alertmanager "$slack_webhook"
+else
+  echo "Skipped alertmanager-secret."
+fi
+
+echo "Secrets are ready in namespace $namespace."
