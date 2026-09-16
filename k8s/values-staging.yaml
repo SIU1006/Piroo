@@ -45,7 +45,7 @@ persistence:
 fastapi:
   replicaCount: 2
   image:
-    tag: "e0a56e876354fc5b1608a35a5e6d12c4e2b60396"  # staging-auto
+    tag: "03b34828ff04a9d0beaa21b98f819b0a68af7a71"  # staging-auto
   service:
     type: ClusterIP # front with a real Ingress/LoadBalancer in staging rather than NodePort
     nodePort: null
@@ -53,7 +53,7 @@ fastapi:
 celery:
   replicaCount: 2
   image:
-    tag: "e0a56e876354fc5b1608a35a5e6d12c4e2b60396"  # staging-auto
+    tag: "03b34828ff04a9d0beaa21b98f819b0a68af7a71"  # staging-auto
   hpa:
     enabled: true
     minReplicas: 2
@@ -61,11 +61,11 @@ celery:
 
 celeryBeat:
   image:
-    tag: "e0a56e876354fc5b1608a35a5e6d12c4e2b60396"  # staging-auto
+    tag: "03b34828ff04a9d0beaa21b98f819b0a68af7a71"  # staging-auto
 
 whisper:
   image:
-    tag: "e0a56e876354fc5b1608a35a5e6d12c4e2b60396"  # staging-auto
+    tag: "03b34828ff04a9d0beaa21b98f819b0a68af7a71"  # staging-auto
   canary:
     enabled: false # enable per-rollout when actually testing a candidate model
 
