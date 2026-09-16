@@ -16,6 +16,9 @@ venv/
 env/
 .env/
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 test_video/
 uploads/
@@ -23,6 +26,7 @@ uploads/
 .pytest_cache/
 
 mlflow.db
+mlflow.db-*
 mlruns/
 mlartifacts/
 
@@ -53,8 +57,51 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+
+# Local caches, coverage and generated runtime output
+.cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.log
+*.pid
+*.pid.lock
+
+# Local CI exports (published through Actions artifacts)
+/ci-evaluation.json
+/published-image-digests.json
+/whisper-evaluated.tar
+/promotion-config.json
+
+# Private credentials and local certificate bundles
+*.key
+*.p12
+*.pfx
 
 docs/loadtest/*.csv
 docs/loadtest/*_history.csv
+!docs/loadtest/legacy-*.csv
+!docs/loadtest/*/*.csv
 
 obsidian/
+docs/model-loop/**/registry.db*
+model-eval-*-build.log
+docs/model-loop/**/canary-rendered.yaml
+docs/model-loop/raw-evidence.zip
+# Raw demo exports remain local; commit the consolidated evidence and receipts.
+docs/model-loop/**/*.log
+docs/model-loop/**/baseline.json
+docs/model-loop/**/candidate.json
+docs/model-loop/**/release.json
+docs/model-loop/**/verify.json
+docs/model-loop/**/verify-rollback.json
+docs/model-loop/**/ci-evaluation.json
+docs/model-loop/**/promotion-config.json
+docs/model-loop/**/initial-deployment.json
+docs/model-loop/**/deployment.json
+docs/model-loop/**/rollback.json
+docs/model-loop/**/rollback-deployment.json

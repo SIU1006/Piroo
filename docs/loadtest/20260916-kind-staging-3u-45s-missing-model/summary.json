@@ -1,0 +1,37 @@
+{
+  "snapshot_at": 1789542864.5583107,
+  "accepted_uploads": 11,
+  "keepalives": 0,
+  "start_sources": {
+    "task_started_event": 0,
+    "inferred_from_success_runtime": 0
+  },
+  "completed": 0,
+  "failed": 11,
+  "pending": 0,
+  "seconds": {
+    "upload_seconds": {
+      "samples": 11,
+      "mean": 0.04814072088761763,
+      "p50": 0.01735234260559082,
+      "p95": 0.14840173721313477,
+      "max": 0.14840173721313477
+    },
+    "queue_wait_lower_seconds": {
+      "samples": 0
+    },
+    "queue_wait_upper_seconds": {
+      "samples": 0
+    },
+    "processing_seconds": {
+      "samples": 0
+    },
+    "total_seconds": {
+      "samples": 11,
+      "mean": 9.712515094063498,
+      "p50": 10.7976975440979,
+      "p95": 13.93468451499939,
+      "max": 13.93468451499939
+    }
+  }
+}

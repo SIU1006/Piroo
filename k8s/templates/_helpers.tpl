@@ -48,9 +48,17 @@ Call as: {{ include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" 
 */}}
 {{- define "asyncvtp.image" -}}
 {{- $registry := .root.Values.global.imageRegistry -}}
+{{- if .image.digest -}}
+{{- if $registry -}}
+{{- printf "%s/%s@%s" (trimSuffix "/" $registry) .image.repository .image.digest -}}
+{{- else -}}
+{{- printf "%s@%s" .image.repository .image.digest -}}
+{{- end -}}
+{{- else -}}
 {{- if $registry -}}
 {{- printf "%s/%s:%s" (trimSuffix "/" $registry) .image.repository .image.tag -}}
 {{- else -}}
 {{- printf "%s:%s" .image.repository .image.tag -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

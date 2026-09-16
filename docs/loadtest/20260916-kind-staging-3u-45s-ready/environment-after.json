@@ -1,0 +1,75 @@
+{
+  "captured_at": "2026-09-16T07:33:08.5894318+00:00",
+  "deployments": [
+    {
+      "replicas": 2,
+      "name": "fastapi",
+      "image": "ghcr.io/siu1006/fastapi:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1"
+    },
+    {
+      "replicas": 2,
+      "name": "celery",
+      "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1"
+    },
+    {
+      "replicas": 1,
+      "name": "whisper",
+      "image": "ghcr.io/siu1006/whisper:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1"
+    },
+    {
+      "replicas": 1,
+      "name": "ollama",
+      "image": "ollama/ollama:0.32.13"
+    }
+  ],
+  "image_ids": [
+    {
+      "containers": {
+        "name": "celery",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "celery-5bcb9798bf-pn57q"
+    },
+    {
+      "containers": {
+        "name": "celery",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "celery-5bcb9798bf-xm85f"
+    },
+    {
+      "containers": {
+        "name": "fastapi",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "fastapi-66dd9b55f6-rk2z9"
+    },
+    {
+      "containers": {
+        "name": "fastapi",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "fastapi-66dd9b55f6-zl6jn"
+    },
+    {
+      "containers": {
+        "name": "ollama",
+        "image": "docker.io/ollama/ollama:0.32.13",
+        "imageID": "docker.io/ollama/ollama@sha256:77f1a2a54460f0380f2611e1464233d9b82cb6e58afc8f60abec0061049d2d82"
+      },
+      "pod": "ollama-859b947c99-qhln6"
+    },
+    {
+      "containers": {
+        "name": "whisper",
+        "image": "ghcr.io/siu1006/whisper:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/whisper@sha256:78592655b09b4dbc6652fb5710e57ac92866dd7165ef600c27f4f45d144dd16a"
+      },
+      "pod": "whisper-7684db6857-nrjbd"
+    }
+  ]
+}

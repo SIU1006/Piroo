@@ -15,7 +15,7 @@ This is my first MLOPS related project. I am trying my best to work it through a
 
 Transcribing a 50 MB video inside a standard HTTP request guarantees browser timeouts and blocked server threads. The solution is to **decouple job ingestion from job execution**:
 
-- **FastAPI** acknowledges uploads in under 200 ms with a `task_id`.
+- **FastAPI** acknowledges accepted uploads with a `task_id`; measured latency and run conditions are recorded in [Load Test Results](docs/load-test-results.md).
 - A **Celery** worker fleet performs the heavy pipeline — ffmpeg audio extraction, Whisper transcription, LLM summarisation — in completely separate processes.
 - The result is pushed to the browser over **WebSocket** via Redis pub/sub. No polling, no dangling HTTP connections.
 
@@ -67,7 +67,7 @@ FastAPI and the Celery workers are **separate processes communicating exclusivel
 - **Local LLM summarisation** — Ollama running llama3.2, no external API dependency
 - **Real-time delivery** — WebSocket push with a Redis-backed result cache that survives late connections
 - **Kubernetes-native** — Deployments, Services, PVCs, ConfigMaps, and a CPU-based HorizontalPodAutoscaler
-- **Canary inference releases (opt-in)** — stable and canary Whisper pods can be served behind one Service via label selectors; not applied by default, see [Model Management & Canary Releases](#model-management--canary-releases)
+- **Canary inference releases (opt-in)** — candidate-only inference and evaluation traffic use a separate Service; see [Model Management & Canary Releases](#model-management--canary-releases)
 - **Full observability** — Prometheus metrics, prebuilt Grafana dashboard and Locust for load testing
 - **MLOps lifecycle** — MLflow experiment tracking and model registry; GitHub Actions CI that tests, builds, and pushes images to GHCR
 
@@ -303,36 +303,26 @@ Use this to watch the Celery HPA scale workers from 1 to 5 replicas as CPU cross
 
 ## Model Management & Canary Releases
 
-**MLflow** tracks Whisper model candidates so model selection is data-driven rather than anecdotal - real WER against a fixed, labeled eval set, not just latency:
+Registration, CI, and fresh promotion verification use the exact 20 filenames and decoding settings in `model_eval/evaluation_config.json`. Every evaluation records the full dataset and subset hashes, model revision, configuration, packages, image identity, and per-clip results. Hugging Face revisions are pinned in `model_eval/model_revisions.json` and baked into inference images.
 
 ```bash
-python model_eval/prepare_eval_set.py          # one-time: builds a fixed 5-clip labeled eval set from LibriSpeech dev-clean
-python model_eval/register_model.py --sizes tiny base small   # benchmarks, logs, and registers each candidate
-python model_eval/promote_model.py             # re-verifies @staging's WER and promotes it to @production
+python -m model_eval.register_model --sizes tiny base small
+python -m model_eval.check_regression --output ci-evaluation.json
 ```
 
-Each run actually transcribes every clip in the eval set and logs `model_size`, `device`, `compute_type`, real-time factor (RTF), and word error rate (WER) against ground-truth transcripts. `register_model.py` registers every candidate as a model version and promotes the best one (lowest WER within an RTF budget) to the `@staging` alias; `promote_model.py` re-checks that WER and moves `@production` to point at it - the tradeoff curve behind picking `base` is in the MLflow UI, not just asserted in this README.
+Local registration records `not-deployed`; production promotion requires registration against the actual candidate endpoint and immutable image identity. Promotion sends the examples through that candidate again and rejects dataset/configuration mismatches, WER regression, or an exceeded RTF budget. Changing an MLflow alias authorizes a release; deployment is a separate operation.
 
-**Canary deployment** uses native Kubernetes label selectors — no service mesh required. The chart keeps it disabled by default, so the setup above runs only the stable `base` deployment.
+The [model evaluation guide](docs/model-evaluation.md) records a complete **candidate evaluation → fresh promotion → deployment → verification → rollback** example, with real model outputs, MLflow versions, Docker image IDs and rollback receipts. It also contains a three-case summary-quality review, including a numerical comparison error found in the generated summaries.
 
-If you want to see the canary pattern running:
+**Canary deployment** is opt-in. Stable traffic uses `whisper-service` (`track: stable`); the checker uses `whisper-canary-service` (`track: canary`). Disabled canaries do not fall back to the stable endpoint. Use a registry manifest digest for the candidate:
 
 ```bash
-# Build a "small" model image (see Getting Started for the "base" build)
-docker build --pull -f Dockerfile.inference \
-  --build-arg WHISPER_MODEL_SIZE=small -t whisper:small .
-kind load docker-image --name asyncvtp whisper:small
-
-# Enable the chart's canary Deployment alongside the stable one
-helm upgrade asyncvtp k8s --namespace asyncvtp-dev -f k8s/values-dev.yaml \
-  --set whisper.canary.enabled=true
+helm upgrade --install asyncvtp k8s -f k8s/values.yaml \
+  --set whisper.canary.enabled=true \
+  --set whisper.canary.image.digest=sha256:<published-manifest-digest>
 ```
 
-- `k8s/templates/whisper/deployment.yaml` runs the stable model (`whisper:base`).
-- `k8s/templates/whisper/canary.yaml` runs the candidate (`whisper:small`) when enabled.
-- Both carry the label `app: whisper`, so the `whisper-service` ClusterIP Service load-balances inference traffic across whichever stable and canary pods currently exist (roughly 50/50 with one replica each).
-- **Roll back** by running the same Helm upgrade with `--set whisper.canary.enabled=false`; the stable deployment continues serving traffic.
-- **Promote** by changing the stable `whisper.image.tag` value after its evaluation gate passes, then disable the canary.
+The candidate's model size comes from its built image. The checker stores its dataset/configuration, model revision, endpoint, image digest and WER in Redis at `canary:evaluation`. Verification traffic is isolated; no user traffic is split automatically. Disable the candidate with `--set whisper.canary.enabled=false`, or deploy a promoted digest through the stable image values after fresh verification.
 
 ---
 
@@ -347,7 +337,7 @@ helm upgrade asyncvtp k8s --namespace asyncvtp-dev -f k8s/values-dev.yaml \
 5. **Build & push** *(pushes to `main` only)* — publishes images only after tests, integration tests, model checks, Helm validation, and Terraform validation pass:
    - `ghcr.io/<owner>/fastapi:latest`
    - `ghcr.io/<owner>/celery:latest`
-   - `ghcr.io/<owner>/whisper:latest` and `ghcr.io/<owner>/whisper:base` (same image, two tags — the Whisper build always bakes in the `base` model via `WHISPER_MODEL_SIZE=base`; the canary's `small`-model image is not built in CI, see [Model Management & Canary Releases](#model-management--canary-releases))
+   - `ghcr.io/<owner>/whisper:latest`, `:<model-size>` and `:<commit>` — CI selects the committed baseline's model size, evaluates its built image, then publishes that exact saved image. Evaluation and publication digests are retained as workflow artifacts.
 
 ---
 
@@ -432,9 +422,9 @@ AsyncVTP/
 
 - **BentoML as a dedicated inference service.** The Whisper model loads once at service startup (not per task) with int8 quantisation on CPU, and is addressable over HTTP. This lets the model be versioned, scaled, monitored, and canary-released independently of the Celery workers — a standard pattern for production inference servers.
 
-- **WebSocket over polling.** The server pushes the moment a result lands. With 500 concurrent users that means 500 silent connections rather than 500 requests per second hammering the API.
+- **WebSocket updates.** Persistent connections deliver keepalives and terminal results without repeated status polling. This design choice does not establish a concurrent-user capacity; see the [bounded measurement](docs/load-test-results.md).
 
-- **Canary via native label selectors (opt-in).** Stable and canary inference pods can share a selector behind one ClusterIP Service, giving weighted rollout and instant rollback without Istio/Linkerd overhead — see [Model Management & Canary Releases](#model-management--canary-releases) for how to enable it.
+- **Canary via native label selectors (opt-in).** Separate stable and candidate Services isolate evaluation traffic; deployment and rollback select explicit image identities. See [Model Management & Canary Releases](#model-management--canary-releases).
 
 ---
 

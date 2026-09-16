@@ -1,0 +1,3 @@
+NAME               ID              SIZE      MODIFIED       
+llama3.2:latest    a80c4f17acd5    2.0 GB    16 minutes ago    
+Whisper model: small

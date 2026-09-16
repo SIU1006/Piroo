@@ -1,7 +1,63 @@
 {
-  "model_size": "small",
-  "wer": 0.03307086614173228,
-  "rtf": 0.42611901307156674,
+  "schema_version": 2,
+  "model_size": "tiny",
+  "model_revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+  "deployed_image": "sha256:8a5db60c0c2b0e4ec337cdd81e9e0cab59bd4dc6f879c7534c11fbb6be23b51f",
+  "packages": {
+    "faster-whisper": "1.2.1",
+    "ctranslate2": "4.8.2",
+    "bentoml": "1.3.9"
+  },
+  "evaluation": {
+    "dataset_sha256": "7e2881fd9e66a0bd020bf6e0b33582a810749d3189712e613f4e91dbf7cda577",
+    "subset_sha256": "a76f8b024e6a2c5e37e3324f92bcb3852c26010e041740c623e6d8f806744554",
+    "config_sha256": "839b9dc7de24ef0e7081701b0d79f420a38e30824191cd990ccd8e1e83fdb22d",
+    "config": {
+      "schema_version": 1,
+      "filenames": [
+        "clip_00.wav",
+        "clip_01.wav",
+        "clip_02.wav",
+        "clip_03.wav",
+        "clip_04.wav",
+        "clip_05.wav",
+        "clip_06.wav",
+        "clip_07.wav",
+        "clip_08.wav",
+        "clip_09.wav",
+        "clip_10.wav",
+        "clip_11.wav",
+        "clip_12.wav",
+        "clip_13.wav",
+        "clip_14.wav",
+        "clip_15.wav",
+        "clip_16.wav",
+        "clip_17.wav",
+        "clip_18.wav",
+        "clip_19.wav"
+      ],
+      "transcribe": {
+        "language": "en",
+        "beam_size": 5,
+        "temperature": 0,
+        "vad_filter": false
+      },
+      "normalization": "lowercase_remove_punctuation_collapse_spaces_v1",
+      "device": "cpu",
+      "compute_type": "int8"
+    }
+  },
+  "device": "cpu",
+  "compute_type": "int8",
+  "load_seconds": 0.015272779000042647,
+  "n_clips": 20,
+  "total_audio_seconds": 126.93506250000002,
+  "total_transcribe_seconds": 7.522058951000417,
+  "rtf": 0.05925911094107995,
+  "evaluated_at": 1789555772.350878,
+  "wer": 0.06683168316831684,
   "registered_model_name": "video-transcriber-whisper",
-  "version": "7"
+  "version": 3,
+  "run_id": "58eced976f374ba599b11c4b19cb77e4",
+  "evidence_file": "../docs/model-loop/20260916-tiny-to-base/evidence.json"
 }
