@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import threading
@@ -10,9 +9,12 @@ import httpx
 import ollama
 import redis
 import requests
+from botocore.exceptions import BotoCoreError, ClientError
 from dotenv import load_dotenv
 from redis.exceptions import RedisError
 
+import task_store
+import upload_storage
 from settings import (
     BROKER_URL,
     LLM_MODEL,
@@ -48,7 +50,11 @@ ACTIVE_ATTEMPT_REFRESH_SECONDS = 30
 SWEEPER_CLAIM_TTL_SECONDS = 300
 
 START_ATTEMPT_SCRIPT = """
-if redis.call('EXISTS', KEYS[3]) == 1 then
+if ARGV[5] == '1' and not redis.call('ZSCORE', KEYS[5], ARGV[4]) then
+    return 0
+end
+if redis.call('EXISTS', KEYS[2]) == 1 or redis.call('EXISTS', KEYS[3]) == 1
+    or redis.call('EXISTS', KEYS[4]) == 1 then
     return 0
 end
 redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
@@ -91,6 +97,8 @@ RETRYABLE_EXCEPTIONS = (
     ConnectionError,
     TransientServiceError,
     RedisError,
+    BotoCoreError,
+    ClientError,
 )
 
 
@@ -132,13 +140,17 @@ def start_running(task_id: str, file_path: str):
     acquired = bool(
         r.eval(
             START_ATTEMPT_SCRIPT,
-            3,
+            5,
             HEARTBEAT_KEY,
             active_attempt_key(task_id),
             sweeper_claim_key(task_id),
+            f"result:{task_id}",
+            task_store.OUTSTANDING_KEY,
             f"running:{file_path}",
             HEARTBEAT_TTL_SECONDS,
             ACTIVE_ATTEMPT_TTL_SECONDS,
+            task_id,
+            "1" if file_path.startswith("s3://") else "0",
         )
     )
 
@@ -183,27 +195,24 @@ def transcribe(audio_path: str, whisper_url: str) -> str:
 
 def summarize(transcript: str, model: str) -> str:
     client = ollama.Client(timeout=300)
-    response_llm = client.chat(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": SUMMARY_PROMPT.format(transcript=transcript),
-            }
-        ],
-        options=SUMMARY_OPTIONS,
-    )
+    try:
+        response_llm = client.chat(
+            model=model,
+            messages=[
+                {"role": "user", "content": SUMMARY_PROMPT.format(transcript=transcript)},
+            ],
+            options=SUMMARY_OPTIONS,
+        )
+    except ollama.ResponseError as exc:
+        if exc.status_code == 429 or exc.status_code >= 500:
+            raise TransientServiceError(f"Ollama service error: {exc}") from exc
+        raise
     return response_llm.message.content
 
 def publish_result(r, task_id: str, payload: dict) -> None:
     """Store the result in Redis, notify any listening websocket"""
 
-    RESULT_KEY = f"result:{task_id}"
-    TASK_CHANNEL = f"task:{task_id}"
-
-    message = json.dumps(payload)
-    r.setex(RESULT_KEY, RESULT_TTL_SECONDS, message)
-    r.publish(TASK_CHANNEL, message)
+    task_store.finish(r, task_id, payload)
 
 def store_success(r, task_id, summary):
     message = {
@@ -263,13 +272,17 @@ def process_video(self, task_id: str, file_path: str):
     video_length_bucket = "unknown"
     will_retry = False
     attempt_acquired = False
+    source_ref = file_path
 
     try:
         r, audio_path, attempt_acquired = start_running(task_id, file_path)
         if not attempt_acquired:
-            logger.info("Task %s is already claimed by the stuck-task sweeper", task_id)
+            logger.info("Task %s is active, terminal, claimed or no longer admitted", task_id)
             return
         active_stop, active_thread = keep_attempt_active(r, task_id)
+        task_store.transition(r, task_id, "running", "processing",
+                              TASK_HARD_TIME_LIMIT_SECONDS + STUCK_GRACE_SECONDS)
+        file_path = upload_storage.materialize(source_ref, UPLOAD_DIR)
         duration_minutes = validate_duration(ffmpeg.probe(file_path))
         video_length_bucket = "under_10min" if duration_minutes < 10 else "over_10min"
         extract_audio(file_path, audio_path)
@@ -284,6 +297,11 @@ def process_video(self, task_id: str, file_path: str):
         will_retry = isinstance(e, RETRYABLE_EXCEPTIONS) and self.request.retries < self.max_retries
 
         if will_retry:
+            if r is not None:
+                try:
+                    task_store.transition(r, task_id, "queued", "retrying")
+                except RedisError:
+                    logger.exception("Could not record retry for task %s", task_id)
             metrics(
                 task_name="process_video",
                 status="retry",
@@ -336,8 +354,15 @@ def process_video(self, task_id: str, file_path: str):
         elif will_retry:
             # keep file_path
             cleanup(audio_path)
+            if source_ref.startswith("s3://"):
+                cleanup(file_path)
         else:
             cleanup(file_path, audio_path)
+            if source_ref.startswith("s3://"):
+                try:
+                    upload_storage.delete(source_ref)
+                except (BotoCoreError, ClientError):
+                    logger.exception("Could not delete upload %s; bucket lifecycle will expire it", task_id)
 
 
 # ============= sweep_stuck_tasks() helpers =============
@@ -399,8 +424,16 @@ def cleanup_stuck(r, task_id: str, heartbeat_key, claim_token: str) -> None:
     cleanup_paths = [extracted_audio_path(task_id)]
 
     if original_path:
-        cleanup_paths.append(original_path)
+        if original_path.startswith("s3://"):
+            cleanup_paths.append(str(UPLOAD_DIR / original_path.rsplit("/", 1)[-1]))
+        else:
+            cleanup_paths.append(original_path)
     cleanup(*cleanup_paths)
+    if original_path and original_path.startswith("s3://"):
+        try:
+            upload_storage.delete(original_path)
+        except (BotoCoreError, ClientError):
+            logger.exception("Could not remove stuck upload %s", task_id)
 # =======================================================
 
 @celery_app.task(name="sweep_stuck_tasks")
@@ -413,6 +446,13 @@ def sweep_stuck_tasks():
     start = time.perf_counter()
 
     try:
+        for task_id, ref in task_store.expire_overdue(r):
+            try:
+                if ref.startswith("s3://"):
+                    cleanup(str(UPLOAD_DIR / ref.rsplit("/", 1)[-1]), extracted_audio_path(task_id))
+                upload_storage.delete(ref)
+            except (BotoCoreError, ClientError, OSError):
+                logger.exception("Could not remove expired upload %s", task_id)
         for task_id, heartbeat_key, claim_token in find_stuck(r):
             report_stuck(r, task_id)
             cleanup_stuck(r, task_id, heartbeat_key, claim_token)

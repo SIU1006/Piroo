@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+import task_store
 from worker.tasks import (
     cleanup,
     get_originalpath,
@@ -98,15 +99,17 @@ def test_get_originalpath_returns_none_when_no_path_segment():
 # publish_result
 # ---------------------------------------------------------------------------
 
-def test_publish_result_calls_setex_and_publish_with_same_json():
+def test_publish_result_uses_atomic_terminal_transition():
     r = MagicMock()
     payload = {"status": "completed", "task_id": "task-1", "summary": "hi"}
 
     publish_result(r, "task-1", payload)
 
     expected_message = json.dumps(payload)
-    r.setex.assert_called_once_with("result:task-1", 3600, expected_message)
-    r.publish.assert_called_once_with("task:task-1", expected_message)
+    args = r.eval.call_args.args
+    assert args[:5] == (task_store.FINISH_SCRIPT, 3, "admission:tasks", "status:task-1", "result:task-1")
+    assert args[5:9] == ("task-1", "completed", expected_message, 3600)
+    assert args[-1] == "task:task-1"
 
 
 # ---------------------------------------------------------------------------

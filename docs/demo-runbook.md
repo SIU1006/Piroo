@@ -45,8 +45,12 @@ kubectl port-forward -n argocd svc/argocd-server 8080:443
 
 The ApplicationSet isn't managed by Terraform (its CRD is installed by the
 ArgoCD release, so referencing it in the same run breaks `terraform plan`).
-Create both namespaces, their required Secrets, and the adapter certificates
-before allowing ArgoCD to sync either application.
+Create both namespaces and their required Secrets, then create adapter
+certificates only in production. Before ArgoCD sync, run
+`terraform output -json upload_storage` and commit each environment's bucket,
+region and upload ServiceAccount role ARN into its `objectStorage` values.
+See [deployment limits](deployment-limits.md) for the existing-install migration;
+do not prune a shared upload PVC containing unfinished jobs.
 
 ```powershell
 foreach ($ns in @("asyncvtp-staging","asyncvtp-prod")) {
@@ -59,14 +63,13 @@ foreach ($ns in @("asyncvtp-staging","asyncvtp-prod")) {
 
 ```powershell
 $openssl = "C:\Program Files\Git\usr\bin\openssl.exe"
-foreach ($ns in @("asyncvtp-staging","asyncvtp-prod")) {
+$ns = "asyncvtp-prod" # sole owner of the cluster-wide external-metrics adapter
   $cn = "prometheus-adapter-service.$ns.svc"
   & $openssl req -x509 -newkey rsa:2048 -nodes -keyout serving.key -out serving.crt -days 3650 `
     -subj "/CN=$cn" -addext "subjectAltName=DNS:$cn,DNS:$cn.cluster.local"
   kubectl -n $ns create secret generic cm-adapter-serving-certs `
     --from-file=serving.crt=serving.crt --from-file=serving.key=serving.key `
     --from-file=apiserver.crt=serving.crt --from-file=apiserver.key=serving.key
-}
 ```
 
 ```bash

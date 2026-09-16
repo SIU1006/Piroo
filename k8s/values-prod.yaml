@@ -23,9 +23,6 @@ secrets:
     key: slack-webhook-url
 
 persistence:
-  uploads:
-    size: 100Gi
-    storageClass: "gp3"
   mlflow:
     size: 20Gi
     storageClass: "gp3"
@@ -94,6 +91,7 @@ ollama:
       cpu: 4000m
 
 prometheus:
+  externalMetricNamespaces: [asyncvtp-staging]
   service:
     type: ClusterIP
     nodePort: null
@@ -122,3 +120,14 @@ mlflow:
 
 prometheusAdapter:
   enabled: true
+
+minio:
+  enabled: false
+
+objectStorage:
+  bucket: "" # terraform output -json upload_storage -> prod.bucket
+  endpoint: "" # AWS S3
+  credentialsSecret: "" # use IRSA, not static AWS keys
+  caSecret: "" # AWS S3 uses the system CA bundle
+  serviceAccount:
+    roleArn: "" # terraform output -> prod.role_arn

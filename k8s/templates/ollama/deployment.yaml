@@ -7,6 +7,8 @@ metadata:
     {{- include "asyncvtp.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate # one RWO model-cache volume, never mount it on two nodes during rollout
   selector:
     matchLabels:
       app: ollama

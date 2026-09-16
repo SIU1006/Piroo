@@ -1,0 +1,124 @@
+{{- if .Values.minio.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.objectStorage.credentialsSecret }}
+type: Opaque
+stringData:
+  # Throwaway local credentials. Production uses per-environment IRSA roles.
+  AWS_ACCESS_KEY_ID: dev-only-minio
+  AWS_SECRET_ACCESS_KEY: dev-only-minio-password
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ .Values.minio.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+      annotations:
+        checksum/object-storage-secrets: {{ include "asyncvtp.objectStorageSecretChecksum" . }}
+    spec:
+      containers:
+      - name: minio
+        image: {{ .Values.minio.image }}
+        args: [server, /data, --certs-dir, /etc/minio/certs]
+        ports:
+        - containerPort: 9000
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.objectStorage.credentialsSecret }}
+              key: AWS_ACCESS_KEY_ID
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.objectStorage.credentialsSecret }}
+              key: AWS_SECRET_ACCESS_KEY
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+            scheme: HTTPS
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: tls
+          mountPath: /etc/minio/certs
+          readOnly: true
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tls
+        secret:
+          secretName: {{ required "minio.tlsSecret is required" .Values.minio.tlsSecret }}
+          items:
+          - key: tls.crt
+            path: public.crt
+          - key: tls.key
+            path: private.key
+      - name: data
+        persistentVolumeClaim:
+          claimName: minio-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+spec:
+  selector:
+    app: minio
+  ports:
+  - port: 9000
+    targetPort: 9000
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-init-{{ dict "image" (include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" $)) "config" (include (print $.Template.BasePath "/configmap.yaml") .) "secrets" (include "asyncvtp.objectStorageSecretChecksum" .) "pullPolicy" .Values.global.imagePullPolicy | toJson | sha256sum | trunc 8 }}
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: initialize
+        image: {{ include "asyncvtp.image" (dict "image" .Values.fastapi.image "root" $) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        command: [python, -m, init_object_storage]
+        envFrom:
+        - configMapRef:
+            name: pipeline-config
+        - secretRef:
+            name: {{ .Values.objectStorage.credentialsSecret }}
+        {{- if .Values.objectStorage.caSecret }}
+        volumeMounts:
+          {{- include "asyncvtp.objectStorageCaMount" . | nindent 8 }}
+      volumes:
+        {{- include "asyncvtp.objectStorageCaVolume" . | nindent 6 }}
+        {{- end }}
+{{- end }}
