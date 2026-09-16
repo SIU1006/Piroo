@@ -10,12 +10,10 @@ on:
     branches: [main]
     paths-ignore:
       - '**.md'
-      - 'terraform/**'
   pull_request:
     branches: [main]
     paths-ignore:
       - '**.md'
-      - 'terraform/**'
 
 jobs:
   helm-lint:
@@ -94,6 +92,87 @@ jobs:
         LLM_MODEL: llama3.2
       run: python -m pytest tests/ -v
 
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build boundary-test images
+      run: |
+        docker build -t asyncvtp-app:integration .
+        docker build -f Dockerfile.inference \
+          --build-arg WHISPER_MODEL_SIZE=tiny \
+          -t asyncvtp-whisper:integration .
+
+    - name: Start Redis and Whisper
+      run: |
+        docker network create asyncvtp-integration
+        docker run -d --name redis-integration --network asyncvtp-integration redis:7.4.10
+        docker run -d --name whisper-integration --network asyncvtp-integration \
+          asyncvtp-whisper:integration
+        for _ in {1..60}; do
+          if docker exec whisper-integration python -c \
+            "import urllib.request; urllib.request.urlopen('http://localhost:3000/readyz', timeout=2)"; then
+            exit 0
+          fi
+          sleep 5
+        done
+        docker logs whisper-integration
+        exit 1
+
+    - name: Run service boundary tests
+      run: |
+        docker run --rm --network asyncvtp-integration \
+          --mount "type=bind,source=$PWD,target=/workspace" \
+          --workdir /workspace \
+          -e RUN_SERVICE_INTEGRATION=1 \
+          -e BROKER_URL=redis://redis-integration:6379/0 \
+          -e REDIS_PASSWORD= \
+          -e WHISPER_URL=http://whisper-integration:3000 \
+          -e OLLAMA_HOST=http://unused:11434 \
+          -e LLM_MODEL=llama3.2 \
+          -e UPLOAD_DIR=/tmp/asyncvtp-uploads \
+          asyncvtp-app:integration sh -c \
+          'python -m pip install --user --disable-pip-version-check pytest==9.0.3 && python -m pytest tests/integration -v -p no:cacheprovider'
+
+    - name: Print service logs after failure
+      if: failure()
+      run: |
+        docker logs redis-integration || true
+        docker logs whisper-integration || true
+
+    - name: Remove boundary-test services
+      if: always()
+      run: |
+        docker rm -f redis-integration whisper-integration || true
+        docker network rm asyncvtp-integration || true
+
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.9.8
+
+    - name: Check formatting
+      run: terraform fmt -check -recursive
+
+    - name: Initialize without a backend
+      working-directory: terraform
+      run: terraform init -backend=false -input=false
+
+    - name: Validate configuration
+      working-directory: terraform
+      run: terraform validate
+
   model-ci:
     runs-on: ubuntu-latest
     needs: test
@@ -125,7 +204,7 @@ jobs:
 
   build-check: # before actual pushing
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, integration, helm-lint, terraform]
     if: github.event_name == 'pull_request'
     timeout-minutes: 20 # default Github timeout is 6 hours!
 
@@ -159,7 +238,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [test, model-ci]    # only build if tests pass AND the model hasn't regressed
+    needs: [test, integration, model-ci, helm-lint, terraform]
     if: github.event_name == 'push' # only push images after code lands on main
     timeout-minutes: 20
     permissions:

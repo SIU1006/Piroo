@@ -340,9 +340,11 @@ helm upgrade asyncvtp k8s --namespace asyncvtp-dev -f k8s/values-dev.yaml \
 
 `.github/workflows/ci.yml` runs on every push and PR to `main`:
 
-1. **Test** — installs dependencies, lints with `ruff`, and runs `pytest tests/ -v`.
-2. **Build-check** *(PRs only)* — builds the FastAPI/Celery and Whisper (`base` model) images without pushing, as a sanity check before merge.
-3. **Build & push** *(pushes to `main` only, after tests pass)* — builds and pushes to GitHub Container Registry:
+1. **Test** — installs dependencies, lints with `ruff`, and runs the default pytest suite.
+2. **Integration** — builds the application and a tiny Whisper image, starts disposable Redis and BentoML services, and exercises the real service boundaries.
+3. **Helm and Terraform validation** — renders/lints the Helm chart, checks Terraform formatting, and validates the Terraform configuration without a backend.
+4. **Build-check** *(PRs only)* — builds the FastAPI/Celery and Whisper (`base` model) images after all validation jobs pass.
+5. **Build & push** *(pushes to `main` only)* — publishes images only after tests, integration tests, model checks, Helm validation, and Terraform validation pass:
    - `ghcr.io/<owner>/fastapi:latest`
    - `ghcr.io/<owner>/celery:latest`
    - `ghcr.io/<owner>/whisper:latest` and `ghcr.io/<owner>/whisper:base` (same image, two tags — the Whisper build always bakes in the `base` model via `WHISPER_MODEL_SIZE=base`; the canary's `small`-model image is not built in CI, see [Model Management & Canary Releases](#model-management--canary-releases))
@@ -365,11 +367,15 @@ In Docker Compose these values come from one shared environment block. In Kubern
 
 ---
 
-## Testing ( Under Construction )
+## Testing
+
+Run the default suite locally:
 
 ```bash
-pytest tests/ -v
+python -m pytest tests/ -v
 ```
+
+Tests marked `integration` are skipped unless `RUN_SERVICE_INTEGRATION=1` is set. CI runs them in the application image against disposable Redis and BentoML containers, so broker publication, Pub/Sub behavior, media extraction, Celery retries, and the Whisper HTTP contract are checked without mocks at those boundaries.
 
 ---
 
