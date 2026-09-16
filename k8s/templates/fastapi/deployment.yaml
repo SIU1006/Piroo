@@ -15,12 +15,13 @@ spec:
       labels:
         app: fastapi
       annotations:
+        checksum/pipeline-config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
     spec:
+      serviceAccountName: asyncvtp-uploads
       securityContext:
-        # The EBS volume is mounted at /app/uploads.  The image runs as UID/GID
-        # 1000 (appuser), so Kubernetes must grant that group write access.
+        # Private scratch space belongs to the non-root appuser.
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
       containers:
@@ -32,6 +33,10 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        {{- if .Values.objectStorage.credentialsSecret }}
+        - secretRef:
+            name: {{ .Values.objectStorage.credentialsSecret }}
+        {{- end }}
         env:
         - name: REDIS_PASSWORD
           valueFrom:
@@ -50,7 +55,7 @@ spec:
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /readyz
             port: 8000
           initialDelaySeconds: 3
           periodSeconds: 5
@@ -60,8 +65,8 @@ spec:
 
       volumes:
       - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: uploads-pvc
+        emptyDir:
+          sizeLimit: {{ .Values.objectStorage.scratchSize }}
 ---
 apiVersion: v1
 kind: Service

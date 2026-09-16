@@ -17,9 +17,10 @@ Transcribing a 50 MB video inside a standard HTTP request guarantees browser tim
 
 - **FastAPI** acknowledges accepted uploads with a `task_id`; measured latency and run conditions are recorded in [Load Test Results](docs/load-test-results.md).
 - A **Celery** worker fleet performs the heavy pipeline — ffmpeg audio extraction, Whisper transcription, LLM summarisation — in completely separate processes.
-- The result is pushed to the browser over **WebSocket** via Redis pub/sub. No polling, no dangling HTTP connections.
+- The result is pushed over **WebSocket**; `GET /api/v1/tasks/{id}` also exposes queued/running/completed/failed state for reconnection and polling.
 
-A 2-minute transcription job has zero impact on API response time.
+Job admission is bounded across API replicas. Actual upload and processing
+latencies depend on payload, storage and inference capacity.
 
 ---
 
@@ -30,20 +31,21 @@ Browser
   │
   │  POST /api/v1/upload (video file)
   ▼
-FastAPI (Producer) ─────── returns {"task_id", "status": "queued"} instantly
+FastAPI (Producer) ─────── persists source in S3/MinIO, returns queued task ID
   │                           serves web UI · exposes /metrics for Prometheus
   │  enqueues task
   ▼
 Redis ── Celery broker · pub/sub bus · result cache
   │
-  │  dequeues task
+  │  dequeues task carrying an S3 object reference
   ▼
 Celery Worker (Consumer) ── autoscaled 1–5 pods via HPA
   │
-  ├── 1. ffmpeg              → extract mono 128 kbps MP3 (30 min limit)
-  ├── 2. BentoML Whisper     → POST /transcribe  (faster-whisper, CPU / int8)
-  ├── 3. Ollama llama3.2     → summarise transcript
-  └── 4. Redis               → publish result + cache it with 1 h TTL
+  ├── 1. S3 / MinIO          → download source to worker-private scratch
+  ├── 2. ffmpeg              → extract mono 128 kbps MP3 (30 min limit)
+  ├── 3. BentoML Whisper     → POST /transcribe  (faster-whisper, CPU / int8)
+  ├── 4. Ollama llama3.2     → summarise transcript
+  └── 5. Redis               → publish result + cache it with 1 h TTL
   │
   │  publishes to channel task:{task_id}
   ▼
@@ -56,13 +58,17 @@ Browser receives the summary in real time
 Observability (sidecar): Prometheus scrapes FastAPI /metrics → Grafana dashboards
 ```
 
-FastAPI and the Celery workers are **separate processes communicating exclusively through Redis**. The Whisper model is served by a **standalone BentoML inference service**, so it can be versioned, scaled, and canary-released independently of the workers that call it.
+FastAPI and Celery workers use Redis for job/result messages and object storage
+for source media. The Whisper model is served by a standalone BentoML inference
+service, so it can be versioned and released independently of the workers.
 
 ---
 
 ## Features
 
-- **Asynchronous job processing** — Celery + Redis task queue fully decoupled from the API
+- **Asynchronous job processing** — Celery + Redis, with atomic admission for at most 100 outstanding jobs per environment
+- **Placement-independent uploads** — private S3 buckets on EKS; MinIO locally; workers download sources independently
+- **Task status API** — queued/running/completed/failed states and one-hour cached results
 - **Self-hosted speech-to-text** — faster-whisper behind a BentoML inference service (CPU, int8 quantised, no GPU or API costs)
 - **Local LLM summarisation** — Ollama running llama3.2, no external API dependency
 - **Real-time delivery** — WebSocket push with a Redis-backed result cache that survives late connections
@@ -80,6 +86,7 @@ FastAPI and the Celery workers are **separate processes communicating exclusivel
 | API layer | **FastAPI** | Async upload endpoint, WebSocket gateway, static UI, `/metrics` |
 | Task queue | **Celery** | Runs ffmpeg → Whisper → LLM pipeline in isolated worker processes |
 | Broker / bus | **Redis** | Triple duty: Celery broker, pub/sub channel, result cache (1 h TTL) |
+| Upload storage | **S3 / local MinIO** | Private source objects, independently fetched by workers |
 | Media processing | **ffmpeg** | Extracts mono 128 kbps MP3 from video; duration probing |
 | Speech-to-text | **faster-whisper** via **BentoML** | Dedicated inference service; model loaded once at startup |
 | Summarisation | **Ollama / llama3.2** | Local LLM inference, zero usage cost |
@@ -136,6 +143,10 @@ docker compose down
 To use a custom Redis password or model, copy `.env.example` to `.env` and edit
 it before starting. The same Redis password is passed to the Redis server,
 healthcheck, API, worker, and beat scheduler.
+Compose initializes a local MinIO bucket and its cleanup lifecycle before API
+and workers start; no shared upload volume is needed. See the
+[supported deployment limits](docs/deployment-limits.md) for storage, queue
+deadlines, adapter ownership, EKS prerequisites and migration steps.
 
 | Service | URL |
 |---|---|
@@ -178,7 +189,7 @@ kubectl exec -n asyncvtp-dev deployment/ollama -- ollama pull llama3.2
 
 Wait for the application workloads:
 kubectl wait -n asyncvtp-dev --for=condition=available --timeout=300s \
-  deployment/fastapi deployment/celery deployment/celery-beat deployment/whisper-service
+  deployment/fastapi deployment/celery deployment/celery-beat deployment/whisper
 kubectl get pods -n asyncvtp-dev
 ```
 
@@ -241,7 +252,8 @@ the server, health checks, API, workers, and exporter.
 
 ### `POST /api/v1/upload`
 
-Accepts a video upload, stores it under a generated UUID (path-traversal safe), enqueues a Celery task, and returns immediately.
+Accepts a media upload, reserves admission, persists it under a generated UUID
+in S3/MinIO, then enqueues the object reference and returns its task ID.
 
 **Request:** `multipart/form-data` with a `file` field
 
@@ -255,6 +267,21 @@ Accepts a video upload, stores it under a generated UUID (path-traversal safe), 
 ```
 
 If the Redis task queue is unavailable, the API returns HTTP 503 and removes the saved upload.
+Full job capacity returns HTTP 429 with `Retry-After: 30`.
+
+### `GET /api/v1/tasks/{task_id}`
+
+Returns `queued`, `running`, `completed` or `failed`. Queued jobs include a phase
+(`uploading`, `waiting`, `retrying`) and timestamps. Terminal responses include
+the summary or error. Unknown/expired IDs return 404, malformed UUIDs 422, and
+unavailable status storage 503. Results expire after one hour.
+
+```bash
+curl http://localhost:8000/api/v1/tasks/REPLACE_WITH_ACCEPTED_UUID
+```
+
+See [deployment limits](docs/deployment-limits.md) for queue deadlines,
+private deployment requirements and the singleton metrics-adapter owner.
 
 ### `WS /api/v1/ws/{task_id}`
 
@@ -416,7 +443,7 @@ AsyncVTP/
 
 ## Key Design Decisions
 
-- **Celery over `asyncio` for background work.** `asyncio` provides non-blocking I/O within one process but cannot escape the GIL for CPU-bound work. Celery runs ffmpeg, transcription, and LLM calls in separate processes — a 2-minute job has literally zero impact on API responsiveness.
+- **Celery for background work.** Ingestion and execution run in separate services, with bounded admission and independently measurable upload/processing latency.
 
 - **Redis for broker, pub/sub, and result cache.** One infrastructure service bridges producer → worker → WebSocket with no shared memory. Results are also written with `SETEX` (1 h TTL), which eliminates the pub/sub race condition where a client connects *after* the worker has already published.
 

@@ -8,6 +8,7 @@ import ollama
 import pytest
 import redis
 
+import task_store
 from settings import UPLOAD_DIR
 from worker.tasks import (
     HEARTBEAT_TTL_SECONDS,
@@ -55,6 +56,15 @@ def mock_pipeline(tmp_path, monkeypatch):
 
         mock_redis_instance = MagicMock()
         mock_redis_instance.eval.return_value = 1
+        # Simulate the Lua publication's observable effects for pipeline unit tests.
+        # Atomic Redis semantics are exercised against real Redis in integration tests.
+        def evaluate(script, _count, *args):
+            if script == task_store.FINISH_SCRIPT and mock_redis_instance.eval.return_value:
+                mock_redis_instance.setex(args[2], int(args[6]), args[5])
+                mock_redis_instance.publish(args[8], args[5])
+            return mock_redis_instance.eval.return_value
+
+        mock_redis_instance.eval.side_effect = evaluate
         mock_redis.Redis.from_url.return_value = mock_redis_instance
 
         yield {

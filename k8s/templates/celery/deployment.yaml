@@ -19,8 +19,9 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.celery.metricsPort | quote }}
     spec:
+      serviceAccountName: asyncvtp-uploads
       securityContext:
-        # Keep the shared uploads volume writable by the non-root appuser.
+        # Private scratch space; source uploads live in object storage.
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
       containers:
@@ -33,6 +34,10 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        {{- if .Values.objectStorage.credentialsSecret }}
+        - secretRef:
+            name: {{ .Values.objectStorage.credentialsSecret }}
+        {{- end }}
         env:
         - name: REDIS_PASSWORD
           valueFrom:
@@ -48,5 +53,5 @@ spec:
           {{- toYaml .Values.celery.resources | nindent 10 }}
       volumes:
       - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: uploads-pvc
+        emptyDir:
+          sizeLimit: {{ .Values.objectStorage.scratchSize }}

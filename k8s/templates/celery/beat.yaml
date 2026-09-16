@@ -17,6 +17,7 @@ spec:
       labels:
         app: celery-beat
     spec:
+      serviceAccountName: asyncvtp-uploads
       containers:
       - name: celery-beat
         image: {{ include "asyncvtp.image" (dict "image" .Values.celeryBeat.image "root" $) }}
@@ -26,6 +27,10 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        {{- if .Values.objectStorage.credentialsSecret }}
+        - secretRef:
+            name: {{ .Values.objectStorage.credentialsSecret }}
+        {{- end }}
         env:
         - name: REDIS_PASSWORD
           valueFrom:

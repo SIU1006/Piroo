@@ -39,13 +39,25 @@ jobs:
     - name: Install YAML validator
       run: python -m pip install PyYAML==6.0.3
 
+    - name: Verify placement and external-metrics ownership
+      run: |
+        for env in staging prod; do
+          helm template "asyncvtp-$env" k8s --namespace "asyncvtp-$env" -f "k8s/values-$env.yaml" \
+            --set objectStorage.bucket=ci-validation-bucket \
+            --set objectStorage.serviceAccount.roleArn=arn:aws:iam::123456789012:role/ci-validation \
+            > "$RUNNER_TEMP/$env.yaml"
+        done
+        python k8s/validate_deployment.py --staging "$RUNNER_TEMP/staging.yaml" --production "$RUNNER_TEMP/prod.yaml"
+
     - name: Verify rendered monitoring in all overlays
       run: |
         for overlay in dev staging prod; do
           receiver=slack
           if [ "$overlay" = dev ]; then receiver=local; fi
           out="$RUNNER_TEMP/monitoring/$overlay"
-          helm template asyncvtp k8s --namespace monitoring-demo -f "k8s/values-$overlay.yaml" |
+          helm template asyncvtp k8s --namespace monitoring-demo -f "k8s/values-$overlay.yaml" \
+            --set objectStorage.bucket=ci-validation-bucket \
+            --set objectStorage.serviceAccount.roleArn=arn:aws:iam::123456789012:role/ci-validation |
             python monitoring/validate_render.py --output-dir "$out" --receiver "$receiver" --namespace monitoring-demo
           mkdir -p "$out/rules"
           cp "$out/asyncvtp.rules.yml" "$out/rules/asyncvtp.rules.yml"
@@ -111,6 +123,9 @@ jobs:
       run: |
         docker network create asyncvtp-integration
         docker run -d --name redis-integration --network asyncvtp-integration redis:7.4.10
+        docker run -d --name minio-integration --network asyncvtp-integration \
+          -e MINIO_ROOT_USER=dev-only-minio -e MINIO_ROOT_PASSWORD=dev-only-minio-password \
+          quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e server /data
         docker run -d --name whisper-integration --network asyncvtp-integration \
           asyncvtp-whisper:integration
         for _ in {1..60}; do
@@ -132,8 +147,12 @@ jobs:
           -e BROKER_URL=redis://redis-integration:6379/0 \
           -e REDIS_PASSWORD= \
           -e WHISPER_URL=http://whisper-integration:3000 \
+          -e WHISPER_TEST_IMAGE_DIGEST="$(docker image inspect asyncvtp-whisper:integration --format '{{.Id}}')" \
           -e OLLAMA_HOST=http://unused:11434 \
           -e LLM_MODEL=llama3.2 \
+          -e S3_ENDPOINT_URL=http://minio-integration:9000 \
+          -e AWS_ACCESS_KEY_ID=dev-only-minio \
+          -e AWS_SECRET_ACCESS_KEY=dev-only-minio-password \
           -e UPLOAD_DIR=/tmp/asyncvtp-uploads \
           asyncvtp-app:integration sh -c \
           'python -m pip install --user --disable-pip-version-check pytest==9.0.3 && python -m pytest tests/integration -v -p no:cacheprovider'
@@ -142,12 +161,13 @@ jobs:
       if: failure()
       run: |
         docker logs redis-integration || true
+        docker logs minio-integration || true
         docker logs whisper-integration || true
 
     - name: Remove boundary-test services
       if: always()
       run: |
-        docker rm -f redis-integration whisper-integration || true
+        docker rm -f redis-integration whisper-integration minio-integration || true
         docker network rm asyncvtp-integration || true
 
   terraform:

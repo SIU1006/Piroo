@@ -4,7 +4,6 @@ import os
 import time
 from pathlib import Path
 
-import ffmpeg
 import jiwer
 import redis
 import requests
@@ -99,6 +98,7 @@ def check_canary_wer():
         with redis.Redis.from_url(celery_app.conf.broker_url) as client:
             client.setex("canary:evaluation", 3600, json.dumps(report))
         CANARY_WER.set(wer)
+        CANARY_LAST_SUCCESS_UNIX_SECONDS.set(report["evaluated_at"])
         logger.info("Candidate canary WER %.3f across %s clips; revision=%s endpoint=%s",
                     wer, len(manifest), metadata["model_revision"], CANARY_WHISPER_URL)
 

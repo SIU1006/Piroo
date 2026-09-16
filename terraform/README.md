@@ -9,6 +9,7 @@ Provision the AWS EKS cluster, bootstrap ArgoCD, and hand the rest off to GitOps
 | VPC, subnets | Terraform (`terraform-aws-modules/vpc`) |
 | EKS control plane + node group | Terraform (`terraform-aws-modules/eks`) |
 | EBS CSI driver (StorageClass) | Terraform (EKS addon + `gp3` SC) |
+| Private upload buckets, lifecycle and per-environment IRSA roles | Terraform (`uploads.tf`) |
 | ArgoCD | Terraform (`helm_release`) |
 | ApplicationSet (staging + prod) | `kubectl apply` after `terraform apply` (see demo-runbook) |
 | Apps (fastapi, celery, whisper, ...) | **ArgoCD** (GitOps, from `main`) |
@@ -49,17 +50,19 @@ kubectl create namespace asyncvtp-prod
 # run k8s/setup-secrets.ps1 for each namespace, plus the cm-adapter-serving-certs secret
 ```
 
-## Required chart change for EKS
+## Required upload configuration for EKS
 
-`k8s/values-staging.yaml` and `k8s/values-prod.yaml` currently pin
-`persistence.*.storageClass: "standard"` (the kind/local-path class). On EKS that
-class doesn't exist, so change it before deploying:
+Run `terraform output -json upload_storage`. Set `objectStorage.bucket`,
+`objectStorage.region` and `objectStorage.serviceAccount.roleArn` in each
+environment's values file from its output, then commit those non-secret values
+before Argo CD sync. Empty buckets intentionally fail chart rendering.
+AWS credentials come from IRSA; do not add static keys to Helm values.
 
-- **`"gp3"`** — use the `gp3` SC created by this module (recommended, cheaper/faster), or
-- **`""`** (empty) — use the cluster's default (`gp2`).
-
-> `storageClassName` is immutable on PVCs, so make this change on a fresh cluster
-> (before the first ArgoCD sync), not as a live edit.
+Redis, MLflow and Ollama retain separate single-replica `gp3` volumes. Uploads
+use S3, and API/workers mount private scratch `emptyDir` volumes. Follow the
+[deployment limits and migration guide](../docs/deployment-limits.md) before
+upgrading an existing filesystem-based installation. Only production owns the
+shared external-metrics adapter and needs its serving-certificate Secret.
 
 ## Remote state (optional, production-grade)
 
@@ -90,6 +93,8 @@ terraform {
 ```bash
 cd terraform
 terraform destroy
+# Nonempty upload buckets deliberately block deletion. Export any needed data
+# and explicitly empty the demo buckets before retrying destruction.
 # verify nothing is left billing you:
 aws ec2 describe-volumes --region us-east-1 --filters Name=status,Values=available
 aws elbv2 describe-load-balancers --region us-east-1

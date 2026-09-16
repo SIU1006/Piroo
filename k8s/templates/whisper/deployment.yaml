@@ -20,7 +20,7 @@ spec:
         prometheus.io/port: {{ .Values.whisper.service.port | quote }}
     spec:
       securityContext:
-        # Keep the shared uploads volume writable by the non-root appuser.
+        # Inference receives audio over HTTP and needs no upload PVC.
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
       containers:
@@ -32,9 +32,6 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
-        volumeMounts:
-        - name: uploads-storage
-          mountPath: /app/uploads
 
         startupProbe:
           httpGet:
@@ -55,10 +52,6 @@ spec:
         resources:
           {{- toYaml .Values.whisper.resources | nindent 10 }}
 
-      volumes:
-      - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: uploads-pvc
 ---
 apiVersion: v1
 kind: Service

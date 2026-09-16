@@ -43,6 +43,7 @@ function Invoke-RenderAndApply {
 
     $rendered = helm template asyncvtp $ChartDir `
         -f "$ChartDir/values.yaml" -f "$ChartDir/$ValuesFile" `
+        --set objectStorage.bucket=secret-render-only `
         --set "secrets.$SecretKey.create=true" `
         --set "secrets.$SecretKey.value=$Value" `
         --show-only templates/secrets.yaml

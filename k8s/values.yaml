@@ -13,6 +13,26 @@ pipelineConfig:
   OLLAMA_HOST: "http://ollama-service:11434"
   LLM_MODEL: "llama3.2"
 
+# S3-compatible sources; scratch files are private to each API/worker pod.
+objectStorage:
+  bucket: asyncvtp-uploads
+  endpoint: http://minio-service:9000
+  region: us-east-1
+  credentialsSecret: uploads-object-storage
+  scratchSize: 10Gi
+  serviceAccount:
+    roleArn: ""
+
+admission:
+  maxOutstanding: 100 # includes uploads, queued, running and retrying tasks
+  queueTimeoutSeconds: 600
+  uploadTimeoutSeconds: 120
+
+minio:
+  enabled: true # throwaway development service, not a production storage cluster
+  image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
+  size: 10Gi
+
 # ------------------------------------------------------------------
 # Secrets. For devs only. In staging/prod, try sealed-secrets, External Secrets, CI/CD vault injection, etc.
 # ------------------------------------------------------------------
@@ -37,10 +57,6 @@ secrets:
 # Persistent volumes
 # ------------------------------------------------------------------
 persistence:
-  uploads:
-    size: 10Gi
-    accessMode: ReadWriteOnce # real deployments needing multi-pod access should use ReadWriteMany (e.g. AWS EFS)
-    storageClass: ""
   mlflow:
     size: 2Gi
     accessMode: ReadWriteOnce
@@ -198,6 +214,7 @@ mlflow:
 # ------------------------------------------------------------------
 prometheus:
   enabled: true
+  externalMetricNamespaces: [] # singleton adapter's Prometheus also scrapes these queues
   smokeAlert:
     enabled: false
     value: 0
@@ -253,12 +270,9 @@ alertmanager:
       memory: 128Mi
       cpu: 100m
 
-# prometheus-adapter powers the External metric (celery queue depth) the
-# Celery HPA scales on. Requires k8s/generate_adapter_certs.sh-equivalent
-# TLS material in a Secret named cm-adapter-serving-certs (not created by
-# this chart — see NOTES.txt).
+# One owner per cluster: asyncvtp-prod. See docs/deployment-limits.md.
 prometheusAdapter:
-  enabled: true
+  enabled: false
   image:
     repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
     tag: v0.12.0

@@ -23,9 +23,14 @@ installing, e.g. via CI/CD, sealed-secrets, or External Secrets Operator):
 
 prometheus-adapter is enabled, which backs the Celery HPA's external queue-depth
 metric. It expects a pre-existing TLS Secret named "cm-adapter-serving-certs"
-(same as the original k8s/generate_adapter_certs.sh workflow) — create that
-before the adapter pod will become healthy.
+in the singleton owner's namespace. On the shared staging/prod cluster only
+asyncvtp-prod owns this APIService. See docs/deployment-limits.md and
+docs/demo-runbook.md for certificate creation and ownership migration.
 {{- end }}
+
+Source uploads use bucket {{ .Values.objectStorage.bucket }}. API/workers use
+private scratch directories and no shared uploads PVC. For EKS, configure the
+per-environment bucket and IRSA role from terraform output upload_storage.
 
 Once ollama is running, pull the summarization model once per cluster:
 
