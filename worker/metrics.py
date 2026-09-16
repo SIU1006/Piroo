@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
@@ -35,6 +36,15 @@ CANARY_WER = Gauge(
     "canary_wer",
     "Word error rate of the most recent synthetic canary check against known reference clips.",
 )
+CANARY_LAST_SUCCESS_UNIX_SECONDS = Gauge(
+    "canary_last_success_timestamp_seconds",
+    "Unix timestamp of this worker's most recent successful synthetic transcription check.",
+)
+WORKER_STARTED_UNIX_SECONDS = Gauge(
+    "celery_worker_start_timestamp_seconds",
+    "Unix timestamp when this Celery worker's metrics process started.",
+)
+WORKER_STARTED_UNIX_SECONDS.set(time.time())
 
 _started = False
 

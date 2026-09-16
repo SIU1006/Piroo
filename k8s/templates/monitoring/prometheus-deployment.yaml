@@ -15,6 +15,9 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/monitoring/prometheus-configmap.yaml") . | sha256sum }}
+        checksum/rules: {{ include (print $.Template.BasePath "/monitoring/alert-rules.yaml") . | sha256sum }}
     spec:
       serviceAccountName: prometheus
       containers:
@@ -26,6 +29,9 @@ spec:
         - name: config
           mountPath: /etc/prometheus/prometheus.yml
           subPath: prometheus.yml
+        - name: rules
+          mountPath: /etc/prometheus/rules
+          readOnly: true
 
         resources:
           {{- toYaml .Values.prometheus.resources | nindent 10 }}
@@ -34,6 +40,9 @@ spec:
       - name: config
         configMap:
           name: prometheus-config
+      - name: rules
+        configMap:
+          name: prometheus-alert-rules
 ---
 apiVersion: v1
 kind: Service
