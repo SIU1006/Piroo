@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "filenames": ["clip_00.wav", "clip_01.wav", "clip_02.wav", "clip_03.wav", "clip_04.wav", "clip_05.wav", "clip_06.wav", "clip_07.wav", "clip_08.wav", "clip_09.wav", "clip_10.wav", "clip_11.wav", "clip_12.wav", "clip_13.wav", "clip_14.wav", "clip_15.wav", "clip_16.wav", "clip_17.wav", "clip_18.wav", "clip_19.wav"],
+  "transcribe": {"language": "en", "beam_size": 5, "temperature": 0, "vad_filter": false},
+  "normalization": "lowercase_remove_punctuation_collapse_spaces_v1",
+  "device": "cpu",
+  "compute_type": "int8"
+}

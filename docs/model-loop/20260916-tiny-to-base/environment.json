@@ -1,0 +1,17 @@
+{
+  "checkout_commit": "8ce8a7c52e081dcc38e54de9eaa6a44b8f137e76",
+  "evaluation_runtime_image": "sha256:05e2e632baf7eb94051d82e7e8f01b245cc45726e4beb190376d0ed8c57c9ee3",
+  "source_hashes": {
+    "model_eval/benchmark.py": "6E68829A5BF0306038BEFDB0496D590F144BDD1ACCC6B0F84822AC7E34A4AB32",
+    "model_eval/evaluation_config.json": "EFEB3CD856A96381E6C29E385B1E1D54B3855AD59F57DA4C394884F70809A5B1",
+    "summary_contract.py": "70484A59482033716319CA6F836698DB37E1A2BAF99895683F427CA2E138955D",
+    "model_eval/registry.py": "E504F489CFD864633FDFE366B434768E07930F60366854955FBD36A71F9E680B",
+    "model_eval/provenance.py": "B92342096D50BC21C5F751DFA338EBDD9390D2390F5690B710974D7BD6723A6B",
+    "inference/whisper_service.py": "23C9D3204BE7EA9CBB030BFE50F274895631D43AD2C3A538663E256DA80CDFF1"
+  },
+  "cpu": "AMD Ryzen 5 7600X 6-Core Processor             ",
+  "docker": "12 CPUs 25200631808 bytes",
+  "scope": "isolated local Docker network and SQLite MLflow registry; no staging/production alias or deployment changed",
+  "date": "2026-09-16T10:54:33.4889655+00:00",
+  "memory_bytes": 33485803520
+}

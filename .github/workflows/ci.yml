@@ -198,9 +198,42 @@ jobs:
           exit 1
         fi
 
-    - name: WER regression gate
-      working-directory: model_eval
-      run: python check_regression.py
+    - name: Build the image that will be evaluated and published
+      run: |
+        SIZE=$(python model_eval/get_production_size.py)
+        docker build -f Dockerfile.inference --build-arg WHISPER_MODEL_SIZE="$SIZE" -t whisper:evaluated .
+        echo "WHISPER_EVALUATED_IMAGE=$(docker image inspect whisper:evaluated --format '{{.Id}}')" >> "$GITHUB_ENV"
+        docker run -d --name whisper-evaluation -p 127.0.0.1:13000:3000 whisper:evaluated
+        for _ in {1..60}; do
+          if curl --fail --silent http://127.0.0.1:13000/readyz; then exit 0; fi
+          sleep 5
+        done
+        docker logs whisper-evaluation
+        exit 1
+
+    - name: WER regression gate against the actual image
+      run: python -m model_eval.check_regression --endpoint http://127.0.0.1:13000 --deployed-image "$WHISPER_EVALUATED_IMAGE" --output ci-evaluation.json
+
+    - name: Preserve the evaluated image
+      run: docker save whisper:evaluated -o whisper-evaluated.tar
+
+    - name: Upload the evaluated image
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluated-whisper-${{ github.sha }}
+        path: whisper-evaluated.tar
+        retention-days: 3
+
+    - name: Preserve evaluation evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-evaluation-${{ github.sha }}
+        path: ci-evaluation.json
+
+    - name: Stop evaluation service
+      if: always()
+      run: docker rm -f whisper-evaluation || true
 
   build-check: # before actual pushing
     runs-on: ubuntu-latest
@@ -289,20 +322,28 @@ jobs:
         cache-to: type=gha,mode=max,scope=fastapi # Buildx recognizes unchanged layer's hash and restores from GHA cache, no need reinstalling ML dependencies
 
 
-    - name: Build and push Whisper image
-      uses: docker/build-push-action@v5
+    - name: Download the evaluated Whisper image
+      uses: actions/download-artifact@v4
       with:
-        context: .
-        file: Dockerfile.inference
-        push: true
-        tags: |
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ steps.model-size.outputs.size }}
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ github.sha }}
-        build-args: |
-          WHISPER_MODEL_SIZE=${{ steps.model-size.outputs.size }}
-        cache-from: type=gha,scope=whisper-${{ steps.model-size.outputs.size }}
-        cache-to: type=gha,mode=max,scope=whisper-${{ steps.model-size.outputs.size }}
+        name: evaluated-whisper-${{ github.sha }}
+
+    - name: Publish exactly the evaluated image
+      env:
+        MODEL_SIZE: ${{ steps.model-size.outputs.size }}
+        IMAGE_SHA: ${{ github.sha }}
+      run: |
+        docker load -i whisper-evaluated.tar
+        for TAG in latest "$MODEL_SIZE" "$IMAGE_SHA"; do
+          docker tag whisper:evaluated "ghcr.io/$GH_USERNAME/whisper:$TAG"
+          docker push "ghcr.io/$GH_USERNAME/whisper:$TAG"
+        done
+        docker image inspect "ghcr.io/$GH_USERNAME/whisper:$IMAGE_SHA" --format '{{json .RepoDigests}}' > published-image-digests.json
+
+    - name: Preserve publication identity
+      uses: actions/upload-artifact@v4
+      with:
+        name: published-whisper-${{ github.sha }}
+        path: published-image-digests.json
 
     - name: Bump staging image tags to this commit
       run: |

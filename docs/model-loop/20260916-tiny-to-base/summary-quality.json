@@ -1,0 +1,66 @@
+{
+  "dataset_sha256": "f5e5c5e9fcd8e726e7d9d073ee6aed634fcc6ba2a1ceb6e54863283e0d074a0a",
+  "model_digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+  "model": "llama3.2",
+  "deployed_image": "docker.io/ollama/ollama@sha256:77f1a2a54460f0380f2611e1464233d9b82cb6e58afc8f60abec0061049d2d82",
+  "prompt": "Summarise this transcript in 3-5 sentences: {transcript}",
+  "options": {
+    "temperature": 0,
+    "seed": 42
+  },
+  "generated_at": 1789555906.0410805,
+  "cases": [
+    {
+      "id": "incident",
+      "transcript": "On Tuesday the upload API returned errors for twelve minutes. Redis was healthy. The cause was a full uploads volume. The team removed abandoned temporary files and service recovered. No customer files were lost. The follow-up is to alert at eighty percent disk usage.",
+      "required_facts": [
+        "12-minute upload API outage",
+        "full uploads volume was the cause",
+        "cleanup restored service",
+        "no customer files lost",
+        "80% disk alert follow-up"
+      ],
+      "contradictions": [
+        "Redis caused the incident",
+        "customer files were lost"
+      ],
+      "summary": "Here is a summary of the transcript in 4 sentences:\n\nThe upload API experienced errors for 12 minutes on Tuesday, but fortunately, no customer files were lost. The issue was caused by a full uploads volume, which was resolved by removing abandoned temporary files. The team took proactive steps to prevent similar issues in the future. To mitigate similar problems, the team plans to implement a disk usage alert system to notify when the disk usage reaches 80%.",
+      "seconds": 41.05972970200037
+    },
+    {
+      "id": "experiment",
+      "transcript": "We compared two transcription models on the same twenty clips. Model A had a word error rate of eight percent and Model B six percent. Model B took twice as long on our CPU. We chose Model A for the interactive service because latency matters more there. We have not tested either model on noisy recordings.",
+      "required_facts": [
+        "same 20 clips",
+        "A WER 8%, B WER 6%",
+        "B twice as slow on CPU",
+        "A selected for latency",
+        "no noisy-audio evaluation"
+      ],
+      "contradictions": [
+        "B selected for production",
+        "noise robustness established"
+      ],
+      "summary": "Here is a summary of the transcript in 4 sentences:\n\nTwo transcription models, A and B, were compared on the same 20 clips. Model A had a lower word error rate (8%) compared to Model B (6%). However, Model B was significantly slower than Model A, which is a consideration for an interactive service where latency is crucial. Model A was ultimately chosen for the interactive service due to its lower latency, despite not having been tested on noisy recordings.",
+      "seconds": 23.788543522000055
+    },
+    {
+      "id": "decision",
+      "transcript": "The team proposed adding a GPU worker next month. The estimated monthly cost is three hundred dollars, but finance has not approved it. Until approval, the CPU service stays in place. Maya will collect peak-hour queue measurements by Friday. No deployment date has been agreed.",
+      "required_facts": [
+        "GPU proposal for next month",
+        "$300 estimated monthly cost",
+        "finance approval pending",
+        "CPU remains until approval",
+        "Maya measures queue by Friday",
+        "no agreed deployment date"
+      ],
+      "contradictions": [
+        "GPU approved",
+        "deployment date confirmed"
+      ],
+      "summary": "Here is a summary of the transcript in 3-5 sentences:\n\nThe team is considering adding a GPU worker to their system, but the estimated monthly cost of $300 has not been approved by finance. Until approval, the current CPU service will remain in place. Maya will collect peak-hour queue measurements by Friday, but a deployment date has not been agreed upon.",
+      "seconds": 17.343042431999947
+    }
+  ]
+}

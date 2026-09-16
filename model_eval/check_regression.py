@@ -1,76 +1,37 @@
+"""CI compares exactly the baseline's dataset and selected configuration."""
 import argparse
 import json
-import sys
 from pathlib import Path
 
-from benchmark import benchmark_model
-
-'''CI Gate Benchmark current candidate against eval_data/
-- fails if WER regressed past threshold vs baseline.json
-
-Usage:
-    python model_eval/check_regression.py --model-size base --max-regression 0.02
-'''
-
-BASELINE_PATH = Path(__file__).parent / "baseline.json"
-
-def load_baseline() -> dict | None:
-    if not BASELINE_PATH.exists():
-        return None
-    return json.loads(BASELINE_PATH.read_text())
-
-def _parser_add_arguments():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--model-size", default=None,
-        help="Which size to benchmark (default: baseline.json's model_size, or 'base' if no baseline exists yet)",
-    )
-    parser.add_argument(
-        "--n-clips", type=int, default=20,
-        help="How many clips from the fixed eval set to check against (default: 20)",
-    )
-    parser.add_argument(
-        "--max-regression", type=float, default=0.02,
-        help="Max allowed WER increase over the baseline before failing (default: 0.02)",
-    )
-    parser.add_argument(
-        "--hard-ceiling", type=float, default=0.30,
-        help="Absolute WER ceiling regardless of baseline - catches a bad/stale baseline too (default: 0.30)",
-    )
-
-    args = parser.parse_args()
-    return args
+from model_eval.benchmark import benchmark_model
+from model_eval.provenance import DEFAULT_CONFIG, dataset_identity, load_config, require_comparable
+from model_eval.registry import BASELINE_PATH, gate
 
 
 def main():
-    args = _parser_add_arguments()
-
-    baseline = load_baseline()
-    model_size = args.model_size or (baseline["model_size"] if baseline else "base")
-
-    print(f"Benchmarking '{model_size}' against {args.n_clips} clips from the fixed eval set...")
-    result = benchmark_model(model_size, max_clips=args.n_clips)
-    wer, rtf = result["wer"], result["rtf"]
-    print(f"  WER: {wer:.3f} | RTF: {rtf:.3f} (n_clips={result['n_clips']})")
-
-    if wer > args.hard_ceiling:
-        print(f"FAIL: WER {wer:.3f} exceeds the hard ceiling ({args.hard_ceiling}).")
-        sys.exit(1)
-
-    if baseline is None:
-        print(f"No {BASELINE_PATH.name} yet - skipping the regression check (only the hard ceiling applies).")
-        print("Run model_eval/promote_model.py locally after a real promotion to create one, then commit it.")
-        return
-
-    baseline_wer = baseline["wer"]
-    regression = wer - baseline_wer
-    print(f"  baseline WER: {baseline_wer:.3f} (model_size={baseline['model_size']}) | delta: {regression:+.3f}")
-
-    if regression > args.max_regression:
-        print(f"FAIL: WER regressed by {regression:.3f}, which exceeds the allowed {args.max_regression:.3f}.")
-        sys.exit(1)
-
-    print("PASS: no meaningful WER regression detected.")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-size")
+    parser.add_argument("--model-revision")
+    parser.add_argument("--endpoint")
+    parser.add_argument("--deployed-image", default="not-deployed")
+    parser.add_argument("--baseline-path", type=Path, default=BASELINE_PATH)
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--max-regression", type=float, default=0.02)
+    parser.add_argument("--hard-ceiling", type=float, default=0.30)
+    parser.add_argument("--rtf-budget", type=float, default=2.0)
+    parser.add_argument("--output", type=Path, default=Path("ci-evaluation.json"))
+    args = parser.parse_args()
+    baseline = json.loads(args.baseline_path.read_text())
+    identity, _ = dataset_identity(Path(__file__).parent / "eval_data", load_config(args.config))
+    require_comparable(baseline, {"evaluation": identity})
+    size = args.model_size or baseline["model_size"]
+    revision = args.model_revision or (baseline["model_revision"]
+                                       if size == baseline["model_size"] else None)
+    candidate = benchmark_model(size, config_path=args.config, revision=revision,
+                                endpoint=args.endpoint, deployed_image=args.deployed_image)
+    args.output.write_text(json.dumps(candidate, indent=2) + "\n")
+    gate(candidate, baseline, args.hard_ceiling, args.max_regression, args.rtf_budget)
+    print(f"PASS: same examples; WER={candidate['wer']:.4f}, RTF={candidate['rtf']:.3f}")
 
 
 if __name__ == "__main__":

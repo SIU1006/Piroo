@@ -26,9 +26,11 @@ ENV WHISPER_MODEL_SIZE=${WHISPER_MODEL_SIZE}
 
 ENV HF_HOME=/home/appuser/.cache/huggingface
 RUN mkdir -p /home/appuser/.cache/huggingface && chown -R appuser:appuser /home/appuser/.cache
+RUN chown appuser:appuser /app
 
 USER appuser
-RUN python -c "import os; from faster_whisper import WhisperModel; WhisperModel(os.environ['WHISPER_MODEL_SIZE'], device='cpu', compute_type='int8')"
+COPY --chown=appuser:appuser model_eval/model_revisions.json /app/model_revisions.json
+RUN python -c "import os,json; from pathlib import Path; from huggingface_hub import snapshot_download; size=os.environ['WHISPER_MODEL_SIZE']; revision=json.loads(Path('/app/model_revisions.json').read_text())[size]; snapshot_download('Systran/faster-whisper-'+size, revision=revision); Path('/app/model_revision.txt').write_text(revision)"
 
 # force offline mode so huggingface_hub/faster-whisper never makes a network call to check for updated files at runtime
 USER root

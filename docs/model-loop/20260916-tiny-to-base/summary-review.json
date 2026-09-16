@@ -1,0 +1,31 @@
+{
+  "review_type": "assistant qualitative review; not an independent human or automated judge study",
+  "rubric": "Check each predefined required fact for complete and accurate support. Partial facts receive no full coverage credit. Record critical contradictions separately; inspect 3-5 sentence body and unwanted prefaces.",
+  "cases": [
+    {
+      "id": "incident",
+      "required_fact_checks": ["pass", "pass", "pass", "pass", "pass"],
+      "critical_contradictions": [],
+      "notes": "All five specified facts are represented. The sentence saying proactive prevention steps were taken overstates a planned follow-up; the summary also adds a preface and repeats prevention wording.",
+      "body_sentences": 4
+    },
+    {
+      "id": "experiment",
+      "required_fact_checks": ["pass", "fail", "partial", "pass", "partial"],
+      "critical_contradictions": ["Calls A's 8% WER lower than B's 6% WER, reversing the accuracy comparison."],
+      "notes": "Keeps the same-set comparison and latency-based choice. Loses the exact twice-as-slow measurement and restricts the untested-noisy-audio caveat to the selected model. Numeric percentages are copied but their relationship is wrong.",
+      "body_sentences": 4
+    },
+    {
+      "id": "decision",
+      "required_fact_checks": ["fail", "pass", "pass", "pass", "pass", "pass"],
+      "critical_contradictions": [],
+      "notes": "Preserves approval uncertainty, cost, CPU fallback, owner/deadline and lack of deployment date. Omits the proposed next-month timing and adds a preface.",
+      "body_sentences": 3
+    }
+  ],
+  "fully_supported_required_facts": 12,
+  "required_facts": 16,
+  "cases_with_critical_contradictions": 1,
+  "conclusion": "Diagnostic failures identified; this sample does not establish acceptable summary quality. Expand the review set and independently review comparative numbers and uncertainty before claiming quality improvements."
+}

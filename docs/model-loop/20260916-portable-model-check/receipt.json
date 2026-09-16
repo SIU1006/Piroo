@@ -1,0 +1,69 @@
+{
+  "run": "20260916-portable-model-check",
+  "scope": "isolated local Docker and SQLite MLflow",
+  "phases": {
+    "evaluate": {
+      "completed": true,
+      "model_size": "base",
+      "model_revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+      "deployed_image": "sha256:1db8d000b80620b6063735e48da4b676815829f2cf2d9f6de818878b5ffbf98b",
+      "wer": 0.06683168316831684,
+      "rtf": 0.10937331316160868,
+      "n_clips": 20,
+      "evaluated_at": 1789556606.9841309
+    },
+    "promote": {
+      "completed": true
+    },
+    "verify": {
+      "completed": true,
+      "model_size": "base",
+      "model_revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+      "deployed_image": "sha256:1db8d000b80620b6063735e48da4b676815829f2cf2d9f6de818878b5ffbf98b",
+      "wer": 0.06683168316831684,
+      "rtf": 0.13000275480228654,
+      "n_clips": 20,
+      "evaluated_at": 1789556654.2128525
+    },
+    "rollback": {
+      "completed": true
+    },
+    "verify-rollback": {
+      "completed": true,
+      "model_size": "tiny",
+      "model_revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+      "deployed_image": "sha256:af62e9b3f04e7b1684ea1d08095da5e900ecfd30fe2f6d941c50c3167f0eb7e6",
+      "wer": 0.06683168316831684,
+      "rtf": 0.06309886509883399,
+      "n_clips": 20,
+      "evaluated_at": 1789556676.1965356
+    }
+  },
+  "evaluation": {
+    "dataset_sha256": "7e2881fd9e66a0bd020bf6e0b33582a810749d3189712e613f4e91dbf7cda577",
+    "subset_sha256": "a76f8b024e6a2c5e37e3324f92bcb3852c26010e041740c623e6d8f806744554",
+    "config_sha256": "839b9dc7de24ef0e7081701b0d79f420a38e30824191cd990ccd8e1e83fdb22d"
+  },
+  "deployment": {
+    "container_id": "4d9cdb7dcc8f2328261e3b6f4cf833e5d85e33f1b01a49f395722ece177eb15e",
+    "image_id": "sha256:1db8d000b80620b6063735e48da4b676815829f2cf2d9f6de818878b5ffbf98b",
+    "image_ref": "asyncvtp-model-loop:base",
+    "started_at": "2026-09-16T11:03:49.226376291Z"
+  },
+  "rollback-deployment": {
+    "container_id": "7c2643aa0d3866023bda511ee3be11012faea578372e2437df7b59aa35eafcb4",
+    "image_id": "sha256:af62e9b3f04e7b1684ea1d08095da5e900ecfd30fe2f6d941c50c3167f0eb7e6",
+    "image_ref": "asyncvtp-model-loop:tiny",
+    "started_at": "2026-09-16T11:04:19.593711244Z"
+  },
+  "rollback": {
+    "production_version": 1,
+    "deployed_image": "sha256:af62e9b3f04e7b1684ea1d08095da5e900ecfd30fe2f6d941c50c3167f0eb7e6"
+  },
+  "portable_pyfunc": {
+    "model_version": 2,
+    "loaded_outside_repository_working_directory": true,
+    "transcript_matches_candidate_http_evaluation": true,
+    "transcript": " For some reason, he felt as if something might come that way and was relieved when all the envelopes had been scanned and nothing suspicious noticed."
+  }
+}

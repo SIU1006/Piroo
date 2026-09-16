@@ -1,0 +1,10 @@
+{
+  "whisper-canary-service": {
+    "app": "whisper",
+    "track": "canary"
+  },
+  "whisper-service": {
+    "app": "whisper",
+    "track": "stable"
+  }
+}

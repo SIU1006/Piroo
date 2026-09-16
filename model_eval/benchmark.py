@@ -1,101 +1,89 @@
-import json
+"""One pinned evaluation contract for local and deployed model comparisons."""
+import importlib.metadata
+import re
 import time
 from pathlib import Path
 
 import jiwer
-from faster_whisper import WhisperModel
+import requests
 
-'''
-Core Harness (not run directly; imported by the others).
-1. Loads one whisper model size
-2. Transcribes every clip in eval_data/
-3. Computes real WER (vs. the reference transcripts) and RTF (latency).
-'''
-
-
-'''Normalize both reference and hypothesis before diffing so WER reflects real transcription errors, not casing/punctuation noise faster-whisper doesn't even try to match.'''
-
-EVAL_DIR = Path(__file__).parent / "eval_data"
-MANIFEST_PATH = EVAL_DIR / "manifest.json"
-
-_WER_TRANSFORM = jiwer.Compose(
-    [
-        jiwer.ToLowerCase(),
-        jiwer.RemovePunctuation(),
-        jiwer.RemoveMultipleSpaces(),
-        jiwer.Strip(),
-        jiwer.ReduceToListOfListOfWords(),
-    ]
+from model_eval.provenance import (
+    DEFAULT_CONFIG,
+    ROOT,
+    dataset_identity,
+    load_config,
+    revision_for,
 )
 
-def load_manifest(max_clips: int | None = None) -> list[dict]:
-    if not MANIFEST_PATH.exists():
-        raise FileNotFoundError(
-            f"{MANIFEST_PATH} not found. Run `python model_eval/prepare_eval_set.py` first to build the fixed eval set."
-        )
+EVAL_DIR = ROOT / "eval_data"
+_WER_TRANSFORM = jiwer.Compose([
+    jiwer.ToLowerCase(), jiwer.RemovePunctuation(), jiwer.RemoveMultipleSpaces(),
+    jiwer.Strip(), jiwer.ReduceToListOfListOfWords(),
+])
 
-    manifest = json.loads(MANIFEST_PATH.read_text())
-    if max_clips is not None:
-        manifest = manifest[:max_clips]
-    return manifest
 
-def benchmark_model(model_size: str, device: str = "cpu", compute_type: str = "int8", max_clips: int | None = None) -> dict:
+def benchmark_model(model_size, config_path=DEFAULT_CONFIG, endpoint=None,
+                    deployed_image="not-deployed", revision=None, eval_dir=EVAL_DIR):
+    config = load_config(config_path)
+    identity, manifest = dataset_identity(eval_dir, config)
+    revision = revision or revision_for(model_size)
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("Model revision must be an immutable 40-character commit")
+    started = time.perf_counter()
+    if endpoint:
+        metadata = requests.post(f"{endpoint}/metadata", timeout=30).json()
+        expected = {"model_size": model_size, "model_revision": revision,
+                    "transcribe": config["transcribe"], "device": config["device"],
+                    "compute_type": config["compute_type"]}
+        if any(metadata.get(key) != value for key, value in expected.items()):
+            raise ValueError("Live model metadata does not match the evaluation contract")
+        if not re.fullmatch(r"(?:[^\s]+@)?sha256:[0-9a-f]{64}", deployed_image):
+            raise ValueError("Deployed evaluation requires an immutable image digest")
+        packages = metadata["packages"]
+    else:
+        from faster_whisper import WhisperModel
+        from huggingface_hub import snapshot_download
 
-    manifest = load_manifest(max_clips=max_clips)
-
-    load_start = time.perf_counter()
-    model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    load_seconds = time.perf_counter() - load_start
-
+        path = snapshot_download(f"Systran/faster-whisper-{model_size}", revision=revision)
+        model = WhisperModel(path, device=config["device"], compute_type=config["compute_type"])
+        packages = {name: importlib.metadata.version(name) for name in
+                    ("faster-whisper", "ctranslate2", "jiwer")}
+    load_seconds = time.perf_counter() - started
     references, hypotheses, per_clip = [], [], []
-    total_audio_seconds = 0.0
-    total_transcribe_seconds = 0.0
-
-    # transcribe every clip in eval set
     for clip in manifest:
-        audio_path = EVAL_DIR / clip["filename"]
-
-        transcribe_start = time.perf_counter()
-        segments, info = model.transcribe(str(audio_path))
-        hypothesis = " ".join(segment.text for segment in segments)
-        transcribe_seconds = time.perf_counter() - transcribe_start
-
+        audio_path = Path(eval_dir) / clip["filename"]
+        started = time.perf_counter()
+        if endpoint:
+            with audio_path.open("rb") as stream:
+                response = requests.post(f"{endpoint}/transcribe",
+                                         files={"audio_file": (clip["filename"], stream, "audio/wav")},
+                                         timeout=600)
+            response.raise_for_status()
+            if not response.headers.get("content-type", "").startswith("text/plain"):
+                raise ValueError("Whisper transcription contract must be text/plain")
+            hypothesis = response.text
+        else:
+            segments, _ = model.transcribe(str(audio_path), **config["transcribe"])
+            hypothesis = " ".join(segment.text for segment in segments)
+        seconds = time.perf_counter() - started
         references.append(clip["reference_text"])
         hypotheses.append(hypothesis)
-        total_audio_seconds += info.duration
-        total_transcribe_seconds += transcribe_seconds
-
-        # return aggregate latency + WER metrics plus a per-clip breakdown for debugging/audit.
-        clip_wer = jiwer.wer(
-            clip["reference_text"], hypothesis,
-            reference_transform=_WER_TRANSFORM, hypothesis_transform=_WER_TRANSFORM,
-        )
-        per_clip.append(
-            {
-                "filename": clip["filename"],
-                "reference": clip["reference_text"],
-                "hypothesis": hypothesis,
-                "wer": clip_wer,
-                "transcribe_seconds": transcribe_seconds,
-                "audio_seconds": info.duration,
-            }
-        )
-
-    corpus_wer = jiwer.wer(
-        references, hypotheses,
-        reference_transform=_WER_TRANSFORM, hypothesis_transform=_WER_TRANSFORM,
-    )
-    rtf = total_transcribe_seconds / total_audio_seconds if total_audio_seconds > 0 else float("nan")
-
+        per_clip.append({
+            "filename": clip["filename"], "reference": clip["reference_text"],
+            "hypothesis": hypothesis, "audio_seconds": clip["duration_seconds"],
+            "transcribe_seconds": seconds,
+            "wer": jiwer.wer(clip["reference_text"], hypothesis,
+                             reference_transform=_WER_TRANSFORM, hypothesis_transform=_WER_TRANSFORM),
+        })
+    audio_seconds = sum(clip["audio_seconds"] for clip in per_clip)
+    transcribe_seconds = sum(clip["transcribe_seconds"] for clip in per_clip)
     return {
-        "model_size": model_size,
-        "device": device,
-        "compute_type": compute_type,
-        "load_seconds": load_seconds,
-        "n_clips": len(manifest),
-        "total_audio_seconds": total_audio_seconds,
-        "total_transcribe_seconds": total_transcribe_seconds,
-        "rtf": rtf,
-        "wer": corpus_wer,
-        "per_clip": per_clip,
+        "schema_version": 2, "model_size": model_size, "model_revision": revision,
+        "deployed_image": deployed_image, "packages": packages, "evaluation": identity,
+        "device": config["device"], "compute_type": config["compute_type"],
+        "load_seconds": load_seconds, "n_clips": len(per_clip),
+        "total_audio_seconds": audio_seconds, "total_transcribe_seconds": transcribe_seconds,
+        "rtf": transcribe_seconds / audio_seconds, "evaluated_at": time.time(),
+        "wer": jiwer.wer(references, hypotheses, reference_transform=_WER_TRANSFORM,
+                         hypothesis_transform=_WER_TRANSFORM), "per_clip": per_clip,
     }

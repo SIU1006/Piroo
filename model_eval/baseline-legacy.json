@@ -1,0 +1,7 @@
+{
+  "model_size": "small",
+  "wer": 0.03307086614173228,
+  "rtf": 0.42611901307156674,
+  "registered_model_name": "video-transcriber-whisper",
+  "version": "7"
+}

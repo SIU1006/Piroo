@@ -21,6 +21,7 @@ from settings import (
     WHISPER_URL,
     with_password,
 )
+from summary_contract import SUMMARY_OPTIONS, SUMMARY_PROMPT
 from worker.celery_app import TASK_HARD_TIME_LIMIT_SECONDS, celery_app
 from worker.metrics import (
     CANARY_WER,  # noqa: F401 - re-exported so worker/canary.py can share one metrics module
@@ -182,20 +183,16 @@ def transcribe(audio_path: str, whisper_url: str) -> str:
 
 def summarize(transcript: str, model: str) -> str:
     client = ollama.Client(timeout=300)
-    try:
-        response_llm = client.chat(
-            model=model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Summarise this transcript in 3-5 sentences: {transcript}",
-                }
-            ],
-        )
-    except ollama.ResponseError as e:
-        if e.status_code == 429 or e.status_code >= 500:
-            raise TransientServiceError(f"Ollama service error: {e}") from e
-        raise
+    response_llm = client.chat(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": SUMMARY_PROMPT.format(transcript=transcript),
+            }
+        ],
+        options=SUMMARY_OPTIONS,
+    )
     return response_llm.message.content
 
 def publish_result(r, task_id: str, payload: dict) -> None:
