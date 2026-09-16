@@ -1,0 +1,49 @@
+{
+  "snapshot_at": 1789543938.522392,
+  "accepted_uploads": 5,
+  "keepalives": 3,
+  "start_sources": {
+    "task_started_event": 1,
+    "inferred_from_success_runtime": 4
+  },
+  "completed": 5,
+  "failed": 0,
+  "pending": 0,
+  "seconds": {
+    "upload_seconds": {
+      "samples": 5,
+      "mean": 0.0364375114440918,
+      "p50": 0.03223419189453125,
+      "p95": 0.05463600158691406,
+      "max": 0.05463600158691406
+    },
+    "queue_wait_lower_seconds": {
+      "samples": 5,
+      "mean": 0,
+      "p50": 0,
+      "p95": 0,
+      "max": 0
+    },
+    "queue_wait_upper_seconds": {
+      "samples": 5,
+      "mean": 0.03424816131591797,
+      "p50": 0.029515743255615234,
+      "p95": 0.05318188667297363,
+      "max": 0.05318188667297363
+    },
+    "processing_seconds": {
+      "samples": 5,
+      "mean": 34.15646252699953,
+      "p50": 34.59145642299882,
+      "p95": 47.88174512700061,
+      "max": 47.88174512700061
+    },
+    "total_seconds": {
+      "samples": 5,
+      "mean": 34.190156078338624,
+      "p50": 34.61604285240173,
+      "p95": 47.91791367530823,
+      "max": 47.91791367530823
+    }
+  }
+}

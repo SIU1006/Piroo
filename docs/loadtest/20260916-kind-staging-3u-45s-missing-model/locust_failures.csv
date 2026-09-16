@@ -1,0 +1,2 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+WS,result wait (error),"RuntimeError(""model 'llama3.2' not found (status code: 404)"")",11,2026-09-16T07:12:59Z,2026-09-16T07:13:44Z

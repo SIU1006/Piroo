@@ -15,7 +15,7 @@ This is my first MLOPS related project. I am trying my best to work it through a
 
 Transcribing a 50 MB video inside a standard HTTP request guarantees browser timeouts and blocked server threads. The solution is to **decouple job ingestion from job execution**:
 
-- **FastAPI** acknowledges uploads in under 200 ms with a `task_id`.
+- **FastAPI** acknowledges accepted uploads with a `task_id`; measured latency and run conditions are recorded in [Load Test Results](docs/load-test-results.md).
 - A **Celery** worker fleet performs the heavy pipeline — ffmpeg audio extraction, Whisper transcription, LLM summarisation — in completely separate processes.
 - The result is pushed to the browser over **WebSocket** via Redis pub/sub. No polling, no dangling HTTP connections.
 
@@ -405,7 +405,7 @@ AsyncVTP/
 
 - **BentoML as a dedicated inference service.** The Whisper model loads once at service startup (not per task) with int8 quantisation on CPU, and is addressable over HTTP. This lets the model be versioned, scaled, monitored, and canary-released independently of the Celery workers — a standard pattern for production inference servers.
 
-- **WebSocket over polling.** The server pushes the moment a result lands. With 500 concurrent users that means 500 silent connections rather than 500 requests per second hammering the API.
+- **WebSocket updates.** Persistent connections deliver keepalives and terminal results without repeated status polling. This design choice does not establish a concurrent-user capacity; see the [bounded measurement](docs/load-test-results.md).
 
 - **Canary via native label selectors (opt-in).** Stable and canary inference pods can share a selector behind one ClusterIP Service, giving weighted rollout and instant rollback without Istio/Linkerd overhead — see [Model Management & Canary Releases](#model-management--canary-releases) for how to enable it.
 

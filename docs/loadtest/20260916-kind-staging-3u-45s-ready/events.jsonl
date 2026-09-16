@@ -1,0 +1,18 @@
+{"type": "capture-ready", "timestamp": 1789543847.1101353}
+{"type": "task-succeeded", "uuid": "e8cad567-5942-432d-a29a-f8f26d6c7a5e", "timestamp": 1789543846.851678, "runtime": 0.0014373359990713652, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-received", "uuid": "3d0b8469-2b37-42c3-b18a-8c67738c362b", "timestamp": 1789543870.0613906, "hostname": "celery@celery-5bcb9798bf-xm85f", "name": "process_video", "task_id": "24c78062-cb00-4beb-9a6a-364303f6798a"}
+{"type": "task-received", "uuid": "1fcd8536-357f-4d76-a397-d1bb5ac0341f", "timestamp": 1789543870.0650759, "hostname": "celery@celery-5bcb9798bf-pn57q", "name": "process_video", "task_id": "c14f121a-5230-4bd0-9cc2-c9b8ee2ad5c3"}
+{"type": "task-received", "uuid": "463694ab-0160-4889-a4af-e02f30b70d00", "timestamp": 1789543870.070616, "hostname": "celery@celery-5bcb9798bf-xm85f", "name": "process_video", "task_id": "bdcbaedd-2e27-4622-a4ee-96b3e7ceed85"}
+{"type": "task-started", "uuid": "463694ab-0160-4889-a4af-e02f30b70d00", "timestamp": 1789543870.0709667, "hostname": "celery@celery-5bcb9798bf-xm85f"}
+{"type": "task-succeeded", "uuid": "1fcd8536-357f-4d76-a397-d1bb5ac0341f", "timestamp": 1789543892.9397824, "runtime": 22.875036441000702, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-received", "uuid": "a72b8320-5768-486f-8669-934e60dd6def", "timestamp": 1789543895.9586513, "hostname": "celery@celery-5bcb9798bf-pn57q", "name": "process_video", "task_id": "8042e4ae-821f-47ea-96f5-3bcd7702c82e"}
+{"type": "task-received", "uuid": "a78cf334-edf3-47a6-93fc-ddeb070c0bd9", "timestamp": 1789543906.8562605, "hostname": "celery@celery-5bcb9798bf-pn57q", "name": "sweep_stuck_tasks"}
+{"type": "task-started", "uuid": "a78cf334-edf3-47a6-93fc-ddeb070c0bd9", "timestamp": 1789543906.8565767, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-succeeded", "uuid": "3d0b8469-2b37-42c3-b18a-8c67738c362b", "timestamp": 1789543906.8266652, "runtime": 36.76599659099884, "hostname": "celery@celery-5bcb9798bf-xm85f"}
+{"type": "task-succeeded", "uuid": "a78cf334-edf3-47a6-93fc-ddeb070c0bd9", "timestamp": 1789543906.8663387, "runtime": 0.009459746001084568, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-received", "uuid": "8f7c3e1f-2fa9-4ae7-94c3-f53f92426af6", "timestamp": 1789543909.8513484, "hostname": "celery@celery-5bcb9798bf-pn57q", "name": "process_video", "task_id": "7752acab-6206-4e65-b383-73b5beb7b741"}
+{"type": "task-succeeded", "uuid": "463694ab-0160-4889-a4af-e02f30b70d00", "timestamp": 1789543917.9513702, "runtime": 47.88174512700061, "hostname": "celery@celery-5bcb9798bf-xm85f"}
+{"type": "task-succeeded", "uuid": "a72b8320-5768-486f-8669-934e60dd6def", "timestamp": 1789543930.5496204, "runtime": 34.59145642299882, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-succeeded", "uuid": "8f7c3e1f-2fa9-4ae7-94c3-f53f92426af6", "timestamp": 1789543938.5191095, "runtime": 28.66807805299868, "hostname": "celery@celery-5bcb9798bf-pn57q"}
+{"type": "task-received", "uuid": "6929e2e5-bf41-4b44-b6de-b8b3cb2b2b88", "timestamp": 1789543966.8506966, "hostname": "celery@celery-5bcb9798bf-pn57q", "name": "sweep_stuck_tasks"}
+{"type": "task-succeeded", "uuid": "6929e2e5-bf41-4b44-b6de-b8b3cb2b2b88", "timestamp": 1789543966.8532493, "runtime": 0.0019567609997466207, "hostname": "celery@celery-5bcb9798bf-pn57q"}
