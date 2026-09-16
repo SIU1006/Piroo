@@ -52,7 +52,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
 
     finally: # Always close redis sub and socket
         await pubsub.unsubscribe(f"task:{task_id}")
-        await pubsub.close()
+        await pubsub.aclose()
         await websocket.close()
 
 async def wait_with_keepalive(websocket: WebSocket, pubsub, overall_timeout_sec: float):
