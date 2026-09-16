@@ -3,6 +3,7 @@ import logging
 import os
 import threading
 import time
+import uuid
 
 import ffmpeg
 import httpx
@@ -42,6 +43,40 @@ STUCK_DEADLINE_TTL_SECONDS = (
 )
 ACTIVE_ATTEMPT_TTL_SECONDS = 120
 ACTIVE_ATTEMPT_REFRESH_SECONDS = 30
+SWEEPER_CLAIM_TTL_SECONDS = 300
+
+START_ATTEMPT_SCRIPT = """
+if redis.call('EXISTS', KEYS[3]) == 1 then
+    return 0
+end
+redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+redis.call('SET', KEYS[2], 'running', 'EX', ARGV[3])
+return 1
+"""
+
+CLAIM_STUCK_SCRIPT = """
+if redis.call('EXISTS', KEYS[1]) == 1
+    or redis.call('EXISTS', KEYS[2]) == 1
+    or redis.call('EXISTS', KEYS[4]) == 1 then
+    return 0
+end
+local heartbeat = redis.call('GET', KEYS[3])
+local ttl = redis.call('TTL', KEYS[3])
+if not heartbeat or ttl < 0 or ttl > tonumber(ARGV[1]) then
+    return 0
+end
+redis.call('SET', KEYS[4], ARGV[2], 'EX', ARGV[3])
+return 1
+"""
+
+RELEASE_STUCK_SCRIPT = """
+if redis.call('GET', KEYS[2]) ~= ARGV[1] then
+    return false
+end
+local heartbeat = redis.call('GET', KEYS[1])
+redis.call('DEL', KEYS[1], KEYS[2])
+return heartbeat
+"""
 
 
 class TransientServiceError(Exception):
@@ -65,11 +100,14 @@ def active_attempt_key(task_id: str) -> str:
     return f"active:{task_id}"
 
 
+def sweeper_claim_key(task_id: str) -> str:
+    return f"sweeper-claim:{task_id}"
+
+
 def keep_attempt_active(r, task_id: str) -> tuple[threading.Event, threading.Thread]:
     """Renew a lease while this worker attempt is alive, including during slow I/O."""
     stop = threading.Event()
     lease_key = active_attempt_key(task_id)
-    r.setex(lease_key, ACTIVE_ATTEMPT_TTL_SECONDS, "running")
 
     def refresh() -> None:
         while not stop.wait(ACTIVE_ATTEMPT_REFRESH_SECONDS):
@@ -89,12 +127,20 @@ def start_running(task_id: str, file_path: str):
     audio_path = extracted_audio_path(task_id)
 
     r = redis.Redis.from_url(with_password(BROKER_URL, _redis_password))
-    r.setex(
-        HEARTBEAT_KEY,
-        HEARTBEAT_TTL_SECONDS,
-        f"running:{file_path}")
+    acquired = bool(
+        r.eval(
+            START_ATTEMPT_SCRIPT,
+            3,
+            HEARTBEAT_KEY,
+            active_attempt_key(task_id),
+            sweeper_claim_key(task_id),
+            f"running:{file_path}",
+            HEARTBEAT_TTL_SECONDS,
+            ACTIVE_ATTEMPT_TTL_SECONDS,
+        )
+    )
 
-    return r, audio_path
+    return r, audio_path, acquired
 
 def validate_duration(probe_result: dict, max_minutes: int = 30):
     # Check audio duration
@@ -218,9 +264,13 @@ def process_video(self, task_id: str, file_path: str):
     start = time.perf_counter()
     video_length_bucket = "unknown"
     will_retry = False
+    attempt_acquired = False
 
     try:
-        r, audio_path = start_running(task_id, file_path)
+        r, audio_path, attempt_acquired = start_running(task_id, file_path)
+        if not attempt_acquired:
+            logger.info("Task %s is already claimed by the stuck-task sweeper", task_id)
+            return
         active_stop, active_thread = keep_attempt_active(r, task_id)
         duration_minutes = validate_duration(ffmpeg.probe(file_path))
         video_length_bucket = "under_10min" if duration_minutes < 10 else "over_10min"
@@ -244,7 +294,19 @@ def process_video(self, task_id: str, file_path: str):
             )
         else:
             if r is not None:
-                store_failure(r, task_id, e)
+                try:
+                    store_failure(r, task_id, e)
+                except redis.exceptions.RedisError as publish_error:
+                    # This publication failure is retryable. Set the flag before
+                    # re-raising so finally preserves the source for Celery.
+                    will_retry = True
+                    metrics(
+                        task_name="process_video",
+                        status="retry",
+                        exception_type=type(publish_error).__name__,
+                        video_length_bucket=video_length_bucket,
+                    )
+                    raise
             else:
                 logger.error("Task %s failed before connecting to Redis: %s", task_id, e)
             metrics(
@@ -263,14 +325,17 @@ def process_video(self, task_id: str, file_path: str):
                 r.delete(active_attempt_key(task_id))
             except redis.exceptions.RedisError:
                 logger.exception("Could not release active lease for task %s", task_id)
-        if r is not None and not will_retry:
+        if r is not None and attempt_acquired and not will_retry:
             try:
                 r.delete(f"heartbeat:{task_id}")
             except redis.exceptions.RedisError:
                 logger.exception("Could not remove heartbeat for task %s", task_id)
         metrics(task_name="process_video", start=start, video_length_bucket=video_length_bucket)
 
-        if will_retry:
+        if not attempt_acquired:
+            # The sweeper that owns the claim is responsible for these files.
+            pass
+        elif will_retry:
             # keep file_path
             cleanup(audio_path)
         else:
@@ -279,21 +344,25 @@ def process_video(self, task_id: str, file_path: str):
 
 # ============= sweep_stuck_tasks() helpers =============
 def find_stuck(r):
-    """Find unfinished attempts past the hard limit plus the grace period."""
+    """Atomically claim unfinished attempts past the hard limit and grace period."""
 
     for key in r.scan_iter("heartbeat:*"):
-        task_id = key.decode("utf-8").removeprefix("heartbeat:")
-        if r.exists(f"result:{task_id}"): # Task ended normally
-            continue
-
-        if r.exists(active_attempt_key(task_id)):
-            continue
-
-        ttl = r.ttl(key)
-        if ttl < 0 or ttl > STUCK_DEADLINE_TTL_SECONDS:
-            continue
-
-        yield task_id, key
+        heartbeat_key = key.decode("utf-8") if isinstance(key, bytes) else key
+        task_id = heartbeat_key.removeprefix("heartbeat:")
+        claim_token = uuid.uuid4().hex
+        claimed = r.eval(
+            CLAIM_STUCK_SCRIPT,
+            4,
+            f"result:{task_id}",
+            active_attempt_key(task_id),
+            heartbeat_key,
+            sweeper_claim_key(task_id),
+            STUCK_DEADLINE_TTL_SECONDS,
+            claim_token,
+            SWEEPER_CLAIM_TTL_SECONDS,
+        )
+        if claimed:
+            yield task_id, heartbeat_key, claim_token
 
 def report_stuck(r, task_id: str) -> None:
     logger.warning(f"Task {task_id} stuck/killed, reporting error")
@@ -313,10 +382,21 @@ def get_originalpath(r, heartbeat_key) -> str | None:
     _, _, original_path = heartbeat_value.decode("utf-8").partition(":")
     return original_path or None
 
-def cleanup_stuck(r, task_id: str, heartbeat_key) -> None:
-    """Remove heartbeat key and leftover files from the stuck task"""
-    original_path = get_originalpath(r, heartbeat_key)
-    r.delete(heartbeat_key)
+def cleanup_stuck(r, task_id: str, heartbeat_key, claim_token: str) -> None:
+    """Release an owned claim and remove the stuck task's leftover files."""
+    heartbeat_value = r.eval(
+        RELEASE_STUCK_SCRIPT,
+        2,
+        heartbeat_key,
+        sweeper_claim_key(task_id),
+        claim_token,
+    )
+    if not heartbeat_value:
+        return
+
+    if isinstance(heartbeat_value, bytes):
+        heartbeat_value = heartbeat_value.decode("utf-8")
+    _, _, original_path = heartbeat_value.partition(":")
 
     cleanup_paths = [extracted_audio_path(task_id)]
 
@@ -335,12 +415,9 @@ def sweep_stuck_tasks():
     start = time.perf_counter()
 
     try:
-        for task_id, heartbeat_key in find_stuck(r):
-            # A result may have arrived since find_stuck inspected the key.
-            if r.exists(f"result:{task_id}") or r.exists(active_attempt_key(task_id)):
-                continue
+        for task_id, heartbeat_key, claim_token in find_stuck(r):
             report_stuck(r, task_id)
-            cleanup_stuck(r, task_id, heartbeat_key)
+            cleanup_stuck(r, task_id, heartbeat_key, claim_token)
         TASK_TOTAL.labels(task_name="sweep_stuck_tasks", status="success").inc()
 
     except Exception as e:
