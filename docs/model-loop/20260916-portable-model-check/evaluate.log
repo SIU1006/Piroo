@@ -1,0 +1,11 @@
+2026/09/16 11:02:53 INFO mlflow.store.db.utils: Creating initial MLflow database tables...
+2026/09/16 11:02:53 INFO mlflow.store.db.utils: Updating database tables
+/usr/local/lib/python3.11/site-packages/mlflow/pyfunc/utils/data_validation.py:187: UserWarning: Add type hints to the `predict` method to enable data validation and automatic signature inference during model logging. Check https://mlflow.org/docs/latest/model/python_model.html#type-hint-usage-in-pythonmodel for more details.
+  color_warning(
+Successfully registered model 'video-transcriber-whisper'.
+Created version '1' of model 'video-transcriber-whisper'.
+/usr/local/lib/python3.11/site-packages/mlflow/pyfunc/utils/data_validation.py:187: UserWarning: Add type hints to the `predict` method to enable data validation and automatic signature inference during model logging. Check https://mlflow.org/docs/latest/model/python_model.html#type-hint-usage-in-pythonmodel for more details.
+  color_warning(
+Registered model 'video-transcriber-whisper' already exists. Creating a new version of this model...
+Created version '2' of model 'video-transcriber-whisper'.
+Completed phase: evaluate

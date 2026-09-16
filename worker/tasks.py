@@ -17,6 +17,7 @@ from settings import (
     WHISPER_URL,
     with_password,
 )
+from summary_contract import SUMMARY_OPTIONS, SUMMARY_PROMPT
 from worker.celery_app import celery_app
 from worker.metrics import (
     CANARY_WER,  # noqa: F401 - re-exported so worker/canary.py can share one metrics module
@@ -90,9 +91,10 @@ def summarize(transcript: str, model: str) -> str:
         messages=[
             {
                 "role": "user",
-                "content": f"Summarise this transcript in 3-5 sentences: {transcript}",
+                "content": SUMMARY_PROMPT.format(transcript=transcript),
             }
         ],
+        options=SUMMARY_OPTIONS,
     )
     return response_llm.message.content
 

@@ -60,3 +60,6 @@ docs/loadtest/*_history.csv
 !docs/loadtest/*/*.csv
 
 obsidian/
+docs/model-loop/**/registry.db*
+model-eval-*-build.log
+docs/model-loop/**/canary-rendered.yaml

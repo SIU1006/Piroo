@@ -1,0 +1,8 @@
+/usr/local/lib/python3.11/site-packages/mlflow/pyfunc/utils/data_validation.py:187: UserWarning: Add type hints to the `predict` method to enable data validation and automatic signature inference during model logging. Check https://mlflow.org/docs/latest/model/python_model.html#type-hint-usage-in-pythonmodel for more details.
+  color_warning(
+
+Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+Fetching 6 files:  17%|█▋        | 1/6 [00:00<00:01,  2.63it/s]
+Fetching 6 files: 100%|██████████| 6/6 [00:19<00:00,  3.34s/it]
+Fetching 6 files: 100%|██████████| 6/6 [00:19<00:00,  3.19s/it]

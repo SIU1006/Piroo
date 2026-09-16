@@ -1,0 +1,324 @@
+{
+  "schema_version": 2,
+  "model_size": "base",
+  "model_revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+  "deployed_image": "sha256:c0e6adb793fe7e5395bc28bace0e49e9ca99891293430be5b5f23ff2221aa7a9",
+  "packages": {
+    "faster-whisper": "1.2.1",
+    "ctranslate2": "4.8.2",
+    "bentoml": "1.3.9"
+  },
+  "evaluation": {
+    "dataset_sha256": "7e2881fd9e66a0bd020bf6e0b33582a810749d3189712e613f4e91dbf7cda577",
+    "subset_sha256": "a76f8b024e6a2c5e37e3324f92bcb3852c26010e041740c623e6d8f806744554",
+    "examples": [
+      {
+        "filename": "clip_00.wav",
+        "source_id": "2277-149896-0008",
+        "audio_sha256": "d30daf95ae2d05287ba9dfaf752731c7567f52e71330a0ecc0989b906b7fce88"
+      },
+      {
+        "filename": "clip_01.wav",
+        "source_id": "2277-149874-0004",
+        "audio_sha256": "19f9fbb3ec1732afcf394d3a5d27f2cd43845c7dce5bfdef96878b95713b33ed"
+      },
+      {
+        "filename": "clip_02.wav",
+        "source_id": "2277-149897-0030",
+        "audio_sha256": "2dd8e00feb7aa9a83e21835921a6a92a2f3e98a4658c7a89f911ff2fd1e59ece"
+      },
+      {
+        "filename": "clip_03.wav",
+        "source_id": "2277-149897-0008",
+        "audio_sha256": "354d25cdf602b1ec124108eaaec46330837aa429f111748a02c9c035a0a78080"
+      },
+      {
+        "filename": "clip_04.wav",
+        "source_id": "2035-147960-0008",
+        "audio_sha256": "1e3d75f7c59f2c10cb01247a8aa774c7d70c6167931a5ffeb36a0cfdec5635e9"
+      },
+      {
+        "filename": "clip_05.wav",
+        "source_id": "2277-149874-0012",
+        "audio_sha256": "29ffbc5e7bf11bff9b880f072dcfd849f1e2a4d770e59ac49fb16131279e159a"
+      },
+      {
+        "filename": "clip_06.wav",
+        "source_id": "2035-147960-0005",
+        "audio_sha256": "76cb8619e52edd0f41f09e39d8216e6e9493dab7f14ec569ffa8df3869f0bc3c"
+      },
+      {
+        "filename": "clip_07.wav",
+        "source_id": "2277-149897-0034",
+        "audio_sha256": "9c1ef9352d42fe035d2d43b9e70b67d23f67c672277ea2d8e57f9be20beaa33a"
+      },
+      {
+        "filename": "clip_08.wav",
+        "source_id": "2277-149896-0020",
+        "audio_sha256": "85981dbeff50652de0ea5f416ff78f7058d679fba876c7768ec203cca5550cfd"
+      },
+      {
+        "filename": "clip_09.wav",
+        "source_id": "2277-149896-0009",
+        "audio_sha256": "ef711c9cd4c6d53e27ec84eea9d52140f62da697618844f05be186e9c7908779"
+      },
+      {
+        "filename": "clip_10.wav",
+        "source_id": "2277-149897-0017",
+        "audio_sha256": "76928890c4bbff7f933d722bd4af410273a466a6babfd289daa70b8177993de4"
+      },
+      {
+        "filename": "clip_11.wav",
+        "source_id": "2035-147960-0002",
+        "audio_sha256": "ca7cd13377adfa22348f016cdfb100cf472c67fac90a8edf7a98efe99ada502b"
+      },
+      {
+        "filename": "clip_12.wav",
+        "source_id": "2277-149874-0000",
+        "audio_sha256": "1c83b6ab1c175d4dfd5b54445cda0cbdf281c59f0f650cb831edd65c355544f3"
+      },
+      {
+        "filename": "clip_13.wav",
+        "source_id": "2277-149874-0003",
+        "audio_sha256": "850df222d6375c261178e10d33e88e4a6db0440204ea3e69ee9052e1227a24a0"
+      },
+      {
+        "filename": "clip_14.wav",
+        "source_id": "2277-149897-0036",
+        "audio_sha256": "815bb1f6d89dd304df5b50cdb2b530f11841805dceafd4d46148e6a383bc5302"
+      },
+      {
+        "filename": "clip_15.wav",
+        "source_id": "2277-149874-0005",
+        "audio_sha256": "0ad8efd175f70a33f0f568238c1a9b7b4d0f9ff3e0fb32874791e6b06b190211"
+      },
+      {
+        "filename": "clip_16.wav",
+        "source_id": "2277-149897-0016",
+        "audio_sha256": "dd25a1e6b0041eda0c65df19fcb49b402e74f297a945dab9e3f0c54cb9229a04"
+      },
+      {
+        "filename": "clip_17.wav",
+        "source_id": "2277-149896-0012",
+        "audio_sha256": "112f35ff9a302231e3849d65161baac1d5999b1e91e6b9886ff4a2deb9738b4c"
+      },
+      {
+        "filename": "clip_18.wav",
+        "source_id": "2277-149874-0010",
+        "audio_sha256": "ea9504560431df85542a43440424eedb0ba449e6428e98310aa195a1707d6c6e"
+      },
+      {
+        "filename": "clip_19.wav",
+        "source_id": "2277-149897-0010",
+        "audio_sha256": "74d7f744bea28e7a75c7f0e64c3a24dbf7ec6e65906f2989f3802e8df551f269"
+      }
+    ],
+    "config_sha256": "839b9dc7de24ef0e7081701b0d79f420a38e30824191cd990ccd8e1e83fdb22d",
+    "config": {
+      "schema_version": 1,
+      "filenames": [
+        "clip_00.wav",
+        "clip_01.wav",
+        "clip_02.wav",
+        "clip_03.wav",
+        "clip_04.wav",
+        "clip_05.wav",
+        "clip_06.wav",
+        "clip_07.wav",
+        "clip_08.wav",
+        "clip_09.wav",
+        "clip_10.wav",
+        "clip_11.wav",
+        "clip_12.wav",
+        "clip_13.wav",
+        "clip_14.wav",
+        "clip_15.wav",
+        "clip_16.wav",
+        "clip_17.wav",
+        "clip_18.wav",
+        "clip_19.wav"
+      ],
+      "transcribe": {
+        "language": "en",
+        "beam_size": 5,
+        "temperature": 0,
+        "vad_filter": false
+      },
+      "normalization": "lowercase_remove_punctuation_collapse_spaces_v1",
+      "device": "cpu",
+      "compute_type": "int8"
+    }
+  },
+  "device": "cpu",
+  "compute_type": "int8",
+  "load_seconds": 0.0233463690001372,
+  "n_clips": 20,
+  "total_audio_seconds": 126.93506250000002,
+  "total_transcribe_seconds": 16.2135854130006,
+  "rtf": 0.12773133832112463,
+  "evaluated_at": 1789555940.942859,
+  "wer": 0.06683168316831684,
+  "per_clip": [
+    {
+      "filename": "clip_00.wav",
+      "reference": "FOR SOME REASON HE FELT AS IF SOMETHING MIGHT COME THAT WAY AND WAS RELIEVED WHEN ALL THE ENVELOPES HAD BEEN SCANNED AND NOTHING SUSPICIOUS NOTICED",
+      "hypothesis": " For some reason, he felt as if something might come that way and was relieved when all the envelopes had been scanned and nothing suspicious noticed.",
+      "audio_seconds": 6.94,
+      "transcribe_seconds": 1.1669567929998266,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_01.wav",
+      "reference": "HIS AMBITION WAS SOME DAY TO BUILD A HOUSE ON THEM",
+      "hypothesis": " His ambition was someday to build a house on them.",
+      "audio_seconds": 3.215,
+      "transcribe_seconds": 0.7375902880003196,
+      "wer": 0.18181818181818182
+    },
+    {
+      "filename": "clip_02.wav",
+      "reference": "HE DID NOT GO WITHIN A BLOCK OF THE HOUSE",
+      "hypothesis": " He did not go within a block of the house.",
+      "audio_seconds": 2.55,
+      "transcribe_seconds": 0.7390435870001966,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_03.wav",
+      "reference": "ANY ANSWER I GUESS NOT",
+      "hypothesis": " Any answer? I guess not.",
+      "audio_seconds": 2.88,
+      "transcribe_seconds": 0.602313046999825,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_04.wav",
+      "reference": "A FAINT FETID SMELL CAME FROM HIM AND A THREAD OF GREEN LIQUID OOZED FROM HIS CRUSHED HEAD",
+      "hypothesis": " A faint, fetted smell came from him, and a thread of green liquid oozed from his crushed head.",
+      "audio_seconds": 6.21,
+      "transcribe_seconds": 1.2025511209999422,
+      "wer": 0.05555555555555555
+    },
+    {
+      "filename": "clip_05.wav",
+      "reference": "MINNIE BEGAN TO EXPLAIN BUT HER HUSBAND TOOK THIS PART OF THE CONVERSATION TO HIMSELF",
+      "hypothesis": " Many began to explain, but her husband took this part of the conversation to himself.",
+      "audio_seconds": 5.08,
+      "transcribe_seconds": 0.9003986080001596,
+      "wer": 0.06666666666666667
+    },
+    {
+      "filename": "clip_06.wav",
+      "reference": "I WHIRLED ROUND AND THERE ON ONE OF THOSE DRY GRAVEL BEDS WAS THE BIGGEST SNAKE I HAD EVER SEEN",
+      "hypothesis": " A world round and there on one of those dry gravel beds was the biggest snake I had ever seen.",
+      "audio_seconds": 6.585,
+      "transcribe_seconds": 0.8854382849999638,
+      "wer": 0.1
+    },
+    {
+      "filename": "clip_07.wav",
+      "reference": "DEAR SIR WE BEG TO INFORM YOU THAT WE ARE INSTRUCTED TO WAIT UNTIL TO MORROW THURSDAY AT ONE O'CLOCK BEFORE FILING SUIT AGAINST YOU ON BEHALF OF MISSUS JULIA HURSTWOOD FOR DIVORCE AND ALIMONY",
+      "hypothesis": " Dear Sir, we beg to inform you that we are instructed to wait until tomorrow Thursday  at 1 o'clock before filing suit against you on behalf of Mrs. Julia Hearstwood for divorce  and alimony.",
+      "audio_seconds": 12.16,
+      "transcribe_seconds": 1.6937524529998882,
+      "wer": 0.14285714285714285
+    },
+    {
+      "filename": "clip_08.wav",
+      "reference": "THEN HE SAT DOWN IN HIS CHAIR AND GAZED WITHOUT SEEING CONTEMPLATING THE RESULT OF HIS WORK",
+      "hypothesis": " Then he sat down in his chair and gazed without seeing, contemplating the result of his work.",
+      "audio_seconds": 5.285,
+      "transcribe_seconds": 0.9036796640002649,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_09.wav",
+      "reference": "WHILE THE DANGER HAD NOT LESSENED IT HAD NOT AS YET MATERIALISED AND WITH HIM NO NEWS WAS GOOD NEWS",
+      "hypothesis": " While the danger had not lessened, it had not as yet materialized, and with him no news  was good news.",
+      "audio_seconds": 5.815,
+      "transcribe_seconds": 0.8192931150001641,
+      "wer": 0.05
+    },
+    {
+      "filename": "clip_10.wav",
+      "reference": "HOW ABOUT THAT NOW HIS PAIN AT HER FAILURE TO MEET OR WRITE HIM RAPIDLY INCREASED AS HE DEVOTED HIMSELF TO THIS SUBJECT",
+      "hypothesis": " How about that now? His pain at her failure to meet or write him rapidly increased as he  devoted himself to the subject.",
+      "audio_seconds": 7.3,
+      "transcribe_seconds": 0.9202661670001362,
+      "wer": 0.043478260869565216
+    },
+    {
+      "filename": "clip_11.wav",
+      "reference": "ONE DAY WHEN I RODE OVER TO THE SHIMERDAS I FOUND ANTONIA STARTING OFF ON FOOT FOR RUSSIAN PETER'S HOUSE TO BORROW A SPADE AMBROSCH NEEDED",
+      "hypothesis": " One day, when I rode over to the Samaritans, I found Nia starting off on foot for Russian  Peter's house, to borrow a spade and broached needed.",
+      "audio_seconds": 8.84,
+      "transcribe_seconds": 0.6950941410000269,
+      "wer": 0.15384615384615385
+    },
+    {
+      "filename": "clip_12.wav",
+      "reference": "MINNIE'S FLAT AS THE ONE FLOOR RESIDENT APARTMENTS WERE THEN BEING CALLED WAS IN A PART OF WEST VAN BUREN STREET INHABITED BY FAMILIES OF LABOURERS AND CLERKS MEN WHO HAD COME AND WERE STILL COMING WITH THE RUSH OF POPULATION POURING IN AT THE RATE OF FIFTY THOUSAND A YEAR",
+      "hypothesis": " Minnie's flat, as the one-floor resident apartments were then being called, was in a part  of West Van Buren Street inhabited by families of laborers and clerks, men who had come and  were still coming, with the rush of population pouring in at the rate of 50,000 a year.",
+      "audio_seconds": 15.505,
+      "transcribe_seconds": 0.82096284499994,
+      "wer": 0.09803921568627451
+    },
+    {
+      "filename": "clip_13.wav",
+      "reference": "HE WAS OF A CLEAN SAVING DISPOSITION AND HAD ALREADY PAID A NUMBER OF MONTHLY INSTALMENTS ON TWO LOTS FAR OUT ON THE WEST SIDE",
+      "hypothesis": " He was of a clean saving disposition and had already paid a number of monthly installments on two lots far out on the west side",
+      "audio_seconds": 7.7,
+      "transcribe_seconds": 0.6342786800000795,
+      "wer": 0.04
+    },
+    {
+      "filename": "clip_14.wav",
+      "reference": "SO HERE IT WAS SPREAD OUT CLEAR BEFORE HIM AND NOW HE KNEW WHAT TO EXPECT",
+      "hypothesis": " So here it was, spread out clear before him, and now he knew what to expect.",
+      "audio_seconds": 4.42,
+      "transcribe_seconds": 0.5605693289999181,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_15.wav",
+      "reference": "SHE HAD SOME SLIGHT GIFT OF OBSERVATION AND THAT SENSE SO RICH IN EVERY WOMAN INTUITION",
+      "hypothesis": " She had some slight gift of observation and that sense so rich in every woman intuition",
+      "audio_seconds": 6.37,
+      "transcribe_seconds": 0.5451771359998929,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_16.wav",
+      "reference": "HE FANCIED AS HE SAT AT HIS DESK THAT NOTHING WOULD BE DONE FOR A WEEK OR TWO MEANWHILE HE WOULD HAVE TIME TO THINK",
+      "hypothesis": " He'd fancy, as he sat at his desk, that nothing would be done for a week or two.  Meanwhile, he would have time to think.",
+      "audio_seconds": 6.5400625,
+      "transcribe_seconds": 0.6553904560000774,
+      "wer": 0.08
+    },
+    {
+      "filename": "clip_17.wav",
+      "reference": "SHE HAD NOT BEEN ABLE TO GET AWAY THIS MORNING",
+      "hypothesis": " She had not been able to get away this morning.",
+      "audio_seconds": 2.495,
+      "transcribe_seconds": 0.5278935500000443,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_18.wav",
+      "reference": "NOW NOW HE SAID WALKING THERE THERE AND THERE WAS A CERTAIN SWEDISH ACCENT NOTICEABLE IN HIS VOICE",
+      "hypothesis": " Now, now, he said walking, there, there, and there was a certain Swedish accent noticeable in his voice.",
+      "audio_seconds": 7.42,
+      "transcribe_seconds": 0.6229874239998026,
+      "wer": 0.0
+    },
+    {
+      "filename": "clip_19.wav",
+      "reference": "HE WAS BEATEN FOR TO NIGHT AND HE MIGHT JUST AS WELL MAKE THE BEST OF IT",
+      "hypothesis": " He was beaten for tonight and he might just as well make the best of it.",
+      "audio_seconds": 3.625,
+      "transcribe_seconds": 0.5799487240001326,
+      "wer": 0.11764705882352941
+    }
+  ],
+  "production_version": 4
+}

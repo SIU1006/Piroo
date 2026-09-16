@@ -1,3 +1,4 @@
+import importlib.metadata
 import logging
 import os
 import time
@@ -5,10 +6,12 @@ from pathlib import Path
 from typing import Annotated
 
 import bentoml
-from bentoml.io import File
 from bentoml.metrics import Histogram
 from bentoml.validators import FileSchema
 from faster_whisper import WhisperModel
+from huggingface_hub import snapshot_download
+
+from model_eval.provenance import load_config
 
 model_size = os.getenv("WHISPER_MODEL_SIZE", "base")
 logger = logging.getLogger(__name__)
@@ -38,14 +41,27 @@ RTF = Histogram(
 class WhisperService:
     def __init__(self):
         self.model_size = model_size
-        self.model = WhisperModel(model_size, device="cpu", compute_type="int8")
+        self.revision = Path('/app/model_revision.txt').read_text().strip()
+        self.config = load_config()
+        path = snapshot_download(f"Systran/faster-whisper-{model_size}",
+                                 revision=self.revision, local_files_only=True)
+        self.model = WhisperModel(path, device="cpu", compute_type="int8")
+
+    @bentoml.api
+    def metadata(self) -> dict:
+        return {
+            "model_size": self.model_size, "model_revision": self.revision,
+            "device": "cpu", "compute_type": "int8", "transcribe": self.config["transcribe"],
+            "packages": {name: importlib.metadata.version(name) for name in
+                         ("faster-whisper", "ctranslate2", "bentoml")},
+        }
 
     @bentoml.api
     def transcribe(
-        self, audio_file: Annotated[Path, FileSchema(content_type="audio/mpeg")]
+        self, audio_file: Annotated[Path, FileSchema()]
     ) -> str:
         start = time.perf_counter()
-        segments, info = self.model.transcribe(str(audio_file))
+        segments, info = self.model.transcribe(str(audio_file), **self.config["transcribe"])
         text = " ".join(segment.text for segment in segments)  # forces the lazy generator to run
         transcribe_seconds = time.perf_counter() - start
 

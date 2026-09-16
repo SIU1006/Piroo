@@ -7,5 +7,7 @@ metadata:
 data:
   BROKER_URL: {{ .Values.pipelineConfig.BROKER_URL | quote }}
   WHISPER_URL: {{ .Values.pipelineConfig.WHISPER_URL | quote }}
+  CANARY_WHISPER_URL: {{ if .Values.whisper.canary.enabled }}"http://whisper-canary-service:{{ .Values.whisper.service.port }}"{{ else }}""{{ end }}
+  CANARY_WHISPER_IMAGE: {{ if .Values.whisper.canary.enabled }}{{ include "asyncvtp.image" (dict "image" .Values.whisper.canary.image "root" $) | quote }}{{ else }}""{{ end }}
   OLLAMA_HOST: {{ .Values.pipelineConfig.OLLAMA_HOST | quote }}
   LLM_MODEL: {{ .Values.pipelineConfig.LLM_MODEL | quote }}
