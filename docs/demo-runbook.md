@@ -41,21 +41,16 @@ terraform output argocd_admin_password    # -> kubectl ... | base64 -d ; run it
 kubectl port-forward -n argocd svc/argocd-server 8080:443
 ```
 
-## 2b. Apply the ApplicationSet (hands GitOps off to ArgoCD)
+## 2b. Create prerequisites, then apply the ApplicationSet
 
 The ApplicationSet isn't managed by Terraform (its CRD is installed by the
 ArgoCD release, so referencing it in the same run breaks `terraform plan`).
-
-```bash
-kubectl apply -f ../argocd/Applicationset.yaml
-```
-
-ArgoCD now creates and reconciles `asyncvtp-staging` and `asyncvtp-prod`.
-
-## 3. Secrets + adapter cert (create BEFORE ArgoCD syncs the apps)
+Create both namespaces, their required Secrets, and the adapter certificates
+before allowing ArgoCD to sync either application.
 
 ```powershell
 foreach ($ns in @("asyncvtp-staging","asyncvtp-prod")) {
+  kubectl create namespace $ns --dry-run=client -o yaml | kubectl apply -f -
   kubectl -n $ns create secret generic redis-secret      --from-literal=redis-password='demo-redis'
   kubectl -n $ns create secret generic grafana-secret    --from-literal=admin-password='demo-grafana'
   kubectl -n $ns create secret generic alertmanager-secret --from-literal=slack-webhook-url='https://hooks.slack.com/services/REPLACE/ME'
@@ -74,7 +69,13 @@ foreach ($ns in @("asyncvtp-staging","asyncvtp-prod")) {
 }
 ```
 
-## 4. Kick off the ollama model pull EARLY (slowest step)
+```bash
+kubectl apply -f ../argocd/Applicationset.yaml
+```
+
+ArgoCD now creates and reconciles `asyncvtp-staging` and `asyncvtp-prod`.
+
+## 3. Kick off the ollama model pull EARLY (slowest step)
 
 ```bash
 kubectl exec -n asyncvtp-staging deploy/ollama -- ollama pull llama3.2
@@ -83,14 +84,14 @@ kubectl exec -n asyncvtp-prod     deploy/ollama -- ollama pull llama3.2
 
 Run both, then let them finish in the background while you capture other evidence.
 
-## 5. Wait for Healthy
+## 4. Wait for Healthy
 
 ```bash
 kubectl -n argocd get applications --watch     # until both = Synced + Healthy
 kubectl -n asyncvtp-staging get pods           # all Running
 ```
 
-## 6. Capture evidence (one pass)
+## 5. Capture evidence (one pass)
 
 - [ ] `terraform apply` output ("Apply complete! Resources: N added")
 - [ ] `terraform output` results
@@ -101,9 +102,12 @@ kubectl -n asyncvtp-staging get pods           # all Running
       → upload a video → Whisper transcript → Ollama summary
 - [ ] `kubectl -n asyncvtp-staging get pods` (all Running)
 
-## 7. Tear down IMMEDIATELY (order matters — EBS orphans otherwise)
+## 6. Tear down IMMEDIATELY (order matters — EBS orphans otherwise)
 
 ```bash
+kubectl delete -f ../argocd/Applicationset.yaml
+kubectl wait --for=delete application/asyncvtp-staging application/asyncvtp-prod -n argocd --timeout=5m
+
 kubectl delete pvc --all -n asyncvtp-staging
 kubectl delete pvc --all -n asyncvtp-prod
 

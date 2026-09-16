@@ -66,3 +66,15 @@ def test_file_size(isolated_upload_dir, monkeypatch):
     assert "1GB" in response.json()["detail"]
 
     assert list(isolated_upload_dir.iterdir()) == [] # Check if file is cleaned up
+
+
+def test_broker_failure_returns_503_and_removes_upload(isolated_upload_dir):
+    with patch("app.routes.upload.process_video.delay", side_effect=ConnectionError("Redis down")):
+        response = client.post(
+            "/api/v1/upload",
+            files={"file": ("test.mp4", io.BytesIO(b"video"), "video/mp4")},
+        )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Task queue is unavailable"
+    assert list(isolated_upload_dir.iterdir()) == []

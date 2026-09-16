@@ -238,6 +238,8 @@ Accepts a video upload, stores it under a generated UUID (path-traversal safe), 
 }
 ```
 
+If the Redis task queue is unavailable, the API returns HTTP 503 and removes the saved upload.
+
 ### `WS /api/v1/ws/{task_id}`
 
 Connect after uploading. The server first checks the Redis result cache (so late connections still receive completed results), otherwise subscribes to `task:{task_id}` and pushes one message when processing finishes, then closes.
