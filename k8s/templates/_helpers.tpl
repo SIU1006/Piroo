@@ -6,6 +6,33 @@ Chart name and version label
 {{- end -}}
 
 {{/*
+Rendered Alertmanager configuration, shared by the ConfigMap and pod checksum.
+*/}}
+{{- define "asyncvtp.alertmanagerConfig" -}}
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: {{ ternary "slack" "local" .Values.alertmanager.notifications.enabled | quote }}
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: 'local'
+{{ if .Values.alertmanager.notifications.enabled }}
+  - name: 'slack'
+    slack_configs:
+      - api_url_file: /etc/alertmanager/secrets/slack-webhook-url
+        channel: {{ .Values.alertmanager.slackChannel | quote }}
+        send_resolved: true
+        title: {{`'{{ .CommonAnnotations.summary }}'`}}
+        text: {{`'{{ .CommonAnnotations.description }}'`}}
+{{ end }}
+{{- end -}}
+
+{{/*
 Common labels applied to every resource.
 */}}
 {{- define "asyncvtp.labels" -}}
