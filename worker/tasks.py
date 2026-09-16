@@ -11,6 +11,7 @@ import ollama
 import redis
 import requests
 from dotenv import load_dotenv
+from redis.exceptions import RedisError
 
 from settings import (
     BROKER_URL,
@@ -88,7 +89,7 @@ RETRYABLE_EXCEPTIONS = (
     httpx.TimeoutException,
     ConnectionError,
     TransientServiceError,
-    redis.exceptions.RedisError,
+    RedisError,
 )
 
 
@@ -113,7 +114,7 @@ def keep_attempt_active(r, task_id: str) -> tuple[threading.Event, threading.Thr
         while not stop.wait(ACTIVE_ATTEMPT_REFRESH_SECONDS):
             try:
                 r.setex(lease_key, ACTIVE_ATTEMPT_TTL_SECONDS, "running")
-            except redis.exceptions.RedisError:
+            except RedisError:
                 logger.exception("Could not refresh active lease for task %s", task_id)
 
     thread = threading.Thread(target=refresh, name=f"task-lease-{task_id}", daemon=True)
@@ -296,7 +297,7 @@ def process_video(self, task_id: str, file_path: str):
             if r is not None:
                 try:
                     store_failure(r, task_id, e)
-                except redis.exceptions.RedisError as publish_error:
+                except RedisError as publish_error:
                     # This publication failure is retryable. Set the flag before
                     # re-raising so finally preserves the source for Celery.
                     will_retry = True
@@ -323,12 +324,12 @@ def process_video(self, task_id: str, file_path: str):
             active_thread.join()
             try:
                 r.delete(active_attempt_key(task_id))
-            except redis.exceptions.RedisError:
+            except RedisError:
                 logger.exception("Could not release active lease for task %s", task_id)
         if r is not None and attempt_acquired and not will_retry:
             try:
                 r.delete(f"heartbeat:{task_id}")
-            except redis.exceptions.RedisError:
+            except RedisError:
                 logger.exception("Could not remove heartbeat for task %s", task_id)
         metrics(task_name="process_video", start=start, video_length_bucket=video_length_bucket)
 
