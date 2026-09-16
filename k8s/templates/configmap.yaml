@@ -16,6 +16,9 @@ data:
   S3_UPLOAD_BUCKET: {{ required "objectStorage.bucket is required" .Values.objectStorage.bucket | quote }}
   S3_ENDPOINT_URL: {{ .Values.objectStorage.endpoint | quote }}
   AWS_DEFAULT_REGION: {{ .Values.objectStorage.region | quote }}
+  {{- if .Values.objectStorage.caSecret }}
+  AWS_CA_BUNDLE: "/etc/asyncvtp/object-storage-ca/ca.crt"
+  {{- end }}
   MAX_OUTSTANDING_TASKS: {{ .Values.admission.maxOutstanding | quote }}
   TASK_QUEUE_TIMEOUT_SECONDS: {{ .Values.admission.queueTimeoutSeconds | quote }}
   UPLOAD_TIMEOUT_SECONDS: {{ .Values.admission.uploadTimeoutSeconds | quote }}

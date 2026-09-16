@@ -96,5 +96,6 @@ objectStorage:
   bucket: "" # terraform output -json upload_storage -> staging.bucket
   endpoint: ""
   credentialsSecret: ""
+  caSecret: "" # AWS S3 uses the system CA bundle
   serviceAccount:
     roleArn: "" # terraform output -> staging.role_arn

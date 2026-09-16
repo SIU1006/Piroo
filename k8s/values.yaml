@@ -16,9 +16,12 @@ pipelineConfig:
 # S3-compatible sources; scratch files are private to each API/worker pod.
 objectStorage:
   bucket: asyncvtp-uploads
-  endpoint: http://minio-service:9000
+  endpoint: https://minio-service:9000
   region: us-east-1
   credentialsSecret: uploads-object-storage
+  credentialsSecretVersion: "1" # bump with every referenced Secret rotation
+  caSecret: minio-tls # ca.crt; empty for AWS S3's public certificate chain
+  caSecretVersion: "1" # bump when rotating the CA/TLS Secret
   scratchSize: 10Gi
   serviceAccount:
     roleArn: ""
@@ -30,6 +33,7 @@ admission:
 
 minio:
   enabled: true # throwaway development service, not a production storage cluster
+  tlsSecret: minio-tls # pre-created tls.crt, tls.key and ca.crt (see README)
   image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
   size: 10Gi
 

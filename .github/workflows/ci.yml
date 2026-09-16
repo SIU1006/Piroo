@@ -138,6 +138,20 @@ jobs:
         docker logs whisper-integration
         exit 1
 
+    - name: Wait for MinIO readiness
+      timeout-minutes: 3
+      run: |
+        for _ in {1..60}; do
+          if docker run --rm --network asyncvtp-integration --entrypoint python \
+            asyncvtp-app:integration -c \
+            "import urllib.request; urllib.request.urlopen('http://minio-integration:9000/minio/health/ready', timeout=2)"; then
+            exit 0
+          fi
+          sleep 2
+        done
+        docker logs minio-integration
+        exit 1
+
     - name: Run service boundary tests
       run: |
         docker run --rm --network asyncvtp-integration \

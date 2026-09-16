@@ -178,6 +178,19 @@ Slack delivery, and disables the HPA adapter. Install it into a dedicated
 namespace:
 
 ```bash
+kubectl create namespace asyncvtp-dev --dry-run=client -o yaml | kubectl apply -f -
+# Development-only self-signed certificate; clients explicitly trust it.
+cert_dir="$(mktemp -d)"
+openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
+  -keyout "$cert_dir/tls.key" -out "$cert_dir/tls.crt" -subj '/CN=minio-service' \
+  -addext 'subjectAltName=DNS:minio-service,DNS:minio-service.asyncvtp-dev.svc,DNS:minio-service.asyncvtp-dev.svc.cluster.local' \
+  -addext 'basicConstraints=critical,CA:TRUE'
+kubectl create secret generic minio-tls --namespace asyncvtp-dev \
+  --from-file=tls.crt="$cert_dir/tls.crt" --from-file=tls.key="$cert_dir/tls.key" \
+  --from-file=ca.crt="$cert_dir/tls.crt" --dry-run=client -o yaml | kubectl apply -f -
+rm -- "$cert_dir/tls.key" "$cert_dir/tls.crt"
+rmdir -- "$cert_dir"
+
 helm lint k8s
 helm upgrade --install asyncvtp k8s \
   --namespace asyncvtp-dev --create-namespace \
@@ -194,6 +207,14 @@ kubectl get pods -n asyncvtp-dev
 ```
 
 Useful lifecycle commands:
+
+MinIO uses HTTPS. For other namespaces, provision a certificate with matching
+service DNS names in `minio.tlsSecret`; `objectStorage.caSecret` must contain
+the issuing CA as `ca.crt`. AWS S3 overlays leave `caSecret` empty to use public
+CA trust. When rotating an externally managed credentials or CA Secret, also
+bump `objectStorage.credentialsSecretVersion` or `objectStorage.caSecretVersion`
+in the release values and reconcile/upgrade Helm. Secret updates alone do not
+cause Helm/GitOps to re-render or restart pods.
 
 ```bash
 # Preview without installing

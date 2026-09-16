@@ -213,3 +213,17 @@ def test_late_delivery_cannot_restart_cancelled_admission(redis_client, monkeypa
     process_video.run.__wrapped__(task_id, ref)
     assert redis_client.zcard(task_store.OUTSTANDING_KEY) == 0
     assert task_store.get(redis_client, task_id) is None
+
+
+def test_transition_cannot_recreate_missing_reservation(redis_client):
+    task_id = str(uuid4())
+    assert task_store.reserve(redis_client, task_id, "/tmp/source")
+    redis_client.delete(f"status:{task_id}")
+    before = redis_client.zscore(task_store.OUTSTANDING_KEY, task_id)
+    assert not task_store.transition(redis_client, task_id, "queued", "waiting")
+    assert not redis_client.exists(f"status:{task_id}")
+    assert redis_client.zscore(task_store.OUTSTANDING_KEY, task_id) == before
+    active_id = str(uuid4())
+    assert task_store.reserve(redis_client, active_id, "/tmp/active")
+    assert task_store.transition(redis_client, active_id, "running", "processing")
+    assert task_store.get(redis_client, active_id)["status"] == "running"

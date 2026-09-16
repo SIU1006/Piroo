@@ -16,6 +16,7 @@ spec:
         app: fastapi
       annotations:
         checksum/pipeline-config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/object-storage-secrets: {{ include "asyncvtp.objectStorageSecretChecksum" . }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
     spec:
@@ -44,6 +45,7 @@ spec:
               name: {{ .Values.secrets.redis.name }}
               key: {{ .Values.secrets.redis.key }}
         volumeMounts:
+          {{- include "asyncvtp.objectStorageCaMount" . | nindent 8 }}
         - name: uploads-storage
           mountPath: /app/uploads
 
@@ -64,6 +66,7 @@ spec:
           {{- toYaml .Values.fastapi.resources | nindent 10 }}
 
       volumes:
+        {{- include "asyncvtp.objectStorageCaVolume" . | nindent 6 }}
       - name: uploads-storage
         emptyDir:
           sizeLimit: {{ .Values.objectStorage.scratchSize }}

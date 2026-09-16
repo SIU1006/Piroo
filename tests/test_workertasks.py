@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, call, patch
 import ollama
 import pytest
 import redis
+from botocore.exceptions import BotoCoreError, ClientError
 
 import task_store
 from settings import UPLOAD_DIR
@@ -433,6 +434,45 @@ def test_cleanup_stuck_without_owned_claim_keeps_files(tmp_path, monkeypatch):
     cleanup_stuck(r, "task-4", "heartbeat:task-4", "lost-claim")
 
     assert audio_path.exists()
+
+
+@pytest.mark.parametrize("error", [None, BotoCoreError(),
+    ClientError({"Error": {"Code": "AccessDenied"}}, "DeleteObject")])
+def test_stuck_s3_cleanup_removes_scratch_even_when_delete_fails(tmp_path, monkeypatch, error):
+    monkeypatch.setattr("worker.tasks.UPLOAD_DIR", tmp_path)
+    source = tmp_path / "task-s3.mp4"
+    audio = tmp_path / "task-s3.audio.mp3"
+    source.write_bytes(b"source")
+    audio.write_bytes(b"audio")
+    ref = "s3://uploads/uploads/task-s3.mp4"
+    r = MagicMock()
+    r.eval.return_value = f"running:{ref}".encode()
+
+    def delete(_ref):
+        assert not source.exists() and not audio.exists()
+        if error:
+            raise error
+
+    with patch("worker.tasks.upload_storage.delete", side_effect=delete) as remove:
+        cleanup_stuck(r, "task-s3", "heartbeat:task-s3", "claim")
+    remove.assert_called_once_with(ref)
+    assert not source.exists() and not audio.exists()
+
+
+def test_sweeper_continues_after_stuck_s3_delete_error(monkeypatch):
+    r = MagicMock()
+    r.eval.return_value = b"running:s3://uploads/uploads/task.mp4"
+    with patch("worker.tasks.redis.Redis.from_url", return_value=r), \
+         patch("worker.tasks.task_store.expire_overdue", return_value=[]), \
+         patch("worker.tasks.find_stuck", return_value=[
+             ("task-1", "heartbeat:task-1", "claim-1"),
+             ("task-2", "heartbeat:task-2", "claim-2")]), \
+         patch("worker.tasks.report_stuck") as report, \
+         patch("worker.tasks.cleanup"), \
+         patch("worker.tasks.upload_storage.delete", side_effect=BotoCoreError()) as remove:
+        sweep_stuck_tasks()
+    assert report.call_count == 2
+    assert remove.call_count == 2
 
 
 # ---------------------------------------------------------------------------

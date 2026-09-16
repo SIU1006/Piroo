@@ -424,12 +424,16 @@ def cleanup_stuck(r, task_id: str, heartbeat_key, claim_token: str) -> None:
     cleanup_paths = [extracted_audio_path(task_id)]
 
     if original_path:
-        cleanup_paths.append(original_path)
-    for path in cleanup_paths:
-        if path.startswith("s3://"):
-            upload_storage.delete(path)
+        if original_path.startswith("s3://"):
+            cleanup_paths.append(str(UPLOAD_DIR / original_path.rsplit("/", 1)[-1]))
         else:
-            cleanup(path)
+            cleanup_paths.append(original_path)
+    cleanup(*cleanup_paths)
+    if original_path and original_path.startswith("s3://"):
+        try:
+            upload_storage.delete(original_path)
+        except (BotoCoreError, ClientError):
+            logger.exception("Could not remove stuck upload %s", task_id)
 # =======================================================
 
 @celery_app.task(name="sweep_stuck_tasks")
@@ -444,9 +448,9 @@ def sweep_stuck_tasks():
     try:
         for task_id, ref in task_store.expire_overdue(r):
             try:
-                upload_storage.delete(ref)
                 if ref.startswith("s3://"):
                     cleanup(str(UPLOAD_DIR / ref.rsplit("/", 1)[-1]), extracted_audio_path(task_id))
+                upload_storage.delete(ref)
             except (BotoCoreError, ClientError, OSError):
                 logger.exception("Could not remove expired upload %s", task_id)
         for task_id, heartbeat_key, claim_token in find_stuck(r):

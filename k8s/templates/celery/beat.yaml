@@ -14,6 +14,7 @@ spec:
     metadata:
       annotations:
         checksum/pipeline-config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/object-storage-secrets: {{ include "asyncvtp.objectStorageSecretChecksum" . }}
       labels:
         app: celery-beat
     spec:
@@ -39,3 +40,9 @@ spec:
               key: {{ .Values.secrets.redis.key }}
         resources:
           {{- toYaml .Values.celeryBeat.resources | nindent 10 }}
+        {{- if .Values.objectStorage.caSecret }}
+        volumeMounts:
+          {{- include "asyncvtp.objectStorageCaMount" . | nindent 8 }}
+      volumes:
+        {{- include "asyncvtp.objectStorageCaVolume" . | nindent 6 }}
+        {{- end }}

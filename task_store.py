@@ -15,6 +15,8 @@ QUEUE_TIMEOUT_SECONDS = int(os.getenv("TASK_QUEUE_TIMEOUT_SECONDS", "600"))
 UPLOAD_TIMEOUT_SECONDS = int(os.getenv("UPLOAD_TIMEOUT_SECONDS", "120"))
 if min(MAX_OUTSTANDING_TASKS, QUEUE_TIMEOUT_SECONDS, UPLOAD_TIMEOUT_SECONDS) < 1:
     raise ValueError("Admission and timeout limits must be positive")
+if MAX_OUTSTANDING_TASKS > 100:
+    raise ValueError("MAX_OUTSTANDING_TASKS must not exceed 100")
 if max(QUEUE_TIMEOUT_SECONDS, UPLOAD_TIMEOUT_SECONDS + 30) >= STATE_TTL_SECONDS:
     raise ValueError("Queue and upload deadlines must be shorter than task-state retention")
 
@@ -29,7 +31,7 @@ return 1
 
 TRANSITION_SCRIPT = """
 local state = redis.call('HGET', KEYS[2], 'status')
-if state == 'completed' or state == 'failed' then return 0 end
+if not state or state == 'completed' or state == 'failed' then return 0 end
 redis.call('HSET', KEYS[2], 'status', ARGV[2], 'phase', ARGV[3], 'updated_at', ARGV[4])
 redis.call('HSETNX', KEYS[2], 'created_at', ARGV[4])
 redis.call('EXPIRE', KEYS[2], ARGV[6])
