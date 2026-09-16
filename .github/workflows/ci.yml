@@ -10,12 +10,10 @@ on:
     branches: [main]
     paths-ignore:
       - '**.md'
-      - 'terraform/**'
   pull_request:
     branches: [main]
     paths-ignore:
       - '**.md'
-      - 'terraform/**'
 
 jobs:
   helm-lint:
@@ -30,18 +28,38 @@ jobs:
       with:
         version: v3.16.4
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
     - name: Lint chart
       run: helm lint k8s
 
-    # Render overlays to CI check failed ones
-    - name: template dev overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-dev.yaml > /dev/null
+    - name: Install YAML validator
+      run: python -m pip install PyYAML==6.0.3
 
-    - name: template staging overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-staging.yaml > /dev/null
-
-    - name: template prod overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-prod.yaml > /dev/null
+    - name: Verify rendered monitoring in all overlays
+      run: |
+        for overlay in dev staging prod; do
+          receiver=slack
+          if [ "$overlay" = dev ]; then receiver=local; fi
+          out="$RUNNER_TEMP/monitoring/$overlay"
+          helm template asyncvtp k8s --namespace monitoring-demo -f "k8s/values-$overlay.yaml" |
+            python monitoring/validate_render.py --output-dir "$out" --receiver "$receiver" --namespace monitoring-demo
+          mkdir -p "$out/rules"
+          cp "$out/asyncvtp.rules.yml" "$out/rules/asyncvtp.rules.yml"
+          docker run --rm --mount "type=bind,source=$out,target=/config,readonly" \
+            --mount "type=bind,source=$out/rules,target=/etc/prometheus/rules,readonly" \
+            --entrypoint promtool prom/prometheus:v3.8.1 check config /config/prometheus.yml
+          docker run --rm --mount "type=bind,source=$out/rules,target=/rules,readonly" \
+            --entrypoint promtool prom/prometheus:v3.8.1 check rules /rules/asyncvtp.rules.yml
+          docker run --rm --mount "type=bind,source=$out,target=/rules,readonly" \
+            --entrypoint amtool prom/alertmanager:v0.28.1 check-config /rules/alertmanager.yml
+        done
+        cp monitoring/alerts.test.yml "$RUNNER_TEMP/monitoring/dev/alerts.test.yml"
+        docker run --rm --mount "type=bind,source=$RUNNER_TEMP/monitoring/dev,target=/rules,readonly" \
+          --entrypoint promtool prom/prometheus:v3.8.1 test rules /rules/alerts.test.yml
 
   test:
     runs-on: ubuntu-latest
@@ -60,6 +78,9 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements-dev.txt
 
+    - name: Install ffmpeg for media tests
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
     - name: Lint
       run: ruff check . --fix
 
@@ -70,6 +91,87 @@ jobs:
         OLLAMA_HOST: http://ollama-service:11434
         LLM_MODEL: llama3.2
       run: python -m pytest tests/ -v
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build boundary-test images
+      run: |
+        docker build -t asyncvtp-app:integration .
+        docker build -f Dockerfile.inference \
+          --build-arg WHISPER_MODEL_SIZE=tiny \
+          -t asyncvtp-whisper:integration .
+
+    - name: Start Redis and Whisper
+      run: |
+        docker network create asyncvtp-integration
+        docker run -d --name redis-integration --network asyncvtp-integration redis:7.4.10
+        docker run -d --name whisper-integration --network asyncvtp-integration \
+          asyncvtp-whisper:integration
+        for _ in {1..60}; do
+          if docker exec whisper-integration python -c \
+            "import urllib.request; urllib.request.urlopen('http://localhost:3000/readyz', timeout=2)"; then
+            exit 0
+          fi
+          sleep 5
+        done
+        docker logs whisper-integration
+        exit 1
+
+    - name: Run service boundary tests
+      run: |
+        docker run --rm --network asyncvtp-integration \
+          --mount "type=bind,source=$PWD,target=/workspace" \
+          --workdir /workspace \
+          -e RUN_SERVICE_INTEGRATION=1 \
+          -e BROKER_URL=redis://redis-integration:6379/0 \
+          -e REDIS_PASSWORD= \
+          -e WHISPER_URL=http://whisper-integration:3000 \
+          -e OLLAMA_HOST=http://unused:11434 \
+          -e LLM_MODEL=llama3.2 \
+          -e UPLOAD_DIR=/tmp/asyncvtp-uploads \
+          asyncvtp-app:integration sh -c \
+          'python -m pip install --user --disable-pip-version-check pytest==9.0.3 && python -m pytest tests/integration -v -p no:cacheprovider'
+
+    - name: Print service logs after failure
+      if: failure()
+      run: |
+        docker logs redis-integration || true
+        docker logs whisper-integration || true
+
+    - name: Remove boundary-test services
+      if: always()
+      run: |
+        docker rm -f redis-integration whisper-integration || true
+        docker network rm asyncvtp-integration || true
+
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.9.8
+
+    - name: Check formatting
+      run: terraform fmt -check -recursive
+
+    - name: Initialize without a backend
+      working-directory: terraform
+      run: terraform init -backend=false -input=false
+
+    - name: Validate configuration
+      working-directory: terraform
+      run: terraform validate
 
   model-ci:
     runs-on: ubuntu-latest
@@ -96,13 +198,46 @@ jobs:
           exit 1
         fi
 
-    - name: WER regression gate
-      working-directory: model_eval
-      run: python check_regression.py
+    - name: Build the image that will be evaluated and published
+      run: |
+        SIZE=$(python model_eval/get_production_size.py)
+        docker build -f Dockerfile.inference --build-arg WHISPER_MODEL_SIZE="$SIZE" -t whisper:evaluated .
+        echo "WHISPER_EVALUATED_IMAGE=$(docker image inspect whisper:evaluated --format '{{.Id}}')" >> "$GITHUB_ENV"
+        docker run -d --name whisper-evaluation -p 127.0.0.1:13000:3000 whisper:evaluated
+        for _ in {1..60}; do
+          if curl --fail --silent http://127.0.0.1:13000/readyz; then exit 0; fi
+          sleep 5
+        done
+        docker logs whisper-evaluation
+        exit 1
+
+    - name: WER regression gate against the actual image
+      run: python -m model_eval.check_regression --endpoint http://127.0.0.1:13000 --deployed-image "$WHISPER_EVALUATED_IMAGE" --output ci-evaluation.json
+
+    - name: Preserve the evaluated image
+      run: docker save whisper:evaluated -o whisper-evaluated.tar
+
+    - name: Upload the evaluated image
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluated-whisper-${{ github.sha }}
+        path: whisper-evaluated.tar
+        retention-days: 3
+
+    - name: Preserve evaluation evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-evaluation-${{ github.sha }}
+        path: ci-evaluation.json
+
+    - name: Stop evaluation service
+      if: always()
+      run: docker rm -f whisper-evaluation || true
 
   build-check: # before actual pushing
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, integration, helm-lint, terraform]
     if: github.event_name == 'pull_request'
     timeout-minutes: 20 # default Github timeout is 6 hours!
 
@@ -136,7 +271,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [test, model-ci]    # only build if tests pass AND the model hasn't regressed
+    needs: [test, integration, model-ci, helm-lint, terraform]
     if: github.event_name == 'push' # only push images after code lands on main
     timeout-minutes: 20
     permissions:
@@ -187,20 +322,28 @@ jobs:
         cache-to: type=gha,mode=max,scope=fastapi # Buildx recognizes unchanged layer's hash and restores from GHA cache, no need reinstalling ML dependencies
 
 
-    - name: Build and push Whisper image
-      uses: docker/build-push-action@v5
+    - name: Download the evaluated Whisper image
+      uses: actions/download-artifact@v4
       with:
-        context: .
-        file: Dockerfile.inference
-        push: true
-        tags: |
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:latest
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ steps.model-size.outputs.size }}
-          ghcr.io/${{ env.GH_USERNAME }}/whisper:${{ github.sha }}
-        build-args: |
-          WHISPER_MODEL_SIZE=${{ steps.model-size.outputs.size }}
-        cache-from: type=gha,scope=whisper-${{ steps.model-size.outputs.size }}
-        cache-to: type=gha,mode=max,scope=whisper-${{ steps.model-size.outputs.size }}
+        name: evaluated-whisper-${{ github.sha }}
+
+    - name: Publish exactly the evaluated image
+      env:
+        MODEL_SIZE: ${{ steps.model-size.outputs.size }}
+        IMAGE_SHA: ${{ github.sha }}
+      run: |
+        docker load -i whisper-evaluated.tar
+        for TAG in latest "$MODEL_SIZE" "$IMAGE_SHA"; do
+          docker tag whisper:evaluated "ghcr.io/$GH_USERNAME/whisper:$TAG"
+          docker push "ghcr.io/$GH_USERNAME/whisper:$TAG"
+        done
+        docker image inspect "ghcr.io/$GH_USERNAME/whisper:$IMAGE_SHA" --format '{{json .RepoDigests}}' > published-image-digests.json
+
+    - name: Preserve publication identity
+      uses: actions/upload-artifact@v4
+      with:
+        name: published-whisper-${{ github.sha }}
+        path: published-image-digests.json
 
     - name: Bump staging image tags to this commit
       run: |

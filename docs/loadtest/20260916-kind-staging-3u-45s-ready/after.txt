@@ -1,0 +1,3 @@
+{"final_queue_depth": 0}
+{'celery@celery-5bcb9798bf-pn57q': [], 'celery@celery-5bcb9798bf-xm85f': []}
+[{'celery@celery-5bcb9798bf-pn57q': {'ok': 'task events disabled'}}, {'celery@celery-5bcb9798bf-xm85f': {'ok': 'task events disabled'}}]

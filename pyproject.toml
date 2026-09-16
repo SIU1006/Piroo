@@ -4,3 +4,8 @@ target-version = "py311"
 
 [tool.ruff.lint] # ruff check only
 ignore = ["B008"]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires the disposable Redis and Whisper services started by CI",
+]

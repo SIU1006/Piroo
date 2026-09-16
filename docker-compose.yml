@@ -1,11 +1,20 @@
+x-app-environment: &app-environment
+  BROKER_URL: redis://redis:6379/0
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-dev-only}
+  WHISPER_URL: http://whisper-service:3000
+  OLLAMA_HOST: http://ollama:11434
+  LLM_MODEL: ${LLM_MODEL:-llama3.2}
+
 services:
   redis:
     image: redis:7.4.10
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change-me-dev-only}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-dev-only}
     ports:
       - "6379:6379"
     healthcheck: # Make sure redis container ready
-      test: ["CMD-SHELL", "redis-cli -a $${REDIS_PASSWORD:-change-me-dev-only} ping | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -14,47 +23,40 @@ services:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - BROKER_URL=redis://redis:6379/0
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-change-me-dev-only}
-      - WHISPER_URL=http://whisper-service:3000
-      - LLM_MODEL=llama3.2
-      - OLLAMA_HOST=http://ollama:11434
+    environment: *app-environment
     depends_on:
       redis:
         condition: service_healthy
-      ollama:
-        condition: service_started
+      ollama-model:
+        condition: service_completed_successfully
       whisper-service:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
 
   celery:
     build: .
     command: python -m celery -A worker.tasks worker --loglevel=info --pool=solo
-    environment:
-      - BROKER_URL=redis://redis:6379/0
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-change-me-dev-only}
-      - WHISPER_URL=http://whisper-service:3000
-      - OLLAMA_HOST=http://ollama:11434
-      - LLM_MODEL=llama3.2
+    environment: *app-environment
     depends_on:
       redis:
         condition: service_healthy
-      ollama:
-        condition: service_started
+      ollama-model:
+        condition: service_completed_successfully
       whisper-service:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
 
   celery-beat:
     build: .
-    command: python -m celery -A worker.tasks beat --loglevel=info
-    environment:
-      - BROKER_URL=redis://redis:6379/0
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-change-me-dev-only}
+    command: python -m celery -A worker.tasks beat --loglevel=info --schedule=/tmp/celerybeat-schedule
+    environment: *app-environment
     depends_on:
       redis:
         condition: service_healthy
@@ -66,21 +68,37 @@ services:
       dockerfile: Dockerfile.inference
     ports:
       - "3000:3000"
-    depends_on:
-      redis:
-        condition: service_healthy
-      ollama:
-        condition: service_started
     volumes:
       - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/readyz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
 
 
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:0.32.13
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+
+  ollama-model:
+    image: ollama/ollama:0.32.13
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "${LLM_MODEL:-llama3.2}"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
 
 volumes: # storage outside any container
   ollama_data:

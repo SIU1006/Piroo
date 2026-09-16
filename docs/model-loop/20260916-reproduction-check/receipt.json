@@ -1,0 +1,63 @@
+{
+  "run": "20260916-reproduction-check",
+  "scope": "isolated local Docker and SQLite MLflow",
+  "phases": {
+    "evaluate": {
+      "completed": true,
+      "model_size": "base",
+      "model_revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+      "deployed_image": "sha256:e9a77c240c86b627465e015d15ba7896aa562fef1777f8cdeac6e61c91168a08",
+      "wer": 0.06683168316831684,
+      "rtf": 0.09868609432479969,
+      "n_clips": 20,
+      "evaluated_at": 1789556487.9797244
+    },
+    "promote": {
+      "completed": true
+    },
+    "verify": {
+      "completed": true,
+      "model_size": "base",
+      "model_revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+      "deployed_image": "sha256:e9a77c240c86b627465e015d15ba7896aa562fef1777f8cdeac6e61c91168a08",
+      "wer": 0.06683168316831684,
+      "rtf": 0.10149815627182493,
+      "n_clips": 20,
+      "evaluated_at": 1789556529.3343916
+    },
+    "rollback": {
+      "completed": true
+    },
+    "verify-rollback": {
+      "completed": true,
+      "model_size": "tiny",
+      "model_revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+      "deployed_image": "sha256:18359e14e97e657d29c9c75a47145b9b56b077532ce336f187ee8c3abeff1398",
+      "wer": 0.06683168316831684,
+      "rtf": 0.07347859804299835,
+      "n_clips": 20,
+      "evaluated_at": 1789556550.7253087
+    }
+  },
+  "evaluation": {
+    "dataset_sha256": "7e2881fd9e66a0bd020bf6e0b33582a810749d3189712e613f4e91dbf7cda577",
+    "subset_sha256": "a76f8b024e6a2c5e37e3324f92bcb3852c26010e041740c623e6d8f806744554",
+    "config_sha256": "839b9dc7de24ef0e7081701b0d79f420a38e30824191cd990ccd8e1e83fdb22d"
+  },
+  "deployment": {
+    "container_id": "d95054cba99f80e0a9b91015a34678948f9161dc4c4d846b49188955197c9af6",
+    "image_id": "sha256:e9a77c240c86b627465e015d15ba7896aa562fef1777f8cdeac6e61c91168a08",
+    "image_ref": "asyncvtp-model-loop:base",
+    "started_at": "2026-09-16T11:01:49.082953706Z"
+  },
+  "rollback-deployment": {
+    "container_id": "cb83db05d5ea2f7b4813df1198b117bd8d9b87e6f4e1a38042c5c63b4a4ecfc1",
+    "image_id": "sha256:18359e14e97e657d29c9c75a47145b9b56b077532ce336f187ee8c3abeff1398",
+    "image_ref": "asyncvtp-model-loop:tiny",
+    "started_at": "2026-09-16T11:02:14.029552653Z"
+  },
+  "rollback": {
+    "production_version": 1,
+    "deployed_image": "sha256:18359e14e97e657d29c9c75a47145b9b56b077532ce336f187ee8c3abeff1398"
+  }
+}

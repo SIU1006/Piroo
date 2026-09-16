@@ -1,0 +1,20 @@
+[
+  {
+    "id": "incident",
+    "transcript": "On Tuesday the upload API returned errors for twelve minutes. Redis was healthy. The cause was a full uploads volume. The team removed abandoned temporary files and service recovered. No customer files were lost. The follow-up is to alert at eighty percent disk usage.",
+    "required_facts": ["12-minute upload API outage", "full uploads volume was the cause", "cleanup restored service", "no customer files lost", "80% disk alert follow-up"],
+    "contradictions": ["Redis caused the incident", "customer files were lost"]
+  },
+  {
+    "id": "experiment",
+    "transcript": "We compared two transcription models on the same twenty clips. Model A had a word error rate of eight percent and Model B six percent. Model B took twice as long on our CPU. We chose Model A for the interactive service because latency matters more there. We have not tested either model on noisy recordings.",
+    "required_facts": ["same 20 clips", "A WER 8%, B WER 6%", "B twice as slow on CPU", "A selected for latency", "no noisy-audio evaluation"],
+    "contradictions": ["B selected for production", "noise robustness established"]
+  },
+  {
+    "id": "decision",
+    "transcript": "The team proposed adding a GPU worker next month. The estimated monthly cost is three hundred dollars, but finance has not approved it. Until approval, the CPU service stays in place. Maya will collect peak-hour queue measurements by Friday. No deployment date has been agreed.",
+    "required_facts": ["GPU proposal for next month", "$300 estimated monthly cost", "finance approval pending", "CPU remains until approval", "Maya measures queue by Friday", "no agreed deployment date"],
+    "contradictions": ["GPU approved", "deployment date confirmed"]
+  }
+]

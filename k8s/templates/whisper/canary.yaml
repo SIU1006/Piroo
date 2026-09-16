@@ -29,9 +29,6 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
-        env:
-        - name: WHISPER_MODEL_SIZE
-          value: {{ .Values.whisper.canary.modelSize | quote }}
         ports:
         - containerPort: {{ .Values.whisper.service.port }}
         volumeMounts:
@@ -62,4 +59,16 @@ spec:
       - name: uploads-storage
         persistentVolumeClaim:
           claimName: uploads-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whisper-canary-service
+spec:
+  selector:
+    app: whisper
+    track: canary
+  ports:
+  - port: {{ .Values.whisper.service.port }}
+    targetPort: {{ .Values.whisper.service.port }}
 {{- end }}

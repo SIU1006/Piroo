@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 from settings import with_password
 
+TASK_HARD_TIME_LIMIT_SECONDS = 1900
+
 load_dotenv()  # Load .env into os env
 _broker_url = os.getenv("BROKER_URL")
 assert _broker_url is not None, "BROKER_URL is not set in .env"
@@ -22,7 +24,7 @@ celery_app.conf.update(
     broker_read_url=BROKER_URL,
     broker_write_url=BROKER_URL,
     task_soft_time_limit=1800,  # Raise Exception
-    task_time_limit=1900,  # force-kill
+    task_time_limit=TASK_HARD_TIME_LIMIT_SECONDS,  # force-kill
     task_acks_late=True,  # Redis will re-queue the force-killed tasks
     worker_prefetch_multiplier=1,  # 1 worker 1 task
 

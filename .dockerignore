@@ -1,5 +1,9 @@
 .git
 .env
+.env.*
+secrets/
+docs/model-loop/
+model-eval-*-build.log
 **/__pycache__/
 **/*.pyc
 **/.pytest_cache/
@@ -21,3 +25,62 @@ docs/loadtest/*_history.csv
 
 obsidian/
 terraform/
+
+# Repository metadata and development/deployment tooling
+.github/
+.agents/
+.codex/
+.vscode/
+.idea/
+argocd/
+docs/
+tests/
+docker-compose*.yml
+kind-config.yml
+
+# Local Python environments, caches and coverage
+venv/
+.venv/
+env/
+.env/
+.cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+**/*.pyo
+**/*.pyd
+**/*.egg-info/
+.eggs/
+build/
+dist/
+
+# Local state, credentials and generated CI exports
+**/*.db
+**/*.db-*
+**/registry.db*
+**/*.log
+**/*.pid
+**/*.pid.lock
+**/*.key
+**/*.p12
+**/*.pfx
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+**/*.tfvars.json
+**/*.tfplan
+ci-evaluation.json
+published-image-digests.json
+whisper-evaluated.tar
+promotion-config.json
+
+# Editor backups and operating-system metadata
+**/*.swp
+**/*.swo
+**/*~
+**/.DS_Store
+**/Thumbs.db

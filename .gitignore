@@ -16,6 +16,9 @@ venv/
 env/
 .env/
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 test_video/
 uploads/
@@ -23,6 +26,7 @@ uploads/
 .pytest_cache/
 
 mlflow.db
+mlflow.db-*
 mlruns/
 mlartifacts/
 
@@ -53,8 +57,34 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+
+# Local caches, coverage and generated runtime output
+.cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.log
+*.pid
+*.pid.lock
+
+# Local CI exports (published through Actions artifacts)
+/ci-evaluation.json
+/published-image-digests.json
+/whisper-evaluated.tar
+/promotion-config.json
+
+# Private credentials and local certificate bundles
+*.key
+*.p12
+*.pfx
 
 docs/loadtest/*.csv
 docs/loadtest/*_history.csv
+!docs/loadtest/legacy-*.csv
+!docs/loadtest/*/*.csv
 
 obsidian/

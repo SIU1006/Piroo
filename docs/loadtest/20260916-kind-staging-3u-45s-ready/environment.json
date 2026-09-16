@@ -1,0 +1,178 @@
+{
+  "context": "kind-kind",
+  "namespace": "asyncvtp-staging",
+  "captured_at": "2026-09-16T07:30:43.4575891+00:00",
+  "checkout_commit": "f737af354ee0e05d9869ae7aaa03230984eb1257",
+  "hardware": {
+    "cpu": "AMD Ryzen 5 7600X 6-Core Processor             ",
+    "host_memory_bytes": 33485803520,
+    "docker": "12 CPUs 25200635904 bytes"
+  },
+  "deployments": [
+    {
+      "replicas": 2,
+      "name": "fastapi",
+      "containers": [
+        {
+          "args": null,
+          "image": "ghcr.io/siu1006/fastapi:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+          "name": "fastapi",
+          "command": null,
+          "resources": {
+            "limits": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "replicas": 2,
+      "name": "celery",
+      "containers": [
+        {
+          "args": [
+            "-A",
+            "worker.tasks",
+            "worker",
+            "--loglevel=info",
+            "--pool=threads",
+            "--concurrency=4"
+          ],
+          "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+          "name": "celery",
+          "command": [
+            "python",
+            "-m",
+            "celery"
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "memory": "1Gi"
+            },
+            "requests": {
+              "cpu": "250m",
+              "memory": "512Mi"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "replicas": 1,
+      "name": "whisper",
+      "containers": [
+        {
+          "args": null,
+          "image": "ghcr.io/siu1006/whisper:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+          "name": "whisper",
+          "command": null,
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "2Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "512Mi"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "replicas": 1,
+      "name": "ollama",
+      "containers": [
+        {
+          "args": null,
+          "image": "ollama/ollama:0.32.13",
+          "name": "ollama",
+          "command": null,
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "4Gi"
+            },
+            "requests": {
+              "cpu": "500m",
+              "memory": "2Gi"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "image_ids": [
+    {
+      "containers": {
+        "name": "celery",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "celery-5bcb9798bf-pn57q"
+    },
+    {
+      "containers": {
+        "name": "celery",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "celery-5bcb9798bf-xm85f"
+    },
+    {
+      "containers": {
+        "name": "fastapi",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "fastapi-66dd9b55f6-rk2z9"
+    },
+    {
+      "containers": {
+        "name": "fastapi",
+        "image": "ghcr.io/siu1006/celery:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/celery@sha256:25f0cee5d03228a2d46243f0cbf5d272a79b13767a18df85a253adc82f810bd5"
+      },
+      "pod": "fastapi-66dd9b55f6-zl6jn"
+    },
+    {
+      "containers": {
+        "name": "ollama",
+        "image": "docker.io/ollama/ollama:0.32.13",
+        "imageID": "docker.io/ollama/ollama@sha256:77f1a2a54460f0380f2611e1464233d9b82cb6e58afc8f60abec0061049d2d82"
+      },
+      "pod": "ollama-859b947c99-qhln6"
+    },
+    {
+      "containers": {
+        "name": "whisper",
+        "image": "ghcr.io/siu1006/whisper:162a94c2b0f2fa64a5c1d7f47d0bfff294ed77a1",
+        "imageID": "ghcr.io/siu1006/whisper@sha256:78592655b09b4dbc6652fb5710e57ac92866dd7165ef600c27f4f45d144dd16a"
+      },
+      "pod": "whisper-7684db6857-nrjbd"
+    }
+  ],
+  "load_client_sha256": "1197AC41CCC3F896396A34A8A85D9CFE6F0F55BDD416E87E794BD43DD8650C64",
+  "run": {
+    "drain_seconds": 60,
+    "result_deadline_seconds": 90,
+    "submission_seconds": 45,
+    "warmup": "one completed full pipeline request",
+    "transport": "Docker host.docker.internal -> kubectl port-forward -> one staging API pod",
+    "spawn_rate": 3,
+    "users": 3,
+    "locust": "2.46.5"
+  },
+  "payload": {
+    "sha256": "D30DAF95AE2D05287BA9DFAF752731C7567F52E71330A0ECC0989B906B7FCE88",
+    "bytes": 222124,
+    "path": "model_eval/eval_data/clip_00.wav"
+  }
+}

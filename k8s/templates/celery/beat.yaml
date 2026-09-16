@@ -12,6 +12,8 @@ spec:
       app: celery-beat
   template:
     metadata:
+      annotations:
+        checksum/pipeline-config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app: celery-beat
     spec:

@@ -1,0 +1,45 @@
+{
+  "snapshot_at": 1789543938.522392,
+  "jobs": {
+    "24c78062-cb00-4beb-9a6a-364303f6798a": {
+      "upload_started_at": 1789543870.0311527,
+      "accepted_at": 1789543870.063387,
+      "state": "completed",
+      "keepalives": 1,
+      "observed_at": 1789543906.8271534,
+      "observation": "completed"
+    },
+    "c14f121a-5230-4bd0-9cc2-c9b8ee2ad5c3": {
+      "upload_started_at": 1789543870.011564,
+      "accepted_at": 1789543870.0662,
+      "state": "completed",
+      "keepalives": 0,
+      "observed_at": 1789543892.9416661,
+      "observation": "completed"
+    },
+    "bdcbaedd-2e27-4622-a4ee-96b3e7ceed85": {
+      "upload_started_at": 1789543870.028642,
+      "accepted_at": 1789543870.0742154,
+      "state": "completed",
+      "keepalives": 1,
+      "observed_at": 1789543917.9465556,
+      "observation": "completed"
+    },
+    "8042e4ae-821f-47ea-96f5-3bcd7702c82e": {
+      "upload_started_at": 1789543895.9342291,
+      "accepted_at": 1789543895.9598308,
+      "state": "completed",
+      "keepalives": 1,
+      "observed_at": 1789543930.550272,
+      "observation": "completed"
+    },
+    "7752acab-6206-4e65-b383-73b5beb7b741": {
+      "upload_started_at": 1789543909.828748,
+      "accepted_at": 1789543909.8528903,
+      "state": "completed",
+      "keepalives": 0,
+      "observed_at": 1789543938.519469,
+      "observation": "completed"
+    }
+  }
+}
