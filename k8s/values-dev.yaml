@@ -19,8 +19,7 @@ secrets:
     create: true
     value: "dev-only-admin-password"
   alertmanager:
-    create: true
-    value: "https://hooks.slack.com/services/REPLACE/ME/dev"
+    create: false
 
 persistence:
   uploads:
@@ -44,6 +43,10 @@ celery:
 # Flip to true only if you're specifically testing autoscaling locally.
 prometheusAdapter:
   enabled: false
+
+alertmanager:
+  notifications:
+    enabled: false # inspect firing/resolved alerts locally without contacting Slack
 
 whisper:
   canary:

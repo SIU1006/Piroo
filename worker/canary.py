@@ -4,13 +4,20 @@ import os
 import time
 from pathlib import Path
 
+import ffmpeg
 import jiwer
 import redis
 import requests
 
 from model_eval.provenance import dataset_identity, load_config, revision_for
 from worker.celery_app import celery_app
-from worker.metrics import CANARY_WER, TASK_DURATION_SECONDS, TASK_FAILURES_TOTAL, TASK_TOTAL
+from worker.metrics import (
+    CANARY_LAST_SUCCESS_UNIX_SECONDS,
+    CANARY_WER,
+    TASK_DURATION_SECONDS,
+    TASK_FAILURES_TOTAL,
+    TASK_TOTAL,
+)
 
 '''
 Live whisper-service checker. Runs periodically on celery-beat's schedule to transcribe a set of known reference clips and record the WER against the known reference text.

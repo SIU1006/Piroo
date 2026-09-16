@@ -10,6 +10,8 @@ resource "kubernetes_storage_class" "gp3" {
   parameters = {
     type = "gp3"
   }
+
+  depends_on = [aws_eks_access_policy_association.admin]
 }
 
 # install argocd as helm chart
@@ -20,11 +22,13 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
+  depends_on = [aws_eks_access_policy_association.admin]
+
   # Pin a version for reproducibility, e.g. version = "7.8.15"
 }
 
-
-resource "kubernetes_manifest" "applicationset" {
-  manifest   = yamldecode(file("${path.module}/../argocd/Applicationset.yaml"))
-  depends_on = [helm_release.argocd]
-}
+# The ApplicationSet is deliberately NOT a kubernetes_manifest here: its CRD is
+# installed by the ArgoCD release above, so referencing it in the same run makes
+# terraform plan fail with "CRD may not be installed". Apply it with kubectl
+# right after terraform apply instead (see docs/demo-runbook.md):
+#   kubectl apply -f ../argocd/Applicationset.yaml
