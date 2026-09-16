@@ -57,4 +57,13 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: pod
+      {{- range .Values.prometheus.externalMetricNamespaces }}
+      # Only the adapter owner's Prometheus scrapes the other environment's queue.
+      - job_name: 'external-queue-{{ . }}'
+        static_configs:
+          - targets: ['redis-exporter-service.{{ . }}.svc.cluster.local:9121']
+            labels:
+              namespace: {{ . | quote }}
+              app: redis
+      {{- end }}
 {{- end }}

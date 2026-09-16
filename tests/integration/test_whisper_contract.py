@@ -16,6 +16,10 @@ pytestmark = pytest.mark.integration
 
 def test_bentoml_returns_plain_text_consumed_by_worker_and_canary(tmp_path, monkeypatch):
     whisper_url = os.environ["WHISPER_URL"]
+    # This disposable service is the candidate-only endpoint in this topology.
+    monkeypatch.setattr(canary, "CANARY_WHISPER_URL", whisper_url)
+    monkeypatch.setattr(canary, "CANARY_WHISPER_IMAGE",
+                        "whisper@" + os.environ["WHISPER_TEST_IMAGE_DIGEST"])
     source_wav = Path("worker/canary_clips/clip_00.wav").resolve()
     worker_mp3 = tmp_path / "contract.mp3"
     subprocess.run(

@@ -16,11 +16,13 @@ spec:
         app: celery
       annotations:
         checksum/pipeline-config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/object-storage-secrets: {{ include "asyncvtp.objectStorageSecretChecksum" . }}
         prometheus.io/scrape: "true"
         prometheus.io/port: {{ .Values.celery.metricsPort | quote }}
     spec:
+      serviceAccountName: asyncvtp-uploads
       securityContext:
-        # Keep the shared uploads volume writable by the non-root appuser.
+        # Private scratch space; source uploads live in object storage.
         fsGroup: 1000
         fsGroupChangePolicy: OnRootMismatch
       containers:
@@ -33,6 +35,10 @@ spec:
         envFrom:
         - configMapRef:
             name: pipeline-config
+        {{- if .Values.objectStorage.credentialsSecret }}
+        - secretRef:
+            name: {{ .Values.objectStorage.credentialsSecret }}
+        {{- end }}
         env:
         - name: REDIS_PASSWORD
           valueFrom:
@@ -42,11 +48,13 @@ spec:
         ports:
         - containerPort: {{ .Values.celery.metricsPort }}
         volumeMounts:
+          {{- include "asyncvtp.objectStorageCaMount" . | nindent 8 }}
         - name: uploads-storage
           mountPath: /app/uploads
         resources:
           {{- toYaml .Values.celery.resources | nindent 10 }}
       volumes:
+        {{- include "asyncvtp.objectStorageCaVolume" . | nindent 6 }}
       - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: uploads-pvc
+        emptyDir:
+          sizeLimit: {{ .Values.objectStorage.scratchSize }}

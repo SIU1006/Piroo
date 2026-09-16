@@ -38,7 +38,7 @@ def test_rejects_empty_filename():
 def test_returns_taskid():
     file = io.BytesIO(b"fake video content")
     with patch(
-        "app.routes.upload.process_video.delay"
+        "app.routes.upload.process_video.apply_async"
     ) as mock_delay:  # Mock Celery task so no need Redis
         response = client.post(
             "/api/v1/upload", files={"file": ("test.mp4", file, "video/mp4")}
@@ -69,7 +69,7 @@ def test_file_size(isolated_upload_dir, monkeypatch):
 
 
 def test_broker_failure_returns_503_and_removes_upload(isolated_upload_dir):
-    with patch("app.routes.upload.process_video.delay", side_effect=ConnectionError("Redis down")):
+    with patch("app.routes.upload.process_video.apply_async", side_effect=ConnectionError("Redis down")):
         response = client.post(
             "/api/v1/upload",
             files={"file": ("test.mp4", io.BytesIO(b"video"), "video/mp4")},

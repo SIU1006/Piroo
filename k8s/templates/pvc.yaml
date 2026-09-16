@@ -1,22 +1,6 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: uploads-pvc
-  labels:
-    {{- include "asyncvtp.labels" . | nindent 4 }}
-spec:
-  accessModes:
-    - {{ .Values.persistence.uploads.accessMode }} # multi-pod access needs ReadWriteMany, e.g. AWS EFS
-  {{- if .Values.persistence.uploads.storageClass }}
-  storageClassName: {{ .Values.persistence.uploads.storageClass }}
-  {{- end }}
-  resources:
-    requests:
-      storage: {{ .Values.persistence.uploads.size }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
   name: mlflow-pvc
   labels:
     {{- include "asyncvtp.labels" . | nindent 4 }}

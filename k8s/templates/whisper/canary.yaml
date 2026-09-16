@@ -31,9 +31,6 @@ spec:
             name: pipeline-config
         ports:
         - containerPort: {{ .Values.whisper.service.port }}
-        volumeMounts:
-        - name: uploads-storage
-          mountPath: /app/uploads
 
         startupProbe:
           httpGet:
@@ -55,10 +52,6 @@ spec:
         resources:
           {{- toYaml .Values.whisper.resources | nindent 10 }}
 
-      volumes:
-      - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: uploads-pvc
 ---
 apiVersion: v1
 kind: Service

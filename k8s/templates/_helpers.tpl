@@ -5,6 +5,30 @@ Chart name and version label
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/* External Secrets require an explicit version bump on rotation (also in GitOps). */}}
+{{- define "asyncvtp.objectStorageSecretChecksum" -}}
+{{- dict "credentialsSecret" .Values.objectStorage.credentialsSecret "credentialsVersion" .Values.objectStorage.credentialsSecretVersion "caSecret" .Values.objectStorage.caSecret "caVersion" .Values.objectStorage.caSecretVersion | toJson | sha256sum -}}
+{{- end -}}
+
+{{- define "asyncvtp.objectStorageCaMount" -}}
+{{- if .Values.objectStorage.caSecret -}}
+- name: object-storage-ca
+  mountPath: /etc/asyncvtp/object-storage-ca
+  readOnly: true
+{{- end -}}
+{{- end -}}
+
+{{- define "asyncvtp.objectStorageCaVolume" -}}
+{{- if .Values.objectStorage.caSecret -}}
+- name: object-storage-ca
+  secret:
+    secretName: {{ .Values.objectStorage.caSecret }}
+    items:
+    - key: ca.crt
+      path: ca.crt
+{{- end -}}
+{{- end -}}
+
 {{/*
 Rendered Alertmanager configuration, shared by the ConfigMap and pod checksum.
 */}}

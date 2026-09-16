@@ -88,3 +88,8 @@ docs/loadtest/*_history.csv
 !docs/loadtest/*/*.csv
 
 obsidian/
+
+# Local model-loop databases, raw exports and rendered cluster configuration
+docs/model-loop/**/registry.db*
+docs/model-loop/**/canary-rendered.yaml
+docs/model-loop/raw-evidence.zip

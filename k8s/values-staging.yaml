@@ -29,9 +29,6 @@ secrets:
     key: slack-webhook-url
 
 persistence:
-  uploads:
-    size: 20Gi
-    storageClass: "gp3"    # EBS gp3 (created by terraform); kind-local-path is "standard"
   mlflow:
     size: 5Gi
     storageClass: "gp3"
@@ -90,4 +87,15 @@ mlflow:
     nodePort: null
 
 prometheusAdapter:
-  enabled: true
+  enabled: false # asyncvtp-prod owns the cluster-wide external-metrics API
+
+minio:
+  enabled: false
+
+objectStorage:
+  bucket: "" # terraform output -json upload_storage -> staging.bucket
+  endpoint: ""
+  credentialsSecret: ""
+  caSecret: "" # AWS S3 uses the system CA bundle
+  serviceAccount:
+    roleArn: "" # terraform output -> staging.role_arn

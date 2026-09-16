@@ -73,6 +73,7 @@ render_and_apply() {
   helm template asyncvtp "$chart_dir" \
     --namespace "$namespace" \
     -f "$values_path" \
+    --set objectStorage.bucket=secret-render-only \
     --set secrets.redis.create=false \
     --set secrets.grafana.create=false \
     --set secrets.alertmanager.create=false \
