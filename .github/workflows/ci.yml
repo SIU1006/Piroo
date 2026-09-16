@@ -30,18 +30,38 @@ jobs:
       with:
         version: v3.16.4
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
     - name: Lint chart
       run: helm lint k8s
 
-    # Render overlays to CI check failed ones
-    - name: template dev overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-dev.yaml > /dev/null
+    - name: Install YAML validator
+      run: python -m pip install PyYAML==6.0.3
 
-    - name: template staging overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-staging.yaml > /dev/null
-
-    - name: template prod overlay
-      run: helm template asyncvtp k8s -f k8s/values.yaml -f k8s/values-prod.yaml > /dev/null
+    - name: Verify rendered monitoring in all overlays
+      run: |
+        for overlay in dev staging prod; do
+          receiver=slack
+          if [ "$overlay" = dev ]; then receiver=local; fi
+          out="$RUNNER_TEMP/monitoring/$overlay"
+          helm template asyncvtp k8s --namespace monitoring-demo -f "k8s/values-$overlay.yaml" |
+            python monitoring/validate_render.py --output-dir "$out" --receiver "$receiver" --namespace monitoring-demo
+          mkdir -p "$out/rules"
+          cp "$out/asyncvtp.rules.yml" "$out/rules/asyncvtp.rules.yml"
+          docker run --rm --mount "type=bind,source=$out,target=/config,readonly" \
+            --mount "type=bind,source=$out/rules,target=/etc/prometheus/rules,readonly" \
+            --entrypoint promtool prom/prometheus:v3.8.1 check config /config/prometheus.yml
+          docker run --rm --mount "type=bind,source=$out/rules,target=/rules,readonly" \
+            --entrypoint promtool prom/prometheus:v3.8.1 check rules /rules/asyncvtp.rules.yml
+          docker run --rm --mount "type=bind,source=$out,target=/rules,readonly" \
+            --entrypoint amtool prom/alertmanager:v0.28.1 check-config /rules/alertmanager.yml
+        done
+        cp monitoring/alerts.test.yml "$RUNNER_TEMP/monitoring/dev/alerts.test.yml"
+        docker run --rm --mount "type=bind,source=$RUNNER_TEMP/monitoring/dev,target=/rules,readonly" \
+          --entrypoint promtool prom/prometheus:v3.8.1 test rules /rules/alerts.test.yml
 
   test:
     runs-on: ubuntu-latest
