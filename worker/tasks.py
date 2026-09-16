@@ -22,7 +22,7 @@ from settings import (
     with_password,
 )
 from summary_contract import SUMMARY_OPTIONS, SUMMARY_PROMPT
-from worker.celery_app import celery_app
+from worker.celery_app import TASK_HARD_TIME_LIMIT_SECONDS, celery_app
 from worker.metrics import (
     CANARY_WER,  # noqa: F401 - re-exported so worker/canary.py can share one metrics module
     TASK_DURATION_SECONDS,
