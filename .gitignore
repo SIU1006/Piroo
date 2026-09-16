@@ -88,20 +88,3 @@ docs/loadtest/*_history.csv
 !docs/loadtest/*/*.csv
 
 obsidian/
-docs/model-loop/**/registry.db*
-model-eval-*-build.log
-docs/model-loop/**/canary-rendered.yaml
-docs/model-loop/raw-evidence.zip
-# Raw demo exports remain local; commit the consolidated evidence and receipts.
-docs/model-loop/**/*.log
-docs/model-loop/**/baseline.json
-docs/model-loop/**/candidate.json
-docs/model-loop/**/release.json
-docs/model-loop/**/verify.json
-docs/model-loop/**/verify-rollback.json
-docs/model-loop/**/ci-evaluation.json
-docs/model-loop/**/promotion-config.json
-docs/model-loop/**/initial-deployment.json
-docs/model-loop/**/deployment.json
-docs/model-loop/**/rollback.json
-docs/model-loop/**/rollback-deployment.json
