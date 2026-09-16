@@ -76,6 +76,7 @@ try {
     Wait-LoopReady $loopStable
     Save-LoopDeployment 'rollback-deployment.json'
     Invoke-LoopPhase 'verify-rollback'
+    Invoke-LoopDocker @('run', '--rm', '--mount', "type=bind,source=$loopRepo,target=/workspace", '--workdir', '/workspace', 'asyncvtp-model-eval:6', '-m', 'model_eval.export_evidence', $loopDockerOutput)
     Write-Host "Evidence preserved in $loopOutput"
 } finally {
     # Names are generated for this run; shared deployments are never selected.
