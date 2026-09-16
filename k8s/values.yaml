@@ -198,6 +198,9 @@ mlflow:
 # ------------------------------------------------------------------
 prometheus:
   enabled: true
+  smokeAlert:
+    enabled: false
+    value: 0
   image:
     repository: prom/prometheus
     tag: v3.8.1
@@ -232,6 +235,8 @@ grafana:
 
 alertmanager:
   enabled: true
+  notifications:
+    enabled: true
   image:
     repository: prom/alertmanager
     tag: v0.28.1

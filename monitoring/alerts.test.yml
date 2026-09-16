@@ -1,0 +1,77 @@
+# Copy beside the rendered asyncvtp.rules.yml, then run `promtool test rules alerts.test.yml`.
+rule_files:
+  - asyncvtp.rules.yml
+evaluation_interval: 1m
+tests:
+  - name: terminal task failures fire; interim retries do not enter the denominator
+    interval: 1m
+    input_series:
+      - series: 'celery_task_total{task_name="process_video",status="failure",namespace="monitoring-demo"}'
+        values: '0+2x130'
+      - series: 'celery_task_total{task_name="process_video",status="success",namespace="monitoring-demo"}'
+        values: '0+98x130'
+      - series: 'celery_task_total{task_name="process_video",status="retry",namespace="monitoring-demo"}'
+        values: '0+500x130'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: TaskFailureRateSLOBreach
+        exp_alerts: []
+      - eval_time: 80m
+        alertname: TaskFailureRateSLOBreach
+        exp_alerts:
+          - exp_labels: {severity: warning, namespace: monitoring-demo}
+            exp_annotations:
+              summary: 'Video processing failure rate exceeds 1%'
+              description: 'More than 1% of completed video tasks failed in the last hour. Interim retry attempts are excluded.'
+
+  - name: low terminal failure ratio stays clear even with many retries
+    interval: 1m
+    input_series:
+      - series: 'celery_task_total{task_name="process_video",status="failure",namespace="monitoring-demo"}'
+        values: '0+1x130'
+      - series: 'celery_task_total{task_name="process_video",status="success",namespace="monitoring-demo"}'
+        values: '0+199x130'
+      - series: 'celery_task_total{task_name="process_video",status="retry",namespace="monitoring-demo"}'
+        values: '0+500x130'
+    alert_rule_test:
+      - eval_time: 80m
+        alertname: TaskFailureRateSLOBreach
+        exp_alerts: []
+
+  - name: stale canary high WER on old worker does not mask fresh worker
+    interval: 1m
+    input_series:
+      - series: 'canary_wer{app="celery",pod="old",namespace="monitoring-demo"}'
+        values: '0.1x45'
+      - series: 'canary_last_success_timestamp_seconds{app="celery",pod="old",namespace="monitoring-demo"}'
+        values: '1x45'
+      - series: 'canary_wer{app="celery",pod="current",namespace="monitoring-demo"}'
+        values: '0.02x45'
+      - series: 'canary_last_success_timestamp_seconds{app="celery",pod="current",namespace="monitoring-demo"}'
+        values: '1000x45'
+    alert_rule_test:
+      - eval_time: 40m
+        alertname: CanaryWERSLOBreach
+        exp_alerts: []
+
+  - name: stale successful canary fires after two hours and resolves on success
+    interval: 1m
+    input_series:
+      - series: 'celery_worker_start_timestamp_seconds{app="celery",pod="worker",namespace="monitoring-demo"}'
+        values: '0x140'
+      - series: 'canary_last_success_timestamp_seconds{app="celery",pod="worker",namespace="monitoring-demo"}'
+        values: '0x129 7400x11'
+    alert_rule_test:
+      - eval_time: 60m
+        alertname: CanaryCheckNotRunning
+        exp_alerts: []
+      - eval_time: 127m
+        alertname: CanaryCheckNotRunning
+        exp_alerts:
+          - exp_labels: {severity: warning, namespace: monitoring-demo}
+            exp_annotations:
+              summary: 'No successful canary transcription in 2 hours'
+              description: 'The hourly check has not succeeded recently, or its Celery metrics are unavailable.'
+      - eval_time: 135m
+        alertname: CanaryCheckNotRunning
+        exp_alerts: []
