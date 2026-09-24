@@ -45,17 +45,65 @@ The main engineering focus is **Kubernetes deployment and operations**, supporte
 
 Transcription and summarisation take time. Separating the upload API from processing lets the API accept jobs without waiting for inference, while workers handle the expensive steps independently.
 
-```text
-Upload → FastAPI → Redis queue → Celery worker → Whisper → LLM summary
-             │                       ↑                        │
-             └── S3 / MinIO storage ──┘              Result → Browser
+```mermaid
+flowchart LR
+    user["Browser"] -->|Upload media| api["FastAPI"]
+    api -->|Store source| storage[("S3 / MinIO")]
+    api -->|Enqueue job| queue[("Redis queue")]
+    queue -->|Consume job| worker["Celery worker<br/>Extract audio with ffmpeg"]
+    storage -->|Download source| worker
+    worker <-->|Audio / transcript| whisper["BentoML<br/>Whisper"]
+    worker <-->|Transcript / summary| ollama["Ollama<br/>Language model"]
+    worker -->|Cache and publish result| result[("Redis task state<br/>and result cache")]
+    result -->|Result / status| api
+    api -->|WebSocket / status API| user
+
+    classDef app fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef data fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef model fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    class api,worker app
+    class storage,queue,result data
+    class whisper,ollama model
 ```
 
-Object storage lets workers fetch files from any node. A separate inference service keeps model releases independent of the API and worker code.
+Object storage lets workers fetch files from any node. A separate inference service keeps model releases independent of the API and worker code. Redis queue and result storage share one Redis instance per environment.
 
 ## Kubernetes deployment and operations
 
 The platform runs as separate API, worker and inference deployments, with Helm configurations for local **kind** and **AWS EKS**.
+
+```mermaid
+flowchart TB
+    terraform["Terraform<br/>AWS infrastructure"] --> eks
+    git["Git repository<br/>Helm chart + environment values"] --> argo
+
+    subgraph eks["AWS EKS cluster"]
+        argo["Argo CD<br/>Reconcile deployments from Git"]
+        subgraph workloads["Application layout — repeated in staging and production namespaces"]
+            api["FastAPI Service<br/>API pods"] --> redis[("Redis<br/>Queue + task state")]
+            redis --> workers["Celery worker pods"]
+            workers --> inference["Internal Services<br/>Whisper + Ollama pods"]
+            hpa["Horizontal Pod Autoscaler"] -->|Adjust replicas| workers
+        end
+        argo -->|Deploy each environment| workloads
+        monitoring["Prometheus<br/>Scrape application + Redis metrics"] --> dashboards["Grafana + Alertmanager<br/>Dashboards and alerts"]
+        redis -.->|Queue-depth metric via exporter| monitoring
+        monitoring --> adapter["External-metrics adapter<br/>One owner: production"]
+        adapter -->|Queue-depth metric| hpa
+    end
+
+    api -->|Upload| s3[("S3 bucket per environment")]
+    workers -->|Download| s3
+
+    classDef app fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef data fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef ops fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class api,workers,inference app
+    class redis,s3 data
+    class argo,hpa,monitoring,adapter,dashboards ops
+```
+
+*Simplified EKS configuration: queue-based scaling is shown; HPA also uses CPU. Local kind disables HPA by default and uses MinIO.*
 
 - **Infrastructure and GitOps:** Terraform provisions AWS infrastructure; Argo CD reconciles Helm deployments from Git into separate staging and production namespaces.
 - **Scaling with demand:** worker autoscaling uses Redis queue depth alongside CPU, so a growing backlog can trigger more workers even when they are waiting on inference.
